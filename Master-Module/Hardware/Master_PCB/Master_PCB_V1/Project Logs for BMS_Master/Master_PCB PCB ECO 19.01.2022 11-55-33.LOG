@@ -1,0 +1,7 @@
+Added Component: Designator=*(CAPAE530X550N)
+Added Pin To Net: NetName=GND Pin=*-2
+Added Net: Name=GND
+Added Pin To Net: NetName=Net*_1 Pin=*-1
+Added Net: Name=Net*_1
+Added Class: Name=Master_Schematik
+Added Room: Name=Master_Schematik

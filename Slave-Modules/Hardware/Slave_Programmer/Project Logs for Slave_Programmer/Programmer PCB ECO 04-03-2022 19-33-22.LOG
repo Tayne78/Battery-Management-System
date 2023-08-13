@@ -1,0 +1,4 @@
+Change Net Name : Old Net Name=NetFlip1_0 New Net Name=VCC
+Added Pin To Net: NetName=GND Pin=Flip1-1
+Added Pin To Net: NetName=GND Pin=J1-5
+Added Net: Name=GND

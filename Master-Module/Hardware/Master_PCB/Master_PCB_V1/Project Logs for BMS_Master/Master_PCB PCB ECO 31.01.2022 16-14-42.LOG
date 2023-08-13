@@ -1,0 +1,4 @@
+Removed Pin From Net: NetName=NetCON_SSR_1 Pin=Relais-1
+Removed Pin From Net: NetName=NetCON_SSR_3 Pin=Relais-3
+Added Pin To Net: NetName=NetCON_SSR_3 Pin=Relais-1
+Added Pin To Net: NetName=NetCON_SSR_1 Pin=Relais-3

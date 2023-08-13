@@ -1,0 +1,17 @@
+Removed Pin From Net: NetName=NetC42_1 Pin=D41-2
+Removed Pin From Net: NetName=NetC42_1 Pin=Micro-USB-1
+Added Component: Designator=FB41(BEADC3216X130N)
+Add component (AddParameter): Name = "Arrow Part Number"; Value = "BLM31AJ601SN1L"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Arrow Price/Stock"; Value = "https://www.arrow.com/en/products/blm31aj601sn1l/murata-manufacturing"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Datasheet Link"; Value = "https://www.mouser.com/datasheet/2/281/c31e-794748.pdf"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Height"; Value = "1.3mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Name"; Value = "Murata Electronics"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Part_Number"; Value = "BLM31AJ601SN1L"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mouser Part Number"; Value = "81-BLM31A601S"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mouser Price/Stock"; Value = "https://www.mouser.co.uk/ProductDetail/Murata-Electronics/BLM31AJ601SN1L?qs=eh6oC%2F9l24qWxAxwNnqXlg%3D%3D"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=NetC42_1 Pin=FB41-1
+Added Pin To Net: NetName=NetD41_2 Pin=D41-2
+Added Pin To Net: NetName=NetD41_2 Pin=FB41-2
+Added Pin To Net: NetName=NetD41_2 Pin=Micro-USB-1
+Added Net: Name=NetD41_2
+Added Member To Class: ClassName=Master_Schematik Member=Component FB41 BLM31AJ601SN1L

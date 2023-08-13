@@ -1,0 +1,23 @@
+Removed Pin From Net: NetName=VCCGND Pin=CA2-1
+Removed Pin From Net: NetName=VCCGND Pin=CA12-1
+Removed Pin From Net: NetName=VCCGND Pin=CA22-1
+Removed Pin From Net: NetName=VCCGND Pin=CBOT2-1
+Removed Pin From Net: NetName=VCCGND Pin=CLP2-1
+Removed Pin From Net: NetName=VCCGND Pin=CRST2-1
+Removed Pin From Net: NetName=VCCGND Pin=CTOP2-1
+Removed Pin From Net: NetName=VCCGND Pin=IC12-6
+Removed Pin From Net: NetName=VCCGND Pin=IC12-16
+Removed Pin From Net: NetName=VCCGND Pin=IC22-2
+Removed Pin From Net: NetName=Top-RTX Pin=J22-1
+Removed Pin From Net: NetName=VCCGND Pin=J22-MP1
+Removed Pin From Net: NetName=VCCGND Pin=J22-MP2
+Removed Pin From Net: NetName=VCCGND Pin=Programmer2-6
+Removed Pin From Net: NetName=VCCGND Pin=RA22-1
+Removed Pin From Net: NetName=Top-RTX Pin=RDB2-1
+Removed Pin From Net: NetName=Top-RTX Pin=RFB2-2
+Removed Pin From Net: NetName=VCCGND Pin=RL2-1
+Removed Pin From Net: NetName=VCCGND Pin=RLED2-1
+Removed Pin From Net: NetName=VCCGND Pin=TT2-3
+Change Net Name : Old Net Name=VCCGND New Net Name=VCC
+Added Member To Class: ClassName=Slave_Schematic Member=Component CA2 Cap
+Added Room: Name=Slave_Schematic

@@ -1,0 +1,137 @@
+Change component parameters: Designator = "CA1_1" ("CA12"); Footprint = "0603"; UniqueID = "\TYGJLRDQ" ("\TYGJLRDQ")
+Change component parameters (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageDescription"; Value = "Radial Cap, Thru-Hole; 2 Leads; 0.3 in Pin Spacing"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageReference"; Value = "RAD-0.3"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Published"; Value = "8-Jun-2000"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "100pF"; VariantName = "[No Variations]"
+Change component parameters: Designator = "CA11_1" ("CA2"); Footprint = "0603"; UniqueID = "\ZANHYYKV" ("\ZANHYYKV")
+Change component parameters (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageDescription"; Value = "Radial Cap, Thru-Hole; 2 Leads; 0.3 in Pin Spacing"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageReference"; Value = "RAD-0.3"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Published"; Value = "8-Jun-2000"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "100nF"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=VCCBOT Pin=CA1_1-1
+Added Pin To Net: NetName=AVCCTOP Pin=CA1_1-2
+Added Pin To Net: NetName=VCCBOT Pin=CA11_1-1
+Added Pin To Net: NetName=Cell_Voltage2 Pin=CA11_1-2
+Added Pin To Net: NetName=VCCBOT Pin=CA21_1-1
+Added Pin To Net: NetName=VCCUCTOP Pin=CA21_1-2
+Added Pin To Net: NetName=VCCBOT Pin=CBOT1_1-1
+Added Pin To Net: NetName=Mid-Slave2 Pin=CBOT1_1-2
+Added Pin To Net: NetName=VCCBOT Pin=CG1_1-1
+Added Pin To Net: NetName=VCCBOT Pin=CRST1_1-1
+Added Pin To Net: NetName=RST2 Pin=CRST1_1-2
+Added Pin To Net: NetName=VCCBOT Pin=CTOP1_1-1
+Added Pin To Net: NetName=Top-Slave Pin=CTOP1_1-2
+Added Pin To Net: NetName=VCCBOT Pin=CVCC1_1-1
+Added Pin To Net: NetName=VCCUCTOP Pin=CVCC1_1-2
+Added Pin To Net: NetName=AVCCTOP Pin=F11_1-1
+Added Pin To Net: NetName=VCCUCTOP Pin=F11_1-2
+Added Pin To Net: NetName=MOSI2 Pin=IC11_1-1
+Added Pin To Net: NetName=MISO2 Pin=IC11_1-2
+Added Pin To Net: NetName=SCK2 Pin=IC11_1-3
+Added Pin To Net: NetName=VCCUCTOP Pin=IC11_1-5
+Added Pin To Net: NetName=VCCBOT Pin=IC11_1-6
+Added Pin To Net: NetName=Balancing2 Pin=IC11_1-7
+Added Pin To Net: NetName=Debug2 Pin=IC11_1-8
+Added Pin To Net: NetName=Mid-Slave2 Pin=IC11_1-9
+Added Pin To Net: NetName=RST2 Pin=IC11_1-10
+Added Pin To Net: NetName=Cell_Voltage2 Pin=IC11_1-11
+Added Pin To Net: NetName=Status_G2 Pin=IC11_1-12
+Added Pin To Net: NetName=Status_R2 Pin=IC11_1-13
+Added Pin To Net: NetName=AVCCTOP Pin=IC11_1-15
+Added Pin To Net: NetName=VCCBOT Pin=IC11_1-16
+Added Pin To Net: NetName=Top-Slave Pin=IC11_1-18
+Added Pin To Net: NetName=Mid-RTX Pin=J21_1-1
+Added Pin To Net: NetName=Top-RTX Pin=J21_1-2
+Added Pin To Net: NetName=VCCBOT Pin=J21_1-3
+Added Pin To Net: NetName=VCCBOT Pin=J21_1-4
+Added Pin To Net: NetName=Status_G2 Pin=LED11_1-1
+Added Pin To Net: NetName=Status_R2 Pin=LED11_1-2
+Added Pin To Net: NetName=MISO2 Pin=Programmer1_1-1
+Added Pin To Net: NetName=VCCTOP Pin=Programmer1_1-2
+Added Pin To Net: NetName=SCK2 Pin=Programmer1_1-3
+Added Pin To Net: NetName=MOSI2 Pin=Programmer1_1-4
+Added Pin To Net: NetName=RST2 Pin=Programmer1_1-5
+Added Pin To Net: NetName=VCCBOT Pin=Programmer1_1-6
+Added Pin To Net: NetName=Debug2 Pin=Programmer1_1-7
+Added Pin To Net: NetName=VCCBOT Pin=Q11_1-2
+Added Pin To Net: NetName=Cell_Voltage2 Pin=RA11_1-1
+Added Pin To Net: NetName=VCCTOP Pin=RA11_1-2
+Added Pin To Net: NetName=VCCBOT Pin=RA21_1-1
+Added Pin To Net: NetName=Cell_Voltage2 Pin=RA21_1-2
+Added Pin To Net: NetName=Mid-Slave2 Pin=RBB1_1-1
+Added Pin To Net: NetName=Top-Slave Pin=RBT1_1-1
+Added Pin To Net: NetName=Mid-RTX Pin=RDB1_1-1
+Added Pin To Net: NetName=Top-RTX Pin=RDT1_1-2
+Added Pin To Net: NetName=Mid-Slave2 Pin=RFB1_1-1
+Added Pin To Net: NetName=Mid-RTX Pin=RFB1_1-2
+Added Pin To Net: NetName=Top-Slave Pin=RFT1_1-1
+Added Pin To Net: NetName=Top-RTX Pin=RFT1_1-2
+Added Pin To Net: NetName=Balancing2 Pin=RG1_1-1
+Added Pin To Net: NetName=VCCTOP Pin=RL1_1-2
+Added Pin To Net: NetName=VCCBOT Pin=RLED1_1-1
+Added Pin To Net: NetName=VCCBOT Pin=RPD1_1-1
+Added Pin To Net: NetName=VCCUCTOP Pin=RVCC1_1-1
+Added Pin To Net: NetName=VCCTOP Pin=RVCC1_1-2
+Added Pin To Net: NetName=VCCTOP Pin=TB1_1-3
+Added Pin To Net: NetName=VCCBOT Pin=TT1_1-3
+Added Pin To Net: NetName=NetCG1_1_2 Pin=CG1_1-2
+Added Pin To Net: NetName=NetCG1_1_2 Pin=Q11_1-1
+Added Pin To Net: NetName=NetCG1_1_2 Pin=RG1_1-2
+Added Pin To Net: NetName=NetCG1_1_2 Pin=RPD1_1-2
+Added Net: Name=NetCG1_1_2
+Added Pin To Net: NetName=NetLED11_1_3 Pin=LED11_1-3
+Added Pin To Net: NetName=NetLED11_1_3 Pin=LED11_1-4
+Added Pin To Net: NetName=NetLED11_1_3 Pin=RLED1_1-2
+Added Net: Name=NetLED11_1_3
+Added Pin To Net: NetName=NetQ11_1_3 Pin=Q11_1-3
+Added Pin To Net: NetName=NetQ11_1_3 Pin=RL1_1-1
+Added Net: Name=NetQ11_1_3
+Added Pin To Net: NetName=NetRBB1_1_2 Pin=RBB1_1-2
+Added Pin To Net: NetName=NetRBB1_1_2 Pin=TB1_1-2
+Added Net: Name=NetRBB1_1_2
+Added Pin To Net: NetName=NetRBT1_1_2 Pin=RBT1_1-2
+Added Pin To Net: NetName=NetRBT1_1_2 Pin=TT1_1-2
+Added Net: Name=NetRBT1_1_2
+Added Pin To Net: NetName=NetRDB1_1_2 Pin=RDB1_1-2
+Added Pin To Net: NetName=NetRDB1_1_2 Pin=TB1_1-1
+Added Net: Name=NetRDB1_1_2
+Added Pin To Net: NetName=NetRDT1_1_1 Pin=RDT1_1-1
+Added Pin To Net: NetName=NetRDT1_1_1 Pin=TT1_1-1
+Added Net: Name=NetRDT1_1_1
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component CA1_1 Cap
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component CA11_1 Cap
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component CA21_1 Cap
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component CBOT1_1 Cap
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component CG1_1 Cap
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component CRST1_1 Cap
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component CTOP1_1 Cap
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component CVCC1_1 Cap
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component F11_1 BLM18
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component IC11_1 ATTINY261A-SU
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component J21_1 B2B-PH-SM4-TB_LF__SN_
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component LED11_1 SML-P24
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component Programmer1_1 Connector 2x4
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component Q11_1 XP234N0801TR-G
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component RA11_1 Res
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component RA21_1 Res
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component RBB1_1 Res
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component RBT1_1 Res
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component RDB1_1 Res
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component RDT1_1 Res
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component RFB1_1 Res
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component RFT1_1 Res
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component RG1_1 Res
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component RL1_1 Res
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component RLED1_1 Res
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component RPD1_1 Res
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component RVCC1_1 Res
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component TB1_1 BC585BWT1G
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component TT1_1 PDTC143TU
+Added Room: Name=Slave_Schematic2
+Added Room: Name=Slave_Schematic

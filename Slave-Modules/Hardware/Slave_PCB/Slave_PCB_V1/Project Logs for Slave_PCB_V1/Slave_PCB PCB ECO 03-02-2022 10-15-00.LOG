@@ -1,0 +1,4 @@
+Removed Member From Class: ClassName=Slave_Schematic Member=CA12
+Removed Member From Class: ClassName=Slave_Schematic2 Member=CA21
+Added Member To Class: ClassName=Slave_Schematic Member=Component CA1 Cap
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component CA2 Cap

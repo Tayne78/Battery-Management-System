@@ -1,0 +1,19 @@
+Removed Pin From Net: NetName=M_Vcc Pin=C42-1
+Removed Pin From Net: NetName=M_Vcc Pin=Micro-USB-1
+Removed Pin From Net: NetName=M_Vcc Pin=uC-7
+Added Component: Designator=D41(SOD3716X135N)
+Add component (AddParameter): Name = "Arrow Part Number"; Value = "BAT43W-E3-08"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Arrow Price/Stock"; Value = "https://www.arrow.com/en/products/bat43w-e3-08/vishay?region=nac"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Datasheet Link"; Value = "https://www.arrow.com/en/products/bat43w-e3-08/vishay"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Height"; Value = "1.35mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Name"; Value = "Vishay"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Part_Number"; Value = "BAT43W-E3-08"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mouser Part Number"; Value = "78-BAT43W-E3-08"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mouser Price/Stock"; Value = "https://www.mouser.co.uk/ProductDetail/Vishay-Semiconductors/BAT43W-E3-08?qs=KP8Io%2FXyE5RCw3lmmA3XwQ%3D%3D"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=M_Vcc Pin=D41-1
+Added Pin To Net: NetName=NetC42_1 Pin=C42-1
+Added Pin To Net: NetName=NetC42_1 Pin=D41-2
+Added Pin To Net: NetName=NetC42_1 Pin=Micro-USB-1
+Added Pin To Net: NetName=NetC42_1 Pin=uC-7
+Added Net: Name=NetC42_1
+Added Member To Class: ClassName=Master_Schematik Member=Component D41 BAT43W-E3-08

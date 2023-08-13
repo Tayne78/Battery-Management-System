@@ -1,0 +1,31 @@
+Added Component: Designator=Flip1(AVR_Flip)
+Added Component: Designator=J1(Connector 2x4)
+Add component (AddParameter): Name = "Arrow Part Number"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Arrow Price/Stock"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Datasheet Link"; Value = "https://componentsearchengine.com/Datasheets/2/855-22-008-10-001101.pdf"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Height"; Value = "6.27mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Name"; Value = "Mill-Max"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Part_Number"; Value = "855-22-008-10-001101"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mouser Part Number"; Value = "575-855-22-008-10"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mouser Price/Stock"; Value = "https://www.mouser.co.uk/ProductDetail/Mill-Max/855-22-008-10-001101?qs=mPCt1EmoOdQMosTdRU7w4Q%3D%3D"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=NetFlip1_0 Pin=Flip1-0
+Added Pin To Net: NetName=NetFlip1_0 Pin=J1-1
+Added Net: Name=NetFlip1_0
+Added Pin To Net: NetName=NetFlip1_1 Pin=Flip1-1
+Added Pin To Net: NetName=NetFlip1_1 Pin=J1-5
+Added Net: Name=NetFlip1_1
+Added Pin To Net: NetName=NetFlip1_23 Pin=Flip1-23
+Added Pin To Net: NetName=NetFlip1_23 Pin=Flip1-24
+Added Pin To Net: NetName=NetFlip1_23 Pin=J1-6
+Added Net: Name=NetFlip1_23
+Added Pin To Net: NetName=NetFlip1_25 Pin=Flip1-25
+Added Pin To Net: NetName=NetFlip1_25 Pin=J1-2
+Added Net: Name=NetFlip1_25
+Added Pin To Net: NetName=NetFlip1_26 Pin=Flip1-26
+Added Pin To Net: NetName=NetFlip1_26 Pin=J1-3
+Added Net: Name=NetFlip1_26
+Added Pin To Net: NetName=NetFlip1_27 Pin=Flip1-27
+Added Pin To Net: NetName=NetFlip1_27 Pin=J1-4
+Added Net: Name=NetFlip1_27
+Added Class: Name=Programmer
+Added Room: Name=Programmer

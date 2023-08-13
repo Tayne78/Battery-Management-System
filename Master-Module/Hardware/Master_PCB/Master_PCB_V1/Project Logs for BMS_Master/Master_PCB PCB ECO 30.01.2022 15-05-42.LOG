@@ -1,0 +1,6 @@
+Change Component Library : Designator=D31 Old Library=* New Library=BMS_Master.SchLib
+Change Component Library : Designator=Q31 Old Library=* New Library=BMS_Master.SchLib
+Change Component Library : Designator=Relais Old Library=* New Library=BMS_Master.SchLib
+Change Component Library : Designator=RS232 Old Library=* New Library=BMS_Master.SchLib
+Change Component Library : Designator=Y51 Old Library=* New Library=BMS_Master.SchLib
+Added Room: Name=Master_Schematik

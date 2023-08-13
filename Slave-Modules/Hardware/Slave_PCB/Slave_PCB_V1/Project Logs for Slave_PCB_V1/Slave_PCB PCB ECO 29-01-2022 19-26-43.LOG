@@ -1,0 +1,47 @@
+Removed Pin From Net: NetName=GND Pin=IC2-2
+Removed Pin From Net: NetName=VCC Pin=IC2-5
+Removed Pin From Net: NetName=VCC Pin=Q1-3
+Removed Pin From Net: NetName=GND Pin=RL-1
+Removed Pin From Net: NetName=Balancing Pin=RLP-1
+Change Component Footprint: Designator=IC2 Old Footprint=TSSOP-5N New Footprint=0603
+Change Component Comment : Designator=IC2 Old Comment=LMV931IDBVRG4 New Comment=Res
+Change Component Designator: OldDesignator=CLP NewDesignator=CG
+Change Component Designator: OldDesignator=IC2 NewDesignator=RG
+Change Component Designator: OldDesignator=RLP NewDesignator=RPD
+Change component parameters: Designator = "RL" ("RL"); Footprint = "1020 (REVERSED)"; UniqueID = "\RLVVOFJN" ("\RLVVOFJN")
+Change component parameters (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageDescription"; Value = "Axial Device, Thru-Hole; 2 Leads; 0.4 in Pin Spacing"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageReference"; Value = "AXIAL-0.4"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Published"; Value = "8-Jun-2000"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "39R"; VariantName = "[No Variations]"
+Change component parameters: Designator = "RLP" ("RPD"); Footprint = "0603"; UniqueID = "\XOLCFRWY" ("\XOLCFRWY")
+Change component parameters (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageDescription"; Value = "Axial Device, Thru-Hole; 2 Leads; 0.4 in Pin Spacing"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageReference"; Value = "AXIAL-0.4"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Published"; Value = "8-Jun-2000"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "100k"; VariantName = "[No Variations]"
+Change component parameters: Designator = "IC2" ("RG"); Footprint = "TSSOP-5N"; UniqueID = "\IRDUVMJK" ("\IRDUVMJK")
+Change component parameters (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageDescription"; Value = "Axial Device, Thru-Hole; 2 Leads; 0.4 in Pin Spacing"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageReference"; Value = "AXIAL-0.4"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Published"; Value = "8-Jun-2000"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "1k"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=GND Pin=Q1-2
+Added Pin To Net: NetName=Balancing Pin=RG-1
+Added Pin To Net: NetName=VCC Pin=RL-2
+Added Pin To Net: NetName=GND Pin=RPD-1
+Added Pin To Net: NetName=NetCG_2 Pin=CG-2
+Added Pin To Net: NetName=NetCG_2 Pin=Q1-1
+Added Pin To Net: NetName=NetCG_2 Pin=RG-2
+Added Pin To Net: NetName=NetCG_2 Pin=RPD-2
+Added Net: Name=NetCG_2
+Added Pin To Net: NetName=NetQ1_3 Pin=Q1-3
+Added Pin To Net: NetName=NetQ1_3 Pin=RL-1
+Added Net: Name=NetQ1_3
+Added Member To Class: ClassName=Slave_Schematic Member=Component CA2 Cap

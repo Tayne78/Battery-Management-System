@@ -1,0 +1,58 @@
+Added Component: Designator=*(CAPC1608X90N)
+Added Component: Designator=*(CAPC1608X90N)
+Added Component: Designator=*(CAPC1608X90N)
+Added Component: Designator=*(CAPAE530X550N)
+Added Component: Designator=C1(CAPC1608X90N)
+Added Component: Designator=C2(CAPC1608X90N)
+Added Component: Designator=C3(CAPC1608X90N)
+Added Component: Designator=C4(CAPC1608X90N)
+Added Component: Designator=C5(CAPC1608X90N)
+Added Component: Designator=R1(RESC1608X55N)
+Added Component: Designator=R2(RESC1608X55N)
+Added Component: Designator=R3(RESC1608X55N)
+Added Pin To Net: NetName=M_GND Pin=*-1
+Added Pin To Net: NetName=M_GND Pin=*-1
+Added Pin To Net: NetName=M_GND Pin=*-1
+Added Pin To Net: NetName=M_GND Pin=*-2
+Added Pin To Net: NetName=M_GND Pin=C2-1
+Added Pin To Net: NetName=M_GND Pin=C4-1
+Added Pin To Net: NetName=M_GND Pin=C5-2
+Added Net: Name=M_GND
+Added Pin To Net: NetName=M_Vcc Pin=*-1
+Added Pin To Net: NetName=M_Vcc Pin=*-2
+Added Pin To Net: NetName=M_Vcc Pin=*-2
+Added Pin To Net: NetName=M_Vcc Pin=C5-1
+Added Pin To Net: NetName=M_Vcc Pin=R2-2
+Added Net: Name=M_Vcc
+Added Pin To Net: NetName=Net*_2 Pin=*-2
+Added Net: Name=Net*_2
+Added Pin To Net: NetName=NetC1_1 Pin=C1-1
+Added Net: Name=NetC1_1
+Added Pin To Net: NetName=NetC1_2 Pin=C1-2
+Added Net: Name=NetC1_2
+Added Pin To Net: NetName=NetC2_2 Pin=C2-2
+Added Net: Name=NetC2_2
+Added Pin To Net: NetName=NetC3_1 Pin=C3-1
+Added Net: Name=NetC3_1
+Added Pin To Net: NetName=NetC3_2 Pin=C3-2
+Added Net: Name=NetC3_2
+Added Pin To Net: NetName=NetC4_2 Pin=C4-2
+Added Net: Name=NetC4_2
+Added Net: Name=NetIC1_20
+Added Net: Name=NetIC1_21
+Added Pin To Net: NetName=NetIC1_29 Pin=R3-2
+Added Net: Name=NetIC1_29
+Added Pin To Net: NetName=NetIC1_30 Pin=R2-1
+Added Net: Name=NetIC1_30
+Added Net: Name=NetMAX232_13
+Added Net: Name=NetMAX232_14
+Added Pin To Net: NetName=NetOC1_2 Pin=R1-2
+Added Net: Name=NetOC1_2
+Added Pin To Net: NetName=NetOC2_1 Pin=R3-1
+Added Net: Name=NetOC2_1
+Added Pin To Net: NetName=NetOC2_4 Pin=R1-1
+Added Net: Name=NetOC2_4
+Added Net: Name=S_GND
+Added Net: Name=S_Vcc
+Added Class: Name=Master_Schematik
+Added Room: Name=Master_Schematik

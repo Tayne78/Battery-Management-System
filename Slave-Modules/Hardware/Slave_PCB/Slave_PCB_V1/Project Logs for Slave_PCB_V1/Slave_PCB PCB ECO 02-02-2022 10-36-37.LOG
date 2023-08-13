@@ -1,0 +1,224 @@
+Removed Pin From Net: NetName=GND Pin=CA1-1
+Removed Member From Class: ClassName=Slave_Schematic Member=CA1
+Change Component Designator: OldDesignator=CA1 NewDesignator=CA12
+Change Component Designator: OldDesignator=CA1_1 NewDesignator=CA2
+Change Component Designator: OldDesignator=CA2 NewDesignator=CA21
+Change Component Designator: OldDesignator=CA2_1 NewDesignator=CA22
+Change Component Designator: OldDesignator=CA NewDesignator=CA1
+Change Component Designator: OldDesignator=CA_1 NewDesignator=CA11
+Change Component Designator: OldDesignator=CBOT NewDesignator=CBOT1
+Change Component Designator: OldDesignator=CBOT_1 NewDesignator=CBOT2
+Change Component Designator: OldDesignator=CG NewDesignator=CG1
+Change Component Designator: OldDesignator=CG_1 NewDesignator=CG2
+Change Component Designator: OldDesignator=CRST NewDesignator=CRST1
+Change Component Designator: OldDesignator=CRST_1 NewDesignator=CRST2
+Change Component Designator: OldDesignator=CTOP NewDesignator=CTOP1
+Change Component Designator: OldDesignator=CTOP_1 NewDesignator=CTOP2
+Change Component Designator: OldDesignator=CVCC NewDesignator=CVCC1
+Change Component Designator: OldDesignator=CVCC_1 NewDesignator=CVCC2
+Change Component Designator: OldDesignator=F1 NewDesignator=F11
+Change Component Designator: OldDesignator=F1_1 NewDesignator=F12
+Change Component Designator: OldDesignator=IC1 NewDesignator=IC11
+Change Component Designator: OldDesignator=IC1_1 NewDesignator=IC12
+Change Component Designator: OldDesignator=J2 NewDesignator=J21
+Change Component Designator: OldDesignator=J2_1 NewDesignator=J22
+Change Component Designator: OldDesignator=LED1 NewDesignator=LED11
+Change Component Designator: OldDesignator=LED1_1 NewDesignator=LED12
+Change Component Designator: OldDesignator=Programmer NewDesignator=Programmer1
+Change Component Designator: OldDesignator=Programmer_1 NewDesignator=Programmer2
+Change Component Designator: OldDesignator=Q1 NewDesignator=Q11
+Change Component Designator: OldDesignator=Q1_1 NewDesignator=Q12
+Change Component Designator: OldDesignator=RA1 NewDesignator=RA11
+Change Component Designator: OldDesignator=RA1_1 NewDesignator=RA12
+Change Component Designator: OldDesignator=RA2 NewDesignator=RA21
+Change Component Designator: OldDesignator=RA2_1 NewDesignator=RA22
+Change Component Designator: OldDesignator=RBB NewDesignator=RBB1
+Change Component Designator: OldDesignator=RBB_1 NewDesignator=RBB2
+Change Component Designator: OldDesignator=RBT NewDesignator=RBT1
+Change Component Designator: OldDesignator=RBT_1 NewDesignator=RBT2
+Change Component Designator: OldDesignator=RDB NewDesignator=RDB1
+Change Component Designator: OldDesignator=RDB_1 NewDesignator=RDB2
+Change Component Designator: OldDesignator=RDT NewDesignator=RDT1
+Change Component Designator: OldDesignator=RDT_1 NewDesignator=RDT2
+Change Component Designator: OldDesignator=RFB NewDesignator=RFB1
+Change Component Designator: OldDesignator=RFB_1 NewDesignator=RFB2
+Change Component Designator: OldDesignator=RFT NewDesignator=RFT1
+Change Component Designator: OldDesignator=RFT_1 NewDesignator=RFT2
+Change Component Designator: OldDesignator=RG NewDesignator=RG1
+Change Component Designator: OldDesignator=RG_1 NewDesignator=RG2
+Change Component Designator: OldDesignator=RL NewDesignator=RL1
+Change Component Designator: OldDesignator=RL_1 NewDesignator=RL2
+Change Component Designator: OldDesignator=RLED NewDesignator=RLED1
+Change Component Designator: OldDesignator=RLED_1 NewDesignator=RLED2
+Change Component Designator: OldDesignator=RPD NewDesignator=RPD1
+Change Component Designator: OldDesignator=RPD_1 NewDesignator=RPD2
+Change Component Designator: OldDesignator=RVCC NewDesignator=RVCC1
+Change Component Designator: OldDesignator=RVCC_1 NewDesignator=RVCC2
+Change Component Designator: OldDesignator=TB NewDesignator=TB1
+Change Component Designator: OldDesignator=TB_1 NewDesignator=TB2
+Change Component Designator: OldDesignator=TT NewDesignator=TT1
+Change Component Designator: OldDesignator=TT_1 NewDesignator=TT2
+Change component parameters: Designator = "CA1_1" ("CA2"); Footprint = "0603"; UniqueID = "\ZANHYYKV" ("\ZANHYYKV")
+Change component parameters (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageDescription"; Value = "Radial Cap, Thru-Hole; 2 Leads; 0.3 in Pin Spacing"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageReference"; Value = "RAD-0.3"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Published"; Value = "8-Jun-2000"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "100nF"; VariantName = "[No Variations]"
+Change component parameters: Designator = "CA_1" ("CA11"); Footprint = "0603"; UniqueID = "\QFNSKHGI" ("\QFNSKHGI")
+Change component parameters (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageDescription"; Value = "Radial Cap, Thru-Hole; 2 Leads; 0.3 in Pin Spacing"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageReference"; Value = "RAD-0.3"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Published"; Value = "8-Jun-2000"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "100pF"; VariantName = "[No Variations]"
+Change component parameters: Designator = "RL" ("RL1"); Footprint = "1020 (REVERSED)"; UniqueID = "\RLVVOFJN" ("\RLVVOFJN")
+Change component parameters (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageDescription"; Value = "Axial Device, Thru-Hole; 2 Leads; 0.4 in Pin Spacing"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageReference"; Value = "AXIAL-0.4"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Published"; Value = "8-Jun-2000"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "36R"; VariantName = "[No Variations]"
+Change component parameters: Designator = "RL_1" ("RL2"); Footprint = "1020 (REVERSED)"; UniqueID = "\MSTSSRDD" ("\MSTSSRDD")
+Change component parameters (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageDescription"; Value = "Axial Device, Thru-Hole; 2 Leads; 0.4 in Pin Spacing"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageReference"; Value = "AXIAL-0.4"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Published"; Value = "8-Jun-2000"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "36R"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=VCC Pin=CA2-1
+Added Pin To Net: NetName=GND Pin=CA11-1
+Added Pin To Net: NetName=VCC Pin=CA12-1
+Added Pin To Net: NetName=VCC Pin=CA22-1
+Added Pin To Net: NetName=VCC Pin=CBOT2-1
+Added Pin To Net: NetName=VCC Pin=CG2-1
+Added Pin To Net: NetName=VCC Pin=CRST2-1
+Added Pin To Net: NetName=VCC Pin=CTOP2-1
+Added Pin To Net: NetName=VCC Pin=CVCC2-1
+Added Pin To Net: NetName=VCC Pin=IC12-6
+Added Pin To Net: NetName=VCC Pin=IC12-16
+Added Pin To Net: NetName=Top-RTX Pin=J22-1
+Added Pin To Net: NetName=VCC Pin=J22-MP1
+Added Pin To Net: NetName=VCC Pin=J22-MP2
+Added Pin To Net: NetName=VCC Pin=Programmer2-6
+Added Pin To Net: NetName=VCC Pin=Q12-2
+Added Pin To Net: NetName=VCC Pin=RA22-1
+Added Pin To Net: NetName=Top-RTX Pin=RDB2-1
+Added Pin To Net: NetName=Top-RTX Pin=RFB2-2
+Added Pin To Net: NetName=VCC Pin=RLED2-1
+Added Pin To Net: NetName=VCC Pin=RPD2-1
+Added Pin To Net: NetName=VCC Pin=TT2-3
+Change Net Name : Old Net Name=Balancing New Net Name=Balancing1
+Change Net Name : Old Net Name=Cell_Voltage New Net Name=Cell_Voltage1
+Change Net Name : Old Net Name=Debug New Net Name=Debug1
+Change Net Name : Old Net Name=MISO New Net Name=MISO1
+Change Net Name : Old Net Name=MOSI New Net Name=MOSI1
+Change Net Name : Old Net Name=NetCG_2 New Net Name=NetCG1_2
+Change Net Name : Old Net Name=NetLED1_3 New Net Name=NetLED11_3
+Change Net Name : Old Net Name=NetQ1_3 New Net Name=NetQ11_3
+Change Net Name : Old Net Name=NetRBB_2 New Net Name=NetRBB1_2
+Change Net Name : Old Net Name=NetRBT_2 New Net Name=NetRBT1_2
+Change Net Name : Old Net Name=NetRDB_2 New Net Name=NetRDB1_2
+Change Net Name : Old Net Name=NetRDT_1 New Net Name=NetRDT1_1
+Change Net Name : Old Net Name=RST New Net Name=RST1
+Change Net Name : Old Net Name=SCK New Net Name=SCK1
+Change Net Name : Old Net Name=Status_G New Net Name=Status_G1
+Change Net Name : Old Net Name=Status_R New Net Name=Status_R1
+Change Net Name : Old Net Name=Top-RTX New Net Name=Mid-RTX
+Change Net Name : Old Net Name=Top-Slave New Net Name=Mid-Slave1
+Change Net Name : Old Net Name=VCC New Net Name=VCCBOT
+Change Net Name : Old Net Name=VCCUC New Net Name=VCCUCBOT
+Added Pin To Net: NetName=AVCCBOT Pin=CA11-2
+Added Pin To Net: NetName=AVCCBOT Pin=F11-1
+Added Pin To Net: NetName=AVCCBOT Pin=IC11-15
+Added Net: Name=AVCCBOT
+Added Pin To Net: NetName=AVCCTOP Pin=CA12-2
+Added Pin To Net: NetName=AVCCTOP Pin=F12-1
+Added Pin To Net: NetName=AVCCTOP Pin=IC12-15
+Added Net: Name=AVCCTOP
+Added Pin To Net: NetName=Balancing2 Pin=IC12-7
+Added Pin To Net: NetName=Balancing2 Pin=RG2-1
+Added Net: Name=Balancing2
+Added Pin To Net: NetName=Cell_Voltage2 Pin=CA2-2
+Added Pin To Net: NetName=Cell_Voltage2 Pin=IC12-11
+Added Pin To Net: NetName=Cell_Voltage2 Pin=RA12-1
+Added Pin To Net: NetName=Cell_Voltage2 Pin=RA22-2
+Added Net: Name=Cell_Voltage2
+Added Pin To Net: NetName=Debug2 Pin=IC12-8
+Added Pin To Net: NetName=Debug2 Pin=Programmer2-7
+Added Net: Name=Debug2
+Added Pin To Net: NetName=Mid-Slave2 Pin=CBOT2-2
+Added Pin To Net: NetName=Mid-Slave2 Pin=IC12-9
+Added Pin To Net: NetName=Mid-Slave2 Pin=RBB2-1
+Added Pin To Net: NetName=Mid-Slave2 Pin=RFB2-1
+Added Net: Name=Mid-Slave2
+Added Pin To Net: NetName=MISO2 Pin=IC12-2
+Added Pin To Net: NetName=MISO2 Pin=Programmer2-1
+Added Net: Name=MISO2
+Added Pin To Net: NetName=MOSI2 Pin=IC12-1
+Added Pin To Net: NetName=MOSI2 Pin=Programmer2-4
+Added Net: Name=MOSI2
+Added Pin To Net: NetName=NetCG2_2 Pin=CG2-2
+Added Pin To Net: NetName=NetCG2_2 Pin=Q12-1
+Added Pin To Net: NetName=NetCG2_2 Pin=RG2-2
+Added Pin To Net: NetName=NetCG2_2 Pin=RPD2-2
+Added Net: Name=NetCG2_2
+Added Pin To Net: NetName=NetLED12_3 Pin=LED12-3
+Added Pin To Net: NetName=NetLED12_3 Pin=LED12-4
+Added Pin To Net: NetName=NetLED12_3 Pin=RLED2-2
+Added Net: Name=NetLED12_3
+Added Pin To Net: NetName=NetQ12_3 Pin=Q12-3
+Added Pin To Net: NetName=NetQ12_3 Pin=RL2-1
+Added Net: Name=NetQ12_3
+Added Pin To Net: NetName=NetRBB2_2 Pin=RBB2-2
+Added Pin To Net: NetName=NetRBB2_2 Pin=TB2-2
+Added Net: Name=NetRBB2_2
+Added Pin To Net: NetName=NetRBT2_2 Pin=RBT2-2
+Added Pin To Net: NetName=NetRBT2_2 Pin=TT2-2
+Added Net: Name=NetRBT2_2
+Added Pin To Net: NetName=NetRDB2_2 Pin=RDB2-2
+Added Pin To Net: NetName=NetRDB2_2 Pin=TB2-1
+Added Net: Name=NetRDB2_2
+Added Pin To Net: NetName=NetRDT2_1 Pin=RDT2-1
+Added Pin To Net: NetName=NetRDT2_1 Pin=TT2-1
+Added Net: Name=NetRDT2_1
+Added Pin To Net: NetName=RST2 Pin=CRST2-2
+Added Pin To Net: NetName=RST2 Pin=IC12-10
+Added Pin To Net: NetName=RST2 Pin=Programmer2-5
+Added Net: Name=RST2
+Added Pin To Net: NetName=SCK2 Pin=IC12-3
+Added Pin To Net: NetName=SCK2 Pin=Programmer2-3
+Added Net: Name=SCK2
+Added Pin To Net: NetName=Status_G2 Pin=IC12-12
+Added Pin To Net: NetName=Status_G2 Pin=LED12-1
+Added Net: Name=Status_G2
+Added Pin To Net: NetName=Status_R2 Pin=IC12-13
+Added Pin To Net: NetName=Status_R2 Pin=LED12-2
+Added Net: Name=Status_R2
+Added Pin To Net: NetName=Top-RTX Pin=J22-2
+Added Pin To Net: NetName=Top-RTX Pin=RDT2-2
+Added Pin To Net: NetName=Top-RTX Pin=RFT2-2
+Added Net: Name=Top-RTX
+Added Pin To Net: NetName=Top-Slave Pin=CTOP2-2
+Added Pin To Net: NetName=Top-Slave Pin=IC12-18
+Added Pin To Net: NetName=Top-Slave Pin=RBT2-1
+Added Pin To Net: NetName=Top-Slave Pin=RFT2-1
+Added Net: Name=Top-Slave
+Added Pin To Net: NetName=VCCTOP Pin=Programmer2-2
+Added Pin To Net: NetName=VCCTOP Pin=RA12-2
+Added Pin To Net: NetName=VCCTOP Pin=RL2-2
+Added Pin To Net: NetName=VCCTOP Pin=RVCC2-2
+Added Pin To Net: NetName=VCCTOP Pin=TB2-3
+Added Net: Name=VCCTOP
+Added Pin To Net: NetName=VCCUCTOP Pin=CA22-2
+Added Pin To Net: NetName=VCCUCTOP Pin=CVCC2-2
+Added Pin To Net: NetName=VCCUCTOP Pin=F12-2
+Added Pin To Net: NetName=VCCUCTOP Pin=IC12-5
+Added Pin To Net: NetName=VCCUCTOP Pin=RVCC2-1
+Added Net: Name=VCCUCTOP
+Added Class: Name=Slave_Schematic2
+Added Member To Class: ClassName=Slave_Schematic Member=Component CA11 Cap

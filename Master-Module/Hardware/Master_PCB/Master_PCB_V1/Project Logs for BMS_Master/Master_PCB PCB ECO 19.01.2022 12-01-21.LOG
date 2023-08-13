@@ -1,0 +1,16 @@
+Added Component: Designator=C1(CAPAE530X550N)
+Added Component: Designator=IC1(QFP80P1200X1200X120-44N)
+Add component (AddParameter): Name = "Arrow Part Number"; Value = "ATMEGA32U4RC-AU"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Arrow Price/Stock"; Value = "https://www.arrow.com/en/products/atmega32u4rc-au/microchip-technology?region=nac"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Datasheet Link"; Value = "http://uk.rs-online.com/web/p/products/7380451"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Height"; Value = "1.2mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Name"; Value = "Microchip"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Part_Number"; Value = "ATMEGA32U4RC-AU"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mouser Part Number"; Value = "556-ATMEGA32U4RC-AU"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mouser Price/Stock"; Value = "https://www.mouser.co.uk/ProductDetail/Microchip-Technology-Atmel/ATMEGA32U4RC-AU?qs=7AReRZHh%2FSt%252BRqfzkW8%2FkA%3D%3D"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=NetC1_1 Pin=C1-1
+Added Pin To Net: NetName=GND Pin=C1-2
+Added Pin To Net: NetName=NetC1_1 Pin=IC1-33
+Added Member To Class: ClassName=Master_Schematik Member=Component C1 ELKO
+Added Member To Class: ClassName=Master_Schematik Member=Component IC1 ATMEGA32U4RC-AU
+Added Room: Name=Master_Schematik

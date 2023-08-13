@@ -1,0 +1,4 @@
+Removed Pin From Net: NetName=NetCON_CAN_1 Pin=IC91-6
+Removed Pin From Net: NetName=NetCON_CAN_3 Pin=IC91-7
+Added Pin To Net: NetName=NetCON_CAN_3 Pin=IC91-6
+Added Pin To Net: NetName=NetCON_CAN_1 Pin=IC91-7

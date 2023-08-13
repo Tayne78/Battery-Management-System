@@ -1,0 +1,23 @@
+Added Component: Designator=D91(SMLP24MUWT86R)
+Add component (AddParameter): Name = "Arrow Part Number"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Arrow Price/Stock"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Datasheet Link"; Value = "https://datasheet.datasheetarchive.com/originals/distributors/DKDS-18/357144.pdf"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Height"; Value = "0.25mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Name"; Value = "ROHM Semiconductor"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Part_Number"; Value = "SML-P24MUWT86R"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mouser Part Number"; Value = "755-SML-P24MUWT86R"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mouser Price/Stock"; Value = "https://www.mouser.co.uk/ProductDetail/ROHM-Semiconductor/SML-P24MUWT86R?qs=SP2aZMzhwxgr8eZ6SbTI9w%3D%3D"; VariantName = "[No Variations]"
+Added Component: Designator=R91(RESC1608X55N)
+Added Pin To Net: NetName=M_GND Pin=R91-1
+Added Pin To Net: NetName=NetD91_1 Pin=D91-1
+Added Pin To Net: NetName=NetD91_1 Pin=uC-26
+Added Net: Name=NetD91_1
+Added Pin To Net: NetName=NetD91_2 Pin=D91-2
+Added Pin To Net: NetName=NetD91_2 Pin=uC-27
+Added Net: Name=NetD91_2
+Added Pin To Net: NetName=NetD91_3 Pin=D91-3
+Added Pin To Net: NetName=NetD91_3 Pin=D91-4
+Added Pin To Net: NetName=NetD91_3 Pin=R91-2
+Added Net: Name=NetD91_3
+Added Member To Class: ClassName=Master_Schematik Member=Component D91 SML-P24MUWT86R
+Added Member To Class: ClassName=Master_Schematik Member=Component R91 220

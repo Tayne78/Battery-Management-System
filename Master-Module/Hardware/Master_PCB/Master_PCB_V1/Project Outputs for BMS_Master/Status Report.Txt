@@ -1,0 +1,12 @@
+Output: Gerber Files
+Type  : Gerber
+From  : Variant [[No Variations]] of Project [BMS_Master.PrjPcb]
+   Generated File[Master_PCB.RUL]
+   Generated File[Master_PCB.EXTREP]
+   Generated File[Master_PCB.REP]
+
+
+Files Generated   : 3
+Documents Printed : 0
+
+Finished Output Generation At 21:25:41 On 08.02.2022

@@ -1,0 +1,11 @@
+Change Component Footprint: Designator=Y51 Old Footprint=ABLS8000MHZB2T New Footprint=QC3CA160000F12B23R
+Change Component Comment : Designator=Y51 Old Comment=ABLS-16.000MHZ-20-B-3-H-T New Comment=QC3CA16.0000F12B23R
+Change component parameters: Designator = "Y51" ("Y51"); Footprint = "ABLS8000MHZB2T"; UniqueID = "\KEKDMFYU" ("\KEKDMFYU")
+Change component parameters (AddParameter): Name = "Arrow Part Number"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Arrow Price/Stock"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Datasheet Link"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Height"; Value = "1.1mm"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Manufacturer_Name"; Value = "Qantek"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Manufacturer_Part_Number"; Value = "QC3CA16.0000F12B23R"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Mouser Part Number"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Mouser Price/Stock"; Value = ""; VariantName = "[No Variations]"

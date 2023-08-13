@@ -1,0 +1,31 @@
+Added Component: Designator=OC1(SOP254P675X240-4N)
+Add component (AddParameter): Name = "Arrow Part Number"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Arrow Price/Stock"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Datasheet Link"; Value = "https://www.onsemi.com/pub/Collateral/FODM2705-D.pdf"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Height"; Value = "2.4mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Name"; Value = "ON Semiconductor"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Part_Number"; Value = "FODM121GR4"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mouser Part Number"; Value = "863-FODM121GR4"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mouser Price/Stock"; Value = "https://www.mouser.co.uk/ProductDetail/onsemi/FODM121GR4?qs=byeeYqUIh0Okw76KHw6rZA%3D%3D"; VariantName = "[No Variations]"
+Added Component: Designator=OC2(SOP254P675X240-4N)
+Add component (AddParameter): Name = "Arrow Part Number"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Arrow Price/Stock"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Datasheet Link"; Value = "https://www.onsemi.com/pub/Collateral/FODM2705-D.pdf"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Height"; Value = "2.4mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Name"; Value = "ON Semiconductor"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Part_Number"; Value = "FODM121GR4"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mouser Part Number"; Value = "863-FODM121GR4"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mouser Price/Stock"; Value = "https://www.mouser.co.uk/ProductDetail/onsemi/FODM121GR4?qs=byeeYqUIh0Okw76KHw6rZA%3D%3D"; VariantName = "[No Variations]"
+Added Component: Designator=R1(RESC1608X55N)
+Added Pin To Net: NetName=NetOC1_2 Pin=OC1-2
+Added Pin To Net: NetName=NetOC1_2 Pin=R1-2
+Added Net: Name=NetOC1_2
+Added Pin To Net: NetName=NetOC2_4 Pin=OC2-4
+Added Pin To Net: NetName=NetOC2_4 Pin=R1-1
+Added Net: Name=NetOC2_4
+Added Pin To Net: NetName=S_GND Pin=OC2-3
+Added Net: Name=S_GND
+Added Pin To Net: NetName=S_VCC Pin=OC1-1
+Added Net: Name=S_VCC
+Added Class: Name=Master_Schematik
+Added Room: Name=Master_Schematik

@@ -1,0 +1,15 @@
+Removed Pin From Net: NetName=VCCBOT Pin=J22-MP1
+Removed Pin From Net: NetName=VCCBOT Pin=J22-MP2
+Change Component Footprint: Designator=J22 Old Footprint=BM02BGHHDBTBTLFSN New Footprint=B2BPHSM4TBLFSN
+Change Component Comment : Designator=J22 Old Comment=JST GH 1.25mm New Comment=B2B-PH-SM4-TB_LF__SN_
+Change component parameters: Designator = "J22" ("J22"); Footprint = "BM02BGHHDBTBTLFSN"; UniqueID = "\RMYVMHYK" ("\RMYVMHYK")
+Change component parameters (AddParameter): Name = "Arrow Part Number"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Arrow Price/Stock"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Datasheet Link"; Value = "http://www.jst-mfg.com/product/pdf/eng/ePH.pdf"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Height"; Value = "6.6mm"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Manufacturer_Name"; Value = "JST (JAPAN SOLDERLESS TERMINALS)"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Manufacturer_Part_Number"; Value = "B2B-PH-SM4-TB(LF)(SN)"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Mouser Part Number"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Mouser Price/Stock"; Value = ""; VariantName = "[No Variations]"
+Added Pin To Net: NetName=VCCBOT Pin=J22-3
+Added Pin To Net: NetName=VCCBOT Pin=J22-4

@@ -1,0 +1,12 @@
+Output: NC Drill Files
+Type  : NC Drill
+From  : Project [Slave_PCB_V1.PrjPcb]
+   Generated File[Slave_PCB.TXT]
+   Generated File[Slave_PCB.LDP]
+   Generated File[Slave_PCB.DRR]
+
+
+Files Generated   : 3
+Documents Printed : 0
+
+Finished Output Generation At 22:08:40 On 08/02/2022

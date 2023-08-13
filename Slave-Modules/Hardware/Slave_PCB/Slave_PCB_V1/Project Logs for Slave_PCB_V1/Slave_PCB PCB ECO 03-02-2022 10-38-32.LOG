@@ -1,0 +1,16 @@
+Removed Pin From Net: NetName=GND Pin=J21-MP1
+Removed Pin From Net: NetName=GND Pin=J21-MP2
+Removed Member From Class: ClassName=Slave_Schematic Member=CA12
+Removed Member From Class: ClassName=Slave_Schematic2 Member=CA21
+Change Component Comment : Designator=J21 Old Comment=JST GH 1.25mm New Comment=B2B-PH-SM4-TB_LF__SN_
+Change component parameters: Designator = "J21" ("J21"); Footprint = "BM02BGHHDBTBTLFSN"; UniqueID = "\XIUPUXOJ" ("\XIUPUXOJ")
+Change component parameters (AddParameter): Name = "Arrow Part Number"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Arrow Price/Stock"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Datasheet Link"; Value = "http://www.jst-mfg.com/product/pdf/eng/ePH.pdf"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Height"; Value = "6.6mm"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Manufacturer_Name"; Value = "JST (JAPAN SOLDERLESS TERMINALS)"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Manufacturer_Part_Number"; Value = "B2B-PH-SM4-TB(LF)(SN)"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Mouser Part Number"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Mouser Price/Stock"; Value = ""; VariantName = "[No Variations]"
+Added Member To Class: ClassName=Slave_Schematic Member=Component CA1 Cap
+Added Member To Class: ClassName=Slave_Schematic2 Member=Component CA2 Cap

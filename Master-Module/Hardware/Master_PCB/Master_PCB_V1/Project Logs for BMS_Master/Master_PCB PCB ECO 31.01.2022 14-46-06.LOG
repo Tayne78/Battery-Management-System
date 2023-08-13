@@ -1,0 +1,4 @@
+Removed Pin From Net: NetName=NetCON_RS232_1 Pin=IC61-13
+Removed Pin From Net: NetName=NetCON_RS232_3 Pin=IC61-14
+Added Pin To Net: NetName=NetCON_RS232_3 Pin=IC61-13
+Added Pin To Net: NetName=NetCON_RS232_1 Pin=IC61-14

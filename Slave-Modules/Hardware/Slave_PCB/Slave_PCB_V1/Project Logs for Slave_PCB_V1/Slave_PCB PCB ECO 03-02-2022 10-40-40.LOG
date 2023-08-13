@@ -1,0 +1,3 @@
+Change Component Footprint: Designator=J21 Old Footprint=BM02BGHHDBTBTLFSN New Footprint=B2BPHSM4TBLFSN
+Added Pin To Net: NetName=GND Pin=J21-3
+Added Pin To Net: NetName=GND Pin=J21-4

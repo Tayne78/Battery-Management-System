@@ -1,0 +1,5 @@
+Removed Pin From Net: NetName=NetD91_1 Pin=uC-26
+Removed Pin From Net: NetName=NetD91_2 Pin=uC-27
+Added Pin To Net: NetName=NetD91_2 Pin=uC-26
+Added Pin To Net: NetName=NetD91_1 Pin=uC-27
+Added Member To Class: ClassName=Master_Schematik Member=Component R91 220

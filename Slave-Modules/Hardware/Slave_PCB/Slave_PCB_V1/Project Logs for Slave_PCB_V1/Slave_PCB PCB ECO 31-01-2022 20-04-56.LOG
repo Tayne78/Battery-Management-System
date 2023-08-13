@@ -1,0 +1,3 @@
+Removed Pin From Net: NetName=Balancing Pin=IC1-4
+Added Pin To Net: NetName=Balancing Pin=IC1-7
+Added Room: Name=Slave_Schematic

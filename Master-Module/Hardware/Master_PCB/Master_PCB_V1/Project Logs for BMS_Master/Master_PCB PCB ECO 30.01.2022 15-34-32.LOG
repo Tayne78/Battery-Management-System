@@ -1,0 +1,5 @@
+Change Component Designator: OldDesignator=OC21 NewDesignator=OC71
+Change Component Designator: OldDesignator=OC22 NewDesignator=OC72
+Change Net Name : Old Net Name=NetOC21_1 New Net Name=NetOC71_1
+Change Net Name : Old Net Name=NetOC21_4 New Net Name=NetOC71_4
+Change Net Name : Old Net Name=NetOC22_1 New Net Name=NetOC72_1
