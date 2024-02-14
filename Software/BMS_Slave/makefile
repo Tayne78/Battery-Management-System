@@ -29,15 +29,14 @@ $(PROJ).elf: $(OBJ)
 # Create Intel hex format for programming
 $(PROJ).hex: $(PROJ).elf
 	avr-objcopy -O ihex -R .eeprom $(PROJ).elf $(PROJ).hex
-	
 # print memory-usage
 	avr-size -C --mcu=$(MCU) $(PROJ).elf
- 
+
+# Befehl zum Löschen aller erzeugten Dateien
 clean:
-	rm -f *.hex *.elf *.o
-	rm $(OBJ)
- 
-# Install flashes the code
+	del /Q *.hex *.elf *.o
+	del $(OBJ)
+
 install:
 
 	avrdude -c avrispmkII  -P usb -p ATtiny261 -U flash:w:BMS_Slave.hex:i -v
@@ -47,9 +46,3 @@ update:
 	avrdude -c avrispmkII  -P usb -p attiny261 -U eeprom:r:callibration_data.hex:i -v
 	avrdude -c avrispmkII  -P usb -p attiny261 -U flash:w:BMS_Slave.hex:i -v
 	avrdude -c avrispmkII  -P usb -p attiny261 -U eeprom:w:callibration_data.hex:i -v
-
-# info, etc:
-info:
-	avr-nm -S BMS_Slave.elf
-	avr-objdump -D -m avr2 BMS_Slave.hex  > BMS_Slave.dump
-

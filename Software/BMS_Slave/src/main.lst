@@ -1,0 +1,1442 @@
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 1
+
+
+   1               		.file	"main.c"
+   2               	__SP_L__ = 0x3d
+   3               	__SREG__ = 0x3f
+   4               	__tmp_reg__ = 0
+   5               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+ 120               	.global	bms_slave_init
+ 122               	bms_slave_init:
+   1:src/main.c    **** /*********************************************/
+   2:src/main.c    **** /*  file:	main.c (V1.0)                    */
+   3:src/main.c    **** /*						                     */
+   4:src/main.c    **** /*  Diploma Thesis:                          */
+   5:src/main.c    **** /*   Battery Management System 2021/22       */
+   6:src/main.c    **** /* 						                     */
+   7:src/main.c    **** /*  brief:  Application for the Slaves       */
+   8:src/main.c    **** /* 						                     */
+   9:src/main.c    **** /*  Author: Simon Ball                       */
+  10:src/main.c    **** /*********************************************/
+  11:src/main.c    **** 
+  12:src/main.c    **** //erzeugt das programm zum calibrieren
+  13:src/main.c    **** //#define CALIBRATION
+  14:src/main.c    **** 
+  15:src/main.c    **** //--------------CPU-FREQUENCY------------------------------------------------------//
+  16:src/main.c    **** //--Define CPU frequency, if not already defined in the platformio.ini or intellisense
+  17:src/main.c    **** #ifndef F_CPU
+  18:src/main.c    **** error! #define F_CPU 2000000L
+  19:src/main.c    **** #endif
+  20:src/main.c    **** 
+  21:src/main.c    **** //--------------USED-HARDWARE------------------------------------------------------//
+  22:src/main.c    **** //--Define Microcontroller, if not already defined in the platform.ini or intellisense
+  23:src/main.c    **** #ifndef __AVR_ATtiny261A__
+  24:src/main.c    **** error! not implementet!
+  25:src/main.c    **** #endif
+  26:src/main.c    **** 
+  27:src/main.c    **** //--------------PIN-DEFINITIONS----------------------------------------------------//
+  28:src/main.c    **** #define DEBUG_DDR DDRB
+  29:src/main.c    **** #define DEBUG_PORT PORTB
+  30:src/main.c    **** #define DEBUG_PIN PINB5 // PCINT13
+  31:src/main.c    **** 
+  32:src/main.c    **** //--------------LIBRARY-INCLUDES-------------------------------------------------//
+  33:src/main.c    **** #include <avr/io.h>
+  34:src/main.c    **** #include <stdint.h>
+  35:src/main.c    **** #include <avr/interrupt.h>
+  36:src/main.c    **** #include <avr/eeprom.h>
+  37:src/main.c    **** #include <avr/sleep.h>
+  38:src/main.c    **** #include <util/delay.h>
+  39:src/main.c    **** 
+  40:src/main.c    **** //--------------SOURCE-FILES-----------------------------------------------------//
+  41:src/main.c    **** // These are stored outside of the project folder, but will still be compiled
+  42:src/main.c    **** #include "ADC.h"
+  43:src/main.c    **** #include "communication.h"
+  44:src/main.c    **** #include "timer.h"
+  45:src/main.c    **** #include "manch_m.h"
+  46:src/main.c    **** #include "status.h"
+  47:src/main.c    **** 
+  48:src/main.c    **** enum ADC_STAT
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 2
+
+
+  49:src/main.c    **** {
+  50:src/main.c    **** 	MEASURE_VOLT,
+  51:src/main.c    **** 	MEASURE_TEMP
+  52:src/main.c    **** };
+  53:src/main.c    **** 
+  54:src/main.c    **** enum COMM_STAT
+  55:src/main.c    **** {
+  56:src/main.c    **** 	COMM_RECEIVE,
+  57:src/main.c    **** 	COMM_GLOBAL,
+  58:src/main.c    **** 	COMM_ADD,
+  59:src/main.c    **** 	COMM_SEND
+  60:src/main.c    **** };
+  61:src/main.c    **** 
+  62:src/main.c    **** void bms_slave_init(void);
+  63:src/main.c    **** void eeprom_callibrate(uint8_t eeprom_stat);
+  64:src/main.c    **** 
+  65:src/main.c    **** uint8_t register manch_bit asm("r16"); // in manch_h verschieben!
+  66:src/main.c    **** 
+  67:src/main.c    **** //--------------MAIN----------------------------------------------------------------//
+  68:src/main.c    **** int main(void)
+  69:src/main.c    **** {
+  70:src/main.c    **** 	uint32_t volt_k;
+  71:src/main.c    **** 	bms_slave_init(); // Initiating the MCU, Registers configurated
+  72:src/main.c    **** 	// Data received
+  73:src/main.c    **** 	uint16_t bot_received = 0; // data received from the lower slave
+  74:src/main.c    **** 	uint8_t address_received = 0;
+  75:src/main.c    **** 	uint16_t top_received = 0; // data received from the upper slave
+  76:src/main.c    **** 
+  77:src/main.c    **** 	uint8_t comm_stat_b = 0; // Status of the communication to the lower slave
+  78:src/main.c    **** 	uint8_t comm_stat_t = 0; // Status of the communication to the upper slave
+  79:src/main.c    **** 
+  80:src/main.c    **** 	// Communication Cycle
+  81:src/main.c    **** 	uint8_t comm_stat = COMM_RECEIVE;
+  82:src/main.c    **** 
+  83:src/main.c    **** 	// Timing
+  84:src/main.c    **** 	uint8_t BALANCE_time = 0; // compare value
+  85:src/main.c    **** 
+  86:src/main.c    **** 	uint8_t ADCstat = MEASURE_VOLT;
+  87:src/main.c    **** 	// 0  : Set up for Battery Temperature Measurement
+  88:src/main.c    **** 	// 1  : Set up for Battery Voltage Measurement
+  89:src/main.c    **** 
+  90:src/main.c    **** 	// Measurements
+  91:src/main.c    **** 	uint16_t volt_raw = 0;
+  92:src/main.c    **** 
+  93:src/main.c    **** 	uint16_t battery_temperature=0; // battery_temperature in K 
+  94:src/main.c    **** 	uint16_t battery_voltage=0;	// battery_voltage = (float)adc_value / 200; // divided by 1024 aka 10
+  95:src/main.c    **** //	uint8_t eeprom_stat = eeprom_read_byte(EEPROM_STATUS_ADR);
+  96:src/main.c    **** 	uint16_t eeprom_voltage_h = eeprom_read_word(EEPROM_4V_ADR);
+  97:src/main.c    **** 	uint16_t eeprom_voltage_l = eeprom_read_word(EEPROM_3V_ADR);
+  98:src/main.c    **** 	uint16_t eeprom_temp = eeprom_read_word(EEPROM_temp_ADR);
+  99:src/main.c    **** 	
+ 100:src/main.c    **** 	if ( (eeprom_voltage_h==0xffff) || (eeprom_voltage_l==0xffff) || (eeprom_temp==0xffff) ) // if EEP
+ 101:src/main.c    **** 	{
+ 102:src/main.c    **** #ifndef CALIBRATION
+ 103:src/main.c    **** 		while (1)
+ 104:src/main.c    **** 		{
+ 105:src/main.c    **** 			_delay_ms(250);
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 3
+
+
+ 106:src/main.c    **** 			stat_led_off();
+ 107:src/main.c    **** 			_delay_ms(100);
+ 108:src/main.c    **** 			stat_led_red();
+ 109:src/main.c    **** 		}
+ 110:src/main.c    **** 	}
+ 111:src/main.c    **** #endif // not CALIBRATION
+ 112:src/main.c    **** 
+ 113:src/main.c    **** //============ calibration ======================================================================
+ 114:src/main.c    **** #ifdef CALIBRATION
+ 115:src/main.c    **** 		_delay_ms(1500);
+ 116:src/main.c    **** 
+ 117:src/main.c    **** 		// TEMP CALLIBRATION
+ 118:src/main.c    **** 		if (eeprom_temp==0xffff)
+ 119:src/main.c    **** 		{
+ 120:src/main.c    **** 			while (battery_temperature == 0) // Measure ambient temperature
+ 121:src/main.c    **** 				battery_temperature = measure_temperature();
+ 122:src/main.c    **** 			eeprom_write_word(EEPROM_temp_ADR, battery_temperature/ADC_SAMPLES_T);
+ 123:src/main.c    **** 		}
+ 124:src/main.c    **** 
+ 125:src/main.c    **** 		// VOLT CALLIBRATION
+ 126:src/main.c    **** 		while (battery_voltage == 0) // Measure SUPPLY voltage
+ 127:src/main.c    **** 			battery_voltage = measure_voltage();
+ 128:src/main.c    **** 
+ 129:src/main.c    **** 		// 3V detection
+ 130:src/main.c    **** 		if ((battery_voltage <= (CAL_VOLT_LT*ADC_SAMPLES_V)) && (battery_voltage >= (CAL_VOLT_LB*ADC_SAMP
+ 131:src/main.c    **** 								(eeprom_voltage_l==0xffff)) // battery voltage in low borders and not calibrated yet
+ 132:src/main.c    **** 		{
+ 133:src/main.c    **** 			eeprom_write_word(EEPROM_3V_ADR, battery_voltage);
+ 134:src/main.c    **** 			while (1)
+ 135:src/main.c    **** 			{
+ 136:src/main.c    **** 				stat_led_green();
+ 137:src/main.c    **** 				_delay_ms(100);
+ 138:src/main.c    **** 				stat_led_off();
+ 139:src/main.c    **** 				_delay_ms(100);
+ 140:src/main.c    **** 				stat_led_green();
+ 141:src/main.c    **** 				_delay_ms(100);
+ 142:src/main.c    **** 				stat_led_off();
+ 143:src/main.c    **** 				_delay_ms(100);
+ 144:src/main.c    **** 				stat_led_green();
+ 145:src/main.c    **** 				_delay_ms(100);
+ 146:src/main.c    **** 				stat_led_off();
+ 147:src/main.c    **** 				_delay_ms(500);
+ 148:src/main.c    **** 			}
+ 149:src/main.c    **** 		}
+ 150:src/main.c    **** 		 // 4V detection
+ 151:src/main.c    **** 		if ((battery_voltage >= (CAL_VOLT_HB*ADC_SAMPLES_V)) && (battery_voltage <= (CAL_VOLT_HT*ADC_SAMP
+ 152:src/main.c    **** 							(eeprom_voltage_h==0xffff)) // battery voltage in high borders and not calibrated yet
+ 153:src/main.c    **** 		{
+ 154:src/main.c    **** 			eeprom_write_word(EEPROM_4V_ADR, battery_voltage);
+ 155:src/main.c    **** 			while (1)
+ 156:src/main.c    **** 			{
+ 157:src/main.c    **** 				stat_led_green();
+ 158:src/main.c    **** 				_delay_ms(100);
+ 159:src/main.c    **** 				stat_led_off();
+ 160:src/main.c    **** 				_delay_ms(100);
+ 161:src/main.c    **** 				stat_led_green();
+ 162:src/main.c    **** 				_delay_ms(100);
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 4
+
+
+ 163:src/main.c    **** 				stat_led_off();
+ 164:src/main.c    **** 				_delay_ms(100);
+ 165:src/main.c    **** 				stat_led_green();
+ 166:src/main.c    **** 				_delay_ms(100);
+ 167:src/main.c    **** 				stat_led_off();
+ 168:src/main.c    **** 				_delay_ms(100);
+ 169:src/main.c    **** 				stat_led_green();
+ 170:src/main.c    **** 				_delay_ms(100);
+ 171:src/main.c    **** 				stat_led_off();
+ 172:src/main.c    **** 				_delay_ms(500);
+ 173:src/main.c    **** 			}
+ 174:src/main.c    **** 		}
+ 175:src/main.c    **** 		// battery voltage out of predefined borders
+ 176:src/main.c    **** 		else
+ 177:src/main.c    **** 		{
+ 178:src/main.c    **** 			while (1)
+ 179:src/main.c    **** 			{
+ 180:src/main.c    **** 				_delay_ms(200);
+ 181:src/main.c    **** 				stat_led_red();
+ 182:src/main.c    **** 				_delay_ms(200);
+ 183:src/main.c    **** 				stat_led_off();
+ 184:src/main.c    **** 			}
+ 185:src/main.c    **** 		}
+ 186:src/main.c    **** 
+ 187:src/main.c    **** 	}
+ 188:src/main.c    **** 	else // calibriert!
+ 189:src/main.c    **** 	{
+ 190:src/main.c    **** 				while (1)
+ 191:src/main.c    **** 			{
+ 192:src/main.c    **** 				_delay_ms(200);
+ 193:src/main.c    **** 				stat_led_green();
+ 194:src/main.c    **** 				_delay_ms(200);
+ 195:src/main.c    **** 				stat_led_off();
+ 196:src/main.c    **** 			}
+ 197:src/main.c    **** 
+ 198:src/main.c    **** //=================== ende calibration ============================================================
+ 199:src/main.c    **** #else // CALIBRATION
+ 200:src/main.c    **** 
+ 201:src/main.c    **** 	else // calibriert
+ 202:src/main.c    **** 	{
+ 203:src/main.c    **** 	int8_t temp_d = CAL_TEMP - eeprom_temp; // calculate temperature offset
+ 204:src/main.c    **** 
+ 205:src/main.c    **** 	volt_k = (4*1024000UL*ADC_SAMPLES_V)/eeprom_voltage_h; // steigung mit 1-punkt-cal bei 4V [1mV/102
+ 206:src/main.c    **** //	uint16_t VOLT_D = 0;//CAL_VOLT_H_EXT - (voltage_h * VOLT_K); // Value to subtract from measureme
+ 207:src/main.c    **** 
+ 208:src/main.c    **** 	// clear timers after startup
+ 209:src/main.c    **** //	timer_clear_timer(TIMER_BALANCE);
+ 210:src/main.c    **** uint8_t com_stat;
+ 211:src/main.c    **** uint8_t state;
+ 212:src/main.c    **** //DDRA |= 0x80;
+ 213:src/main.c    **** 	state = 0;
+ 214:src/main.c    **** 
+ 215:src/main.c    **** 
+ 216:src/main.c    **** 	while (1)
+ 217:src/main.c    **** 	{
+ 218:src/main.c    **** 		//--------------ADC------------------------------------------------------------------------------
+ 219:src/main.c    **** 		timer_add_time(); // executed after max 32ms
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 5
+
+
+ 220:src/main.c    **** //		stat_led_off();
+ 221:src/main.c    **** //		_delay_ms(500);
+ 222:src/main.c    **** //		stat_led_green();
+ 223:src/main.c    **** //		manch_init_send();
+ 224:src/main.c    **** //		manch_send();
+ 225:src/main.c    **** //		_delay_ms(800);
+ 226:src/main.c    **** 
+ 227:src/main.c    **** 		//============================Recieve Test==========================
+ 228:src/main.c    **** 		if(state==0)		//empfangen initialisieren
+ 229:src/main.c    **** 		{
+ 230:src/main.c    **** 			manch_init_receive();
+ 231:src/main.c    **** 			state++;
+ 232:src/main.c    **** 		}
+ 233:src/main.c    **** 		
+ 234:src/main.c    **** 		else if(state==1)		//Daten Empfangen
+ 235:src/main.c    **** 		{
+ 236:src/main.c    **** 			com_stat=manch_result();
+ 237:src/main.c    **** 			
+ 238:src/main.c    **** 			if (com_stat==0)		//während auf Daten gewartet wird LED orange blinken
+ 239:src/main.c    **** 			{
+ 240:src/main.c    **** 				stat_led_off();
+ 241:src/main.c    **** 			}
+ 242:src/main.c    **** 			
+ 243:src/main.c    **** 			else if(com_stat==1)			//wenn Daten erfolgreich Empfangen wurden LED grün
+ 244:src/main.c    **** 			{
+ 245:src/main.c    **** 				gl_manch_dat1 = gl_manch_dat;	// befehl weiter nach oben
+ 246:src/main.c    **** 				if (gl_manch_dat == REQ_VOLT_G) // spannungs anfrage
+ 247:src/main.c    **** 				{
+ 248:src/main.c    **** 					stat_led_green();
+ 249:src/main.c    **** 					gl_manch_dat = battery_voltage; //antwort spannung in 0.1mV
+ 250:src/main.c    **** 					state=2;
+ 251:src/main.c    **** 				}
+ 252:src/main.c    **** 				else if (gl_manch_dat == REQ_TEMP_G) // temperatur-anfrage
+ 253:src/main.c    **** 				{
+ 254:src/main.c    **** 					stat_led_green();
+ 255:src/main.c    **** 					gl_manch_dat = battery_temperature; //antwort temperatur in [K]
+ 256:src/main.c    **** 					state=2;
+ 257:src/main.c    **** 				}
+ 258:src/main.c    **** 				else if (gl_manch_dat == COM_BLC_OFF_G) // temperatur-anfrage
+ 259:src/main.c    **** 				{
+ 260:src/main.c    **** 					stat_led_green();
+ 261:src/main.c    **** 					BALANCE_time = 0;
+ 262:src/main.c    **** 					state=2;
+ 263:src/main.c    **** 				}
+ 264:src/main.c    **** 				else if ( (gl_manch_dat&0xff00) == COM_BLC_A) // balancing ein
+ 265:src/main.c    **** 				{
+ 266:src/main.c    **** 					state=2;
+ 267:src/main.c    **** 					stat_led_green();
+ 268:src/main.c    **** 					if ( (gl_manch_dat&0x00ff) == 1) // slave adressier!
+ 269:src/main.c    **** 					{
+ 270:src/main.c    **** 						gl_manch_dat1 = 0; // ungültiges command senden, => nächster leitet nix weiter
+ 271:src/main.c    **** 						BALANCE_time = 1;
+ 272:src/main.c    **** 						timer_clear_timer(TIMER_BALANCE);
+ 273:src/main.c    **** 					}
+ 274:src/main.c    **** 					else
+ 275:src/main.c    **** 						gl_manch_dat1 = gl_manch_dat -1;
+ 276:src/main.c    **** 				}				
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 6
+
+
+ 277:src/main.c    **** 				else // kein bekannter befehl, nix weitersenden, auf befehl warten
+ 278:src/main.c    **** 				{
+ 279:src/main.c    **** 					stat_led_red();
+ 280:src/main.c    **** 					state = 0;
+ 281:src/main.c    **** 				}
+ 282:src/main.c    **** 					
+ 283:src/main.c    **** 				timer_clear_timer(MAIN); //_delay_ms(20);
+ 284:src/main.c    **** 			}
+ 285:src/main.c    **** 			else if (com_stat==2)		//wenn Fehler beim Empfangen LED rot
+ 286:src/main.c    **** 			{
+ 287:src/main.c    **** 				stat_led_red();
+ 288:src/main.c    **** 				_delay_ms(100);
+ 289:src/main.c    **** 				state=0;
+ 290:src/main.c    **** 			}
+ 291:src/main.c    **** 			else if (com_stat==3)		//wenn Fehler beim Empfangen LED rot
+ 292:src/main.c    **** 			{
+ 293:src/main.c    **** 				stat_led_red();
+ 294:src/main.c    **** 				_delay_ms(100);
+ 295:src/main.c    **** 				stat_led_off();
+ 296:src/main.c    **** 				_delay_ms(100);
+ 297:src/main.c    **** 				stat_led_red();
+ 298:src/main.c    **** 				_delay_ms(100);
+ 299:src/main.c    **** 				state=0;
+ 300:src/main.c    **** 			}
+ 301:src/main.c    **** 			else if (com_stat==4)		//wenn Fehler beim Empfangen LED rot
+ 302:src/main.c    **** 			{
+ 303:src/main.c    **** 				stat_led_red();
+ 304:src/main.c    **** 				_delay_ms(100);
+ 305:src/main.c    **** 				stat_led_off();
+ 306:src/main.c    **** 				_delay_ms(100);
+ 307:src/main.c    **** 				stat_led_red();
+ 308:src/main.c    **** 				_delay_ms(100);
+ 309:src/main.c    **** 				stat_led_off();
+ 310:src/main.c    **** 				_delay_ms(100);
+ 311:src/main.c    **** 				stat_led_red();
+ 312:src/main.c    **** 				_delay_ms(100);
+ 313:src/main.c    **** 				state=0;
+ 314:src/main.c    **** 			}
+ 315:src/main.c    **** 		}
+ 316:src/main.c    **** 		else if (state==2)  // kurze pause bis zum antworten
+ 317:src/main.c    **** 		{
+ 318:src/main.c    **** 			if (timer_get_timer(MAIN) >= 7)
+ 319:src/main.c    **** 				state = 3; 
+ 320:src/main.c    **** 		}
+ 321:src/main.c    **** 		else if (state==3)	// antworten
+ 322:src/main.c    **** 		{
+ 323:src/main.c    **** 			manch_init_send();
+ 324:src/main.c    **** 			state = 4;
+ 325:src/main.c    **** 		}
+ 326:src/main.c    **** 		else if (state==4)	// warten, bis fertig gesendet
+ 327:src/main.c    **** 		{
+ 328:src/main.c    **** 			com_stat=manch_result();
+ 329:src/main.c    **** 			if (com_stat == 1)
+ 330:src/main.c    **** 			{
+ 331:src/main.c    **** 				//_delay_ms(3);
+ 332:src/main.c    **** 				state = 5;
+ 333:src/main.c    **** 			}
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 7
+
+
+ 334:src/main.c    **** 		}
+ 335:src/main.c    **** 		else if (state==5) // von oben empfangen
+ 336:src/main.c    **** 		{
+ 337:src/main.c    **** 			timer_clear_timer(MAIN);
+ 338:src/main.c    **** 			manch_init_receive1();
+ 339:src/main.c    **** 			state = 6;
+ 340:src/main.c    **** 		}
+ 341:src/main.c    **** 		else if(state==6)		//Daten von oben warten
+ 342:src/main.c    **** 		{
+ 343:src/main.c    **** 			com_stat=manch_result();
+ 344:src/main.c    **** 			
+ 345:src/main.c    **** 			if (com_stat==0)		//während auf Daten gewartet wird LED orange blinken
+ 346:src/main.c    **** 			{
+ 347:src/main.c    **** 				stat_led_off();
+ 348:src/main.c    **** 			}
+ 349:src/main.c    **** 			else if(com_stat==1)			//wenn Daten erfolgreich Empfangen wurden LED grün
+ 350:src/main.c    **** 			{
+ 351:src/main.c    **** 				stat_led_green();
+ 352:src/main.c    **** 				state=7;
+ 353:src/main.c    **** 			}
+ 354:src/main.c    **** 			else if (com_stat==2)		//wenn Fehler beim Empfangen LED rot
+ 355:src/main.c    **** 			{
+ 356:src/main.c    **** 				stat_led_red();
+ 357:src/main.c    **** 				_delay_ms(100); //???
+ 358:src/main.c    **** 				state=0;
+ 359:src/main.c    **** 			}
+ 360:src/main.c    **** 			
+ 361:src/main.c    **** 			if (timer_get_timer(MAIN) >= 15) // time out, kommt nix von oben
+ 362:src/main.c    **** 				state = 0;
+ 363:src/main.c    **** 		}
+ 364:src/main.c    **** 		else if (state==7)	// antworten mit daten von oben
+ 365:src/main.c    **** 		{
+ 366:src/main.c    **** 			manch_init_send();
+ 367:src/main.c    **** 			state = 8;
+ 368:src/main.c    **** 		}
+ 369:src/main.c    **** 		else if (state==8)	// warten, bis fertig gesendet
+ 370:src/main.c    **** 		{
+ 371:src/main.c    **** 			com_stat=manch_result();
+ 372:src/main.c    **** 			if (com_stat == 1)
+ 373:src/main.c    **** 			{
+ 374:src/main.c    **** 				state = 5;
+ 375:src/main.c    **** 			}
+ 376:src/main.c    **** 		}
+ 377:src/main.c    **** 
+ 378:src/main.c    **** //		BALANCE_time = timer_get_timer(TIMER_BALANCE);
+ 379:src/main.c    **** 		if (BALANCE_time)
+ 380:src/main.c    **** 		{
+ 381:src/main.c    **** 			if (timer_get_timer(TIMER_BALANCE) < 50000)
+ 382:src/main.c    **** 			{
+ 383:src/main.c    **** 				stat_led_orange();
+ 384:src/main.c    **** 				START_BALANCING();
+ 385:src/main.c    **** 			}
+ 386:src/main.c    **** 			else
+ 387:src/main.c    **** 				BALANCE_time = 0;
+ 388:src/main.c    **** 			
+ 389:src/main.c    **** 		}
+ 390:src/main.c    **** 		else
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 8
+
+
+ 391:src/main.c    **** 		{
+ 392:src/main.c    **** 			STOP_BALANCING();
+ 393:src/main.c    **** 		}
+ 394:src/main.c    **** 
+ 395:src/main.c    **** // ADC; Messen der Spannung und Temperatur
+ 396:src/main.c    **** 		if (!ADCstat)
+ 397:src/main.c    **** 		{
+ 398:src/main.c    **** 			volt_raw = measure_voltage();
+ 399:src/main.c    **** 			if (volt_raw) // make sure conversion is done
+ 400:src/main.c    **** 			{
+ 401:src/main.c    **** 				battery_voltage = (volt_k * volt_raw)/32768UL;//(1024*ADC_SAMPLES_V);
+ 402:src/main.c    **** 				//battery_voltage = (volt_raw/ADC_SAMPLES_V) * volt_k ;//   /10; /10 geht nicht??
+ 403:src/main.c    **** 				ADCstat = MEASURE_TEMP;
+ 404:src/main.c    **** 			}
+ 405:src/main.c    **** 		}
+ 406:src/main.c    **** 		else
+ 407:src/main.c    **** 		{
+ 408:src/main.c    **** 			volt_raw = measure_temperature();
+ 409:src/main.c    **** 			if (volt_raw) // make sure conversion is done
+ 410:src/main.c    **** 			{
+ 411:src/main.c    **** 				battery_temperature = volt_raw/ADC_SAMPLES_T + temp_d; // T in [K];
+ 412:src/main.c    **** 				ADCstat = MEASURE_VOLT;
+ 413:src/main.c    **** 			}
+ 414:src/main.c    **** 		}
+ 415:src/main.c    **** 
+ 416:src/main.c    **** 	} // main-loop
+ 417:src/main.c    **** #endif CALIBRATION
+ 418:src/main.c    **** 	}
+ 419:src/main.c    **** }
+ 420:src/main.c    **** 
+ 421:src/main.c    **** void bms_slave_init() // Combining all init functions
+ 422:src/main.c    **** {
+ 124               	.LM0:
+ 125               	.LFBB1:
+ 126               	/* prologue: function */
+ 127               	/* frame size = 0 */
+ 128               	/* stack size = 0 */
+ 129               	.L__stack_usage = 0
+ 423:src/main.c    **** 	// CPU frequency settings.
+ 424:src/main.c    **** #if F_CPU == 4000000L
+ 425:src/main.c    **** 	CLKPR = 0x80;
+ 426:src/main.c    **** 	CLKPR = 0x01;
+ 427:src/main.c    **** 
+ 428:src/main.c    **** #elif F_CPU == 2000000L
+ 429:src/main.c    **** 	CLKPR = 0x80;
+ 131               	.LM1:
+ 132 0000 80E8      		ldi r24,lo8(-128)
+ 133 0002 88BD      		out 0x28,r24
+ 430:src/main.c    **** 	CLKPR = 0x02;
+ 135               	.LM2:
+ 136 0004 82E0      		ldi r24,lo8(2)
+ 137 0006 88BD      		out 0x28,r24
+ 431:src/main.c    **** 
+ 432:src/main.c    **** #elif F_CPU == 1000000L
+ 433:src/main.c    **** 	CLKPR = 0x80;
+ 434:src/main.c    **** 	CLKPR = 0x04;
+ 435:src/main.c    **** 
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 9
+
+
+ 436:src/main.c    **** #else
+ 437:src/main.c    **** #error Invalid prescaler setting.
+ 438:src/main.c    **** #endif
+ 439:src/main.c    **** 	timer_init_timer();
+ 139               	.LM3:
+ 140 0008 00D0      		rcall timer_init_timer
+ 440:src/main.c    **** //	timer_add_time();
+ 441:src/main.c    **** 	ADC_init();
+ 142               	.LM4:
+ 143 000a 00D0      		rcall ADC_init
+ 442:src/main.c    **** 	stat_led_init(); // Status LED initialised
+ 145               	.LM5:
+ 146 000c 00D0      		rcall stat_led_init
+ 443:src/main.c    **** 	BALANCING_DDR |= (1 << BALANCING_PIN);
+ 148               	.LM6:
+ 149 000e BC9A      		sbi 0x17,4
+ 444:src/main.c    **** 	sei(); // global interrupt enable
+ 151               	.LM7:
+ 152               	/* #APP */
+ 153               	 ;  444 "src/main.c" 1
+ 154 0010 7894      		sei
+ 155               	 ;  0 "" 2
+ 156               	/* epilogue start */
+ 445:src/main.c    **** }
+ 158               	.LM8:
+ 159               	/* #NOAPP */
+ 160 0012 0895      		ret
+ 162               	.Lscope1:
+ 163               	.global	__mulsi3
+ 164               		.section	.text.startup,"ax",@progbits
+ 166               	.global	main
+ 168               	main:
+  69:src/main.c    **** 	uint32_t volt_k;
+ 170               	.LM9:
+ 171               	.LFBB2:
+ 172 0000 CF93      		push r28
+ 173 0002 DF93      		push r29
+ 174 0004 CDB7      		in r28,__SP_L__
+ 175 0006 DD27      		clr r29
+ 176 0008 C650      		subi r28,lo8(-(-6))
+ 177 000a CDBF      		out __SP_L__,r28
+ 178               	/* prologue: function */
+ 179               	/* frame size = 6 */
+ 180               	/* stack size = 8 */
+ 181               	.L__stack_usage = 8
+  71:src/main.c    **** 	// Data received
+ 183               	.LM10:
+ 184 000c 00D0      		rcall bms_slave_init
+  96:src/main.c    **** 	uint16_t eeprom_voltage_l = eeprom_read_word(EEPROM_3V_ADR);
+ 186               	.LM11:
+ 187 000e 83E0      		ldi r24,lo8(3)
+ 188 0010 90E0      		ldi r25,0
+ 189 0012 00D0      		rcall eeprom_read_word
+ 190 0014 9A83      		std Y+2,r25
+ 191 0016 8983      		std Y+1,r24
+  97:src/main.c    **** 	uint16_t eeprom_temp = eeprom_read_word(EEPROM_temp_ADR);
+ 193               	.LM12:
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 10
+
+
+ 194 0018 81E0      		ldi r24,lo8(1)
+ 195 001a 90E0      		ldi r25,0
+ 196 001c 00D0      		rcall eeprom_read_word
+ 197 001e 7C01      		movw r14,r24
+  98:src/main.c    **** 	
+ 199               	.LM13:
+ 200 0020 85E0      		ldi r24,lo8(5)
+ 201 0022 90E0      		ldi r25,0
+ 202 0024 00D0      		rcall eeprom_read_word
+ 100:src/main.c    **** 	{
+ 204               	.LM14:
+ 205 0026 2981      		ldd r18,Y+1
+ 206 0028 3A81      		ldd r19,Y+2
+ 207 002a 2F3F      		cpi r18,-1
+ 208 002c 3F4F      		sbci r19,-1
+ 209 002e 01F0      		breq .L5
+ 100:src/main.c    **** 	{
+ 211               	.LM15:
+ 212 0030 EF20      		and r14,r15
+ 213 0032 E094      		com r14
+ 214 0034 01F0      		breq .L5
+ 100:src/main.c    **** 	{
+ 216               	.LM16:
+ 217 0036 8F3F      		cpi r24,-1
+ 218 0038 9807      		cpc r25,r24
+ 219 003a 01F4      		brne .L4
+ 220               	.L5:
+ 221               	.LBB27:
+ 222               	.LBB28:
+ 224               	.Ltext1:
+   1:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** /* Copyright (c) 2002, Marek Michalkiewicz
+   2:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    Copyright (c) 2004,2005,2007 Joerg Wunsch
+   3:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    Copyright (c) 2007  Florin-Viorel Petrov
+   4:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    All rights reserved.
+   5:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+   6:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    Redistribution and use in source and binary forms, with or without
+   7:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    modification, are permitted provided that the following conditions are met:
+   8:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+   9:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    * Redistributions of source code must retain the above copyright
+  10:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****      notice, this list of conditions and the following disclaimer.
+  11:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+  12:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    * Redistributions in binary form must reproduce the above copyright
+  13:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****      notice, this list of conditions and the following disclaimer in
+  14:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****      the documentation and/or other materials provided with the
+  15:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****      distribution.
+  16:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+  17:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    * Neither the name of the copyright holders nor the names of
+  18:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****      contributors may be used to endorse or promote products derived
+  19:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****      from this software without specific prior written permission.
+  20:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+  21:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  22:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  23:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  24:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  25:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  26:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  27:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 11
+
+
+  28:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  29:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  30:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  31:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****   POSSIBILITY OF SUCH DAMAGE. */
+  32:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+  33:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** /* $Id$ */
+  34:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+  35:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** #ifndef _UTIL_DELAY_H_
+  36:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** #define _UTIL_DELAY_H_ 1
+  37:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+  38:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** #ifndef __DOXYGEN__
+  39:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** #  ifndef __HAS_DELAY_CYCLES
+  40:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** #    define __HAS_DELAY_CYCLES 1
+  41:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** #  endif
+  42:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** #endif  /* __DOXYGEN__ */
+  43:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+  44:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** #include <inttypes.h>
+  45:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** #include <util/delay_basic.h>
+  46:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** #include <math.h>
+  47:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+  48:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** /** \file */
+  49:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** /** \defgroup util_delay <util/delay.h>: Convenience functions for busy-wait delay loops
+  50:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     \code
+  51:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     #define F_CPU 1000000UL  // 1 MHz
+  52:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     //#define F_CPU 14.7456E6
+  53:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     #include <util/delay.h>
+  54:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     \endcode
+  55:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+  56:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     \note As an alternative method, it is possible to pass the
+  57:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     F_CPU macro down to the compiler from the Makefile.
+  58:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     Obviously, in that case, no \c \#define statement should be
+  59:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     used.
+  60:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+  61:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     The functions in this header file are wrappers around the basic
+  62:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     busy-wait functions from <util/delay_basic.h>.  They are meant as
+  63:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     convenience functions where actual time values can be specified
+  64:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     rather than a number of cycles to wait for.  The idea behind is
+  65:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     that compile-time constant expressions will be eliminated by
+  66:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     compiler optimization so floating-point expressions can be used
+  67:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     to calculate the number of delay cycles needed based on the CPU
+  68:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     frequency passed by the macro F_CPU.
+  69:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+  70:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     \note In order for these functions to work as intended, compiler
+  71:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     optimizations <em>must</em> be enabled, and the delay time
+  72:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     <em>must</em> be an expression that is a known constant at
+  73:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     compile-time.  If these requirements are not met, the resulting
+  74:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     delay will be much longer (and basically unpredictable), and
+  75:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     applications that otherwise do not use floating-point calculations
+  76:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     will experience severe code bloat by the floating-point library
+  77:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     routines linked into the application.
+  78:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+  79:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     The functions available allow the specification of microsecond, and
+  80:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     millisecond delays directly, using the application-supplied macro
+  81:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     F_CPU as the CPU clock frequency (in Hertz).
+  82:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+  83:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** */
+  84:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 12
+
+
+  85:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** #if !defined(__DOXYGEN__)
+  86:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** static __inline__ void _delay_us(double __us) __attribute__((__always_inline__));
+  87:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** static __inline__ void _delay_ms(double __ms) __attribute__((__always_inline__));
+  88:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** #endif
+  89:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+  90:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** #ifndef F_CPU
+  91:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** /* prevent compiler error by supplying a default */
+  92:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** # warning "F_CPU not defined for <util/delay.h>"
+  93:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** /** \ingroup util_delay
+  94:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     \def F_CPU
+  95:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     \brief CPU frequency in Hz
+  96:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+  97:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     The macro F_CPU specifies the CPU frequency to be considered by
+  98:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     the delay macros.  This macro is normally supplied by the
+  99:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     environment (e.g. from within a project header, or the project's
+ 100:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     Makefile).  The value 1 MHz here is only provided as a "vanilla"
+ 101:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     fallback if no such user-provided definition could be found.
+ 102:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+ 103:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     In terms of the delay functions, the CPU frequency can be given as
+ 104:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     a floating-point constant (e.g. 3.6864E6 for 3.6864 MHz).
+ 105:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     However, the macros in <util/setbaud.h> require it to be an
+ 106:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****     integer value.
+ 107:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****  */
+ 108:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** # define F_CPU 1000000UL
+ 109:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** #endif
+ 110:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+ 111:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** #ifndef __OPTIMIZE__
+ 112:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** # warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+ 113:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** #endif
+ 114:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+ 115:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** #if __HAS_DELAY_CYCLES && defined(__OPTIMIZE__) && \
+ 116:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****   !defined(__DELAY_BACKWARD_COMPATIBLE__) &&	   \
+ 117:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****   __STDC_HOSTED__
+ 118:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** #  include <math.h>
+ 119:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** #endif
+ 120:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+ 121:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** /**
+ 122:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    \ingroup util_delay
+ 123:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+ 124:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    Perform a delay of \c __ms milliseconds, using _delay_loop_2().
+ 125:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+ 126:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    The macro F_CPU is supposed to be defined to a
+ 127:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    constant defining the CPU clock frequency (in Hertz).
+ 128:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+ 129:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    The maximal possible delay is 262.14 ms / F_CPU in MHz.
+ 130:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+ 131:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    When the user request delay which exceed the maximum possible one,
+ 132:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    _delay_ms() provides a decreased resolution functionality. In this
+ 133:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    mode _delay_ms() will work with a resolution of 1/10 ms, providing
+ 134:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    delays up to 6.5535 seconds (independent from CPU frequency).  The
+ 135:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    user will not be informed about decreased resolution.
+ 136:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+ 137:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    If the avr-gcc toolchain has __builtin_avr_delay_cycles()
+ 138:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    support, maximal possible delay is 4294967.295 ms/ F_CPU in MHz. For
+ 139:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    values greater than the maximal possible delay, overflows results in
+ 140:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    no delay i.e., 0ms.
+ 141:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 13
+
+
+ 142:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    Conversion of \c __ms into clock cycles may not always result in
+ 143:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    integer.  By default, the clock cycles rounded up to next
+ 144:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    integer. This ensures that the user gets at least \c __ms
+ 145:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    microseconds of delay.
+ 146:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+ 147:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    Alternatively, by defining the macro \c __DELAY_ROUND_DOWN__, or
+ 148:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    \c __DELAY_ROUND_CLOSEST__, before including this header file, the
+ 149:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    algorithm can be made to round down, or round to closest integer,
+ 150:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    respectively.
+ 151:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+ 152:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    \note
+ 153:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+ 154:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    The implementation of _delay_ms() based on
+ 155:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    __builtin_avr_delay_cycles() is not backward compatible with older
+ 156:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    implementations.  In order to get functionality backward compatible
+ 157:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    with previous versions, the macro \c "__DELAY_BACKWARD_COMPATIBLE__"
+ 158:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    must be defined before including this header file. Also, the
+ 159:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    backward compatible algorithm will be chosen if the code is
+ 160:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    compiled in a <em>freestanding environment</em> (GCC option
+ 161:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    \c -ffreestanding), as the math functions required for rounding are
+ 162:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****    not available to the compiler then.
+ 163:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+ 164:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****  */
+ 165:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** void
+ 166:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** _delay_ms(double __ms)
+ 167:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** {
+ 168:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 	double __tmp ;
+ 169:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** #if __HAS_DELAY_CYCLES && defined(__OPTIMIZE__) && \
+ 170:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****   !defined(__DELAY_BACKWARD_COMPATIBLE__) &&	   \
+ 171:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h ****   __STDC_HOSTED__
+ 172:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 	uint32_t __ticks_dc;
+ 173:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 	extern void __builtin_avr_delay_cycles(unsigned long);
+ 174:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 	__tmp = ((F_CPU) / 1e3) * __ms;
+ 175:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+ 176:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 	#if defined(__DELAY_ROUND_DOWN__)
+ 177:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 		__ticks_dc = (uint32_t)fabs(__tmp);
+ 178:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+ 179:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 	#elif defined(__DELAY_ROUND_CLOSEST__)
+ 180:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 		__ticks_dc = (uint32_t)(fabs(__tmp)+0.5);
+ 181:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+ 182:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 	#else
+ 183:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 		//round up by default
+ 184:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+ 185:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 	#endif
+ 186:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 
+ 187:c:\program files\avr8-gnu-toolchain-win32_x86_64\avr\include\util\delay.h **** 	__builtin_avr_delay_cycles(__ticks_dc);
+ 226               	.LM17:
+ 227 003c 4FE9      		ldi r20,lo8(99999)
+ 228 003e 86E8      		ldi r24,hi8(99999)
+ 229 0040 91E0      		ldi r25,hlo8(99999)
+ 230 0042 4150      	1:	subi r20,1
+ 231 0044 8040      		sbci r24,0
+ 232 0046 9040      		sbci r25,0
+ 233 0048 01F4      		brne 1b
+ 234 004a 00C0      		rjmp .
+ 235 004c 0000      		nop
+ 236               	.LBE28:
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 14
+
+
+ 237               	.LBE27:
+ 239               	.Ltext2:
+ 106:src/main.c    **** 			_delay_ms(100);
+ 241               	.LM18:
+ 242 004e 00D0      		rcall stat_led_off
+ 243               	.LBB29:
+ 244               	.LBB30:
+ 246               	.Ltext3:
+ 248               	.LM19:
+ 249 0050 8FE4      		ldi r24,lo8(-15537)
+ 250 0052 93EC      		ldi r25,hi8(-15537)
+ 251 0054 0197      	1:	sbiw r24,1
+ 252 0056 01F4      		brne 1b
+ 253 0058 00C0      		rjmp .
+ 254 005a 0000      		nop
+ 255               	.LBE30:
+ 256               	.LBE29:
+ 258               	.Ltext4:
+ 108:src/main.c    **** 		}
+ 260               	.LM20:
+ 261 005c 00D0      		rcall stat_led_red
+ 262 005e 00C0      		rjmp .L5
+ 263               	.L4:
+ 264               	.LBB31:
+ 203:src/main.c    **** 
+ 266               	.LM21:
+ 267 0060 44E2      		ldi r20,lo8(36)
+ 268 0062 A42E      		mov r10,r20
+ 269 0064 A81A      		sub r10,r24
+ 205:src/main.c    **** //	uint16_t VOLT_D = 0;//CAL_VOLT_H_EXT - (voltage_h * VOLT_K); // Value to subtract from measureme
+ 271               	.LM22:
+ 272 0066 8981      		ldd r24,Y+1
+ 273 0068 9A81      		ldd r25,Y+2
+ 274 006a 9C01      		movw r18,r24
+ 275 006c 50E0      		ldi r21,0
+ 276 006e 40E0      		ldi r20,0
+ 277 0070 60E0      		ldi r22,0
+ 278 0072 70E0      		ldi r23,0
+ 279 0074 80ED      		ldi r24,lo8(-48)
+ 280 0076 97E0      		ldi r25,lo8(7)
+ 281 0078 00D0      		rcall __udivmodsi4
+ 282 007a 2983      		std Y+1,r18
+ 283 007c 3A83      		std Y+2,r19
+ 284 007e 4B83      		std Y+3,r20
+ 285 0080 5C83      		std Y+4,r21
+ 213:src/main.c    **** 
+ 287               	.LM23:
+ 288 0082 1D82      		std Y+5,__zero_reg__
+ 289               	.LBE31:
+  94:src/main.c    **** //	uint8_t eeprom_stat = eeprom_read_byte(EEPROM_STATUS_ADR);
+ 291               	.LM24:
+ 292 0084 F12C      		mov r15,__zero_reg__
+ 293 0086 E12C      		mov r14,__zero_reg__
+  93:src/main.c    **** 	uint16_t battery_voltage=0;	// battery_voltage = (float)adc_value / 200; // divided by 1024 aka 10
+ 295               	.LM25:
+ 296 0088 D12C      		mov r13,__zero_reg__
+ 297 008a C12C      		mov r12,__zero_reg__
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 15
+
+
+  86:src/main.c    **** 	// 0  : Set up for Battery Temperature Measurement
+ 299               	.LM26:
+ 300 008c 10E0      		ldi r17,0
+  84:src/main.c    **** 
+ 302               	.LM27:
+ 303 008e 1E82      		std Y+6,__zero_reg__
+ 304               	.LBB44:
+ 411:src/main.c    **** 				ADCstat = MEASURE_VOLT;
+ 306               	.LM28:
+ 307 0090 0A2C      		mov __tmp_reg__,r10
+ 308 0092 000C      		lsl r0
+ 309 0094 BB08      		sbc r11,r11
+ 310               	.L6:
+ 219:src/main.c    **** //		stat_led_off();
+ 312               	.LM29:
+ 313 0096 00D0      		rcall timer_add_time
+ 228:src/main.c    **** 		{
+ 315               	.LM30:
+ 316 0098 9D81      		ldd r25,Y+5
+ 317 009a 9111      		cpse r25,__zero_reg__
+ 318 009c 00C0      		rjmp .L7
+ 230:src/main.c    **** 			state++;
+ 320               	.LM31:
+ 321 009e 00D0      		rcall manch_init_receive
+ 231:src/main.c    **** 		}
+ 323               	.LM32:
+ 324 00a0 21E0      		ldi r18,lo8(1)
+ 325               	.L48:
+ 367:src/main.c    **** 		}
+ 327               	.LM33:
+ 328 00a2 2D83      		std Y+5,r18
+ 329 00a4 00C0      		rjmp .L8
+ 330               	.L7:
+ 234:src/main.c    **** 		{
+ 332               	.LM34:
+ 333 00a6 3D81      		ldd r19,Y+5
+ 334 00a8 3130      		cpi r19,lo8(1)
+ 335 00aa 01F0      		breq .+2
+ 336 00ac 00C0      		rjmp .L9
+ 236:src/main.c    **** 			
+ 338               	.LM35:
+ 339 00ae 00D0      		rcall manch_result
+ 238:src/main.c    **** 			{
+ 341               	.LM36:
+ 342 00b0 8111      		cpse r24,__zero_reg__
+ 343 00b2 00C0      		rjmp .L10
+ 240:src/main.c    **** 			}
+ 345               	.LM37:
+ 346 00b4 00D0      		rcall stat_led_off
+ 347               	.L8:
+ 379:src/main.c    **** 		{
+ 349               	.LM38:
+ 350 00b6 8E81      		ldd r24,Y+6
+ 351 00b8 8823      		tst r24
+ 352 00ba 01F4      		brne .+2
+ 353 00bc 00C0      		rjmp .L29
+ 381:src/main.c    **** 			{
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 16
+
+
+ 355               	.LM39:
+ 356 00be 80E0      		ldi r24,0
+ 357 00c0 00D0      		rcall timer_get_timer
+ 358 00c2 8035      		cpi r24,80
+ 359 00c4 934C      		sbci r25,-61
+ 360 00c6 00F0      		brlo .+2
+ 361 00c8 00C0      		rjmp .L33
+ 383:src/main.c    **** 				START_BALANCING();
+ 363               	.LM40:
+ 364 00ca 00D0      		rcall stat_led_orange
+ 384:src/main.c    **** 			}
+ 366               	.LM41:
+ 367 00cc C49A      		sbi 0x18,4
+ 368               	.L30:
+ 396:src/main.c    **** 		{
+ 370               	.LM42:
+ 371 00ce 1111      		cpse r17,__zero_reg__
+ 372 00d0 00C0      		rjmp .L31
+ 398:src/main.c    **** 			if (volt_raw) // make sure conversion is done
+ 374               	.LM43:
+ 375 00d2 00D0      		rcall measure_voltage
+ 399:src/main.c    **** 			{
+ 377               	.LM44:
+ 378 00d4 0097      		sbiw r24,0
+ 379 00d6 01F0      		breq .L6
+ 401:src/main.c    **** 				//battery_voltage = (volt_raw/ADC_SAMPLES_V) * volt_k ;//   /10; /10 geht nicht??
+ 381               	.LM45:
+ 382 00d8 BC01      		movw r22,r24
+ 383 00da 90E0      		ldi r25,0
+ 384 00dc 80E0      		ldi r24,0
+ 385 00de 2981      		ldd r18,Y+1
+ 386 00e0 3A81      		ldd r19,Y+2
+ 387 00e2 4B81      		ldd r20,Y+3
+ 388 00e4 5C81      		ldd r21,Y+4
+ 389 00e6 00D0      		rcall __mulsi3
+ 390 00e8 3FE0      		ldi r19,15
+ 391               		1:
+ 392 00ea 9695      		lsr r25
+ 393 00ec 8795      		ror r24
+ 394 00ee 7795      		ror r23
+ 395 00f0 6795      		ror r22
+ 396 00f2 3A95      		dec r19
+ 397 00f4 01F4      		brne 1b
+ 398 00f6 7B01      		movw r14,r22
+ 403:src/main.c    **** 			}
+ 400               	.LM46:
+ 401 00f8 11E0      		ldi r17,lo8(1)
+ 402 00fa 00C0      		rjmp .L6
+ 403               	.L10:
+ 243:src/main.c    **** 			{
+ 405               	.LM47:
+ 406 00fc 8130      		cpi r24,lo8(1)
+ 407 00fe 01F0      		breq .+2
+ 408 0100 00C0      		rjmp .L11
+ 245:src/main.c    **** 				if (gl_manch_dat == REQ_VOLT_G) // spannungs anfrage
+ 410               	.LM48:
+ 411 0102 8091 0000 		lds r24,gl_manch_dat
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 17
+
+
+ 412 0106 9091 0000 		lds r25,gl_manch_dat+1
+ 413 010a 9093 0000 		sts gl_manch_dat1+1,r25
+ 414 010e 8093 0000 		sts gl_manch_dat1,r24
+ 246:src/main.c    **** 				{
+ 416               	.LM49:
+ 417 0112 8333      		cpi r24,51
+ 418 0114 46EC      		ldi r20,-58
+ 419 0116 9407      		cpc r25,r20
+ 420 0118 01F4      		brne .L12
+ 248:src/main.c    **** 					gl_manch_dat = battery_voltage; //antwort spannung in 0.1mV
+ 422               	.LM50:
+ 423 011a 00D0      		rcall stat_led_green
+ 249:src/main.c    **** 					state=2;
+ 425               	.LM51:
+ 426 011c F092 0000 		sts gl_manch_dat+1,r15
+ 427 0120 E092 0000 		sts gl_manch_dat,r14
+ 428               	.L46:
+ 266:src/main.c    **** 					stat_led_green();
+ 430               	.LM52:
+ 431 0124 82E0      		ldi r24,lo8(2)
+ 432 0126 8D83      		std Y+5,r24
+ 433 0128 00C0      		rjmp .L13
+ 434               	.L12:
+ 252:src/main.c    **** 				{
+ 436               	.LM53:
+ 437 012a 8A3A      		cpi r24,-86
+ 438 012c 24ED      		ldi r18,-44
+ 439 012e 9207      		cpc r25,r18
+ 440 0130 01F4      		brne .L14
+ 254:src/main.c    **** 					gl_manch_dat = battery_temperature; //antwort temperatur in [K]
+ 442               	.LM54:
+ 443 0132 00D0      		rcall stat_led_green
+ 255:src/main.c    **** 					state=2;
+ 445               	.LM55:
+ 446 0134 D092 0000 		sts gl_manch_dat+1,r13
+ 447 0138 C092 0000 		sts gl_manch_dat,r12
+ 256:src/main.c    **** 				}
+ 449               	.LM56:
+ 450 013c 32E0      		ldi r19,lo8(2)
+ 451 013e 3D83      		std Y+5,r19
+ 452               	.L13:
+ 283:src/main.c    **** 			}
+ 454               	.LM57:
+ 455 0140 81E0      		ldi r24,lo8(1)
+ 456 0142 00D0      		rcall timer_clear_timer
+ 457 0144 00C0      		rjmp .L8
+ 458               	.L14:
+ 258:src/main.c    **** 				{
+ 460               	.LM58:
+ 461 0146 8535      		cpi r24,85
+ 462 0148 49EB      		ldi r20,-71
+ 463 014a 9407      		cpc r25,r20
+ 464 014c 01F4      		brne .L15
+ 260:src/main.c    **** 					BALANCE_time = 0;
+ 466               	.LM59:
+ 467 014e 00D0      		rcall stat_led_green
+ 262:src/main.c    **** 				}
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 18
+
+
+ 469               	.LM60:
+ 470 0150 82E0      		ldi r24,lo8(2)
+ 471 0152 8D83      		std Y+5,r24
+ 261:src/main.c    **** 					state=2;
+ 473               	.LM61:
+ 474 0154 1E82      		std Y+6,__zero_reg__
+ 475 0156 00C0      		rjmp .L13
+ 476               	.L15:
+ 264:src/main.c    **** 				{
+ 478               	.LM62:
+ 479 0158 8827      		clr r24
+ 480 015a 8115      		cp r24,__zero_reg__
+ 481 015c 964A      		sbci r25,-90
+ 482 015e 01F4      		brne .L16
+ 267:src/main.c    **** 					if ( (gl_manch_dat&0x00ff) == 1) // slave adressier!
+ 484               	.LM63:
+ 485 0160 00D0      		rcall stat_led_green
+ 268:src/main.c    **** 					{
+ 487               	.LM64:
+ 488 0162 8091 0000 		lds r24,gl_manch_dat
+ 489 0166 9091 0000 		lds r25,gl_manch_dat+1
+ 490 016a 8130      		cpi r24,lo8(1)
+ 491 016c 01F4      		brne .L17
+ 270:src/main.c    **** 						BALANCE_time = 1;
+ 493               	.LM65:
+ 494 016e 1092 0000 		sts gl_manch_dat1+1,__zero_reg__
+ 495 0172 1092 0000 		sts gl_manch_dat1,__zero_reg__
+ 272:src/main.c    **** 					}
+ 497               	.LM66:
+ 498 0176 80E0      		ldi r24,0
+ 499 0178 00D0      		rcall timer_clear_timer
+ 271:src/main.c    **** 						timer_clear_timer(TIMER_BALANCE);
+ 501               	.LM67:
+ 502 017a 31E0      		ldi r19,lo8(1)
+ 503 017c 3E83      		std Y+6,r19
+ 266:src/main.c    **** 					stat_led_green();
+ 505               	.LM68:
+ 506 017e 42E0      		ldi r20,lo8(2)
+ 507 0180 4D83      		std Y+5,r20
+ 508 0182 00C0      		rjmp .L13
+ 509               	.L17:
+ 275:src/main.c    **** 				}				
+ 511               	.LM69:
+ 512 0184 0197      		sbiw r24,1
+ 513 0186 9093 0000 		sts gl_manch_dat1+1,r25
+ 514 018a 8093 0000 		sts gl_manch_dat1,r24
+ 515 018e 00C0      		rjmp .L46
+ 516               	.L16:
+ 279:src/main.c    **** 					state = 0;
+ 518               	.LM70:
+ 519 0190 00D0      		rcall stat_led_red
+ 280:src/main.c    **** 				}
+ 521               	.LM71:
+ 522 0192 1D82      		std Y+5,__zero_reg__
+ 523 0194 00C0      		rjmp .L13
+ 524               	.L11:
+ 285:src/main.c    **** 			{
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 19
+
+
+ 526               	.LM72:
+ 527 0196 8230      		cpi r24,lo8(2)
+ 528 0198 01F4      		brne .L18
+ 529               	.L51:
+ 311:src/main.c    **** 				_delay_ms(100);
+ 531               	.LM73:
+ 532 019a 00D0      		rcall stat_led_red
+ 533               	.LBB32:
+ 534               	.LBB33:
+ 536               	.Ltext5:
+ 538               	.LM74:
+ 539 019c 8FE4      		ldi r24,lo8(-15537)
+ 540 019e 93EC      		ldi r25,hi8(-15537)
+ 541 01a0 0197      	1:	sbiw r24,1
+ 542 01a2 01F4      		brne 1b
+ 543 01a4 00C0      		rjmp .
+ 544 01a6 0000      		nop
+ 545               	.L47:
+ 546               	.LBE33:
+ 547               	.LBE32:
+ 549               	.Ltext6:
+ 362:src/main.c    **** 		}
+ 551               	.LM75:
+ 552 01a8 1D82      		std Y+5,__zero_reg__
+ 553 01aa 00C0      		rjmp .L8
+ 554               	.L18:
+ 291:src/main.c    **** 			{
+ 556               	.LM76:
+ 557 01ac 8330      		cpi r24,lo8(3)
+ 558 01ae 01F4      		brne .L19
+ 559               	.L50:
+ 307:src/main.c    **** 				_delay_ms(100);
+ 561               	.LM77:
+ 562 01b0 00D0      		rcall stat_led_red
+ 563               	.LBB34:
+ 564               	.LBB35:
+ 566               	.Ltext7:
+ 568               	.LM78:
+ 569 01b2 8FE4      		ldi r24,lo8(-15537)
+ 570 01b4 93EC      		ldi r25,hi8(-15537)
+ 571 01b6 0197      	1:	sbiw r24,1
+ 572 01b8 01F4      		brne 1b
+ 573 01ba 00C0      		rjmp .
+ 574 01bc 0000      		nop
+ 575               	.LBE35:
+ 576               	.LBE34:
+ 578               	.Ltext8:
+ 309:src/main.c    **** 				_delay_ms(100);
+ 580               	.LM79:
+ 581 01be 00D0      		rcall stat_led_off
+ 582               	.LBB36:
+ 583               	.LBB37:
+ 585               	.Ltext9:
+ 587               	.LM80:
+ 588 01c0 8FE4      		ldi r24,lo8(-15537)
+ 589 01c2 93EC      		ldi r25,hi8(-15537)
+ 590 01c4 0197      	1:	sbiw r24,1
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 20
+
+
+ 591 01c6 01F4      		brne 1b
+ 592 01c8 00C0      		rjmp .
+ 593 01ca 0000      		nop
+ 594 01cc 00C0      		rjmp .L51
+ 595               	.L19:
+ 596               	.LBE37:
+ 597               	.LBE36:
+ 599               	.Ltext10:
+ 301:src/main.c    **** 			{
+ 601               	.LM81:
+ 602 01ce 8430      		cpi r24,lo8(4)
+ 603 01d0 01F0      		breq .+2
+ 604 01d2 00C0      		rjmp .L8
+ 303:src/main.c    **** 				_delay_ms(100);
+ 606               	.LM82:
+ 607 01d4 00D0      		rcall stat_led_red
+ 608               	.LBB38:
+ 609               	.LBB39:
+ 611               	.Ltext11:
+ 613               	.LM83:
+ 614 01d6 8FE4      		ldi r24,lo8(-15537)
+ 615 01d8 93EC      		ldi r25,hi8(-15537)
+ 616 01da 0197      	1:	sbiw r24,1
+ 617 01dc 01F4      		brne 1b
+ 618 01de 00C0      		rjmp .
+ 619 01e0 0000      		nop
+ 620               	.LBE39:
+ 621               	.LBE38:
+ 623               	.Ltext12:
+ 305:src/main.c    **** 				_delay_ms(100);
+ 625               	.LM84:
+ 626 01e2 00D0      		rcall stat_led_off
+ 627               	.LBB40:
+ 628               	.LBB41:
+ 630               	.Ltext13:
+ 632               	.LM85:
+ 633 01e4 8FE4      		ldi r24,lo8(-15537)
+ 634 01e6 93EC      		ldi r25,hi8(-15537)
+ 635 01e8 0197      	1:	sbiw r24,1
+ 636 01ea 01F4      		brne 1b
+ 637 01ec 00C0      		rjmp .
+ 638 01ee 0000      		nop
+ 639 01f0 00C0      		rjmp .L50
+ 640               	.L9:
+ 641               	.LBE41:
+ 642               	.LBE40:
+ 644               	.Ltext14:
+ 316:src/main.c    **** 		{
+ 646               	.LM86:
+ 647 01f2 9D81      		ldd r25,Y+5
+ 648 01f4 9230      		cpi r25,lo8(2)
+ 649 01f6 01F4      		brne .L20
+ 318:src/main.c    **** 				state = 3; 
+ 651               	.LM87:
+ 652 01f8 81E0      		ldi r24,lo8(1)
+ 653 01fa 00D0      		rcall timer_get_timer
+ 319:src/main.c    **** 		}
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 21
+
+
+ 655               	.LM88:
+ 656 01fc 23E0      		ldi r18,lo8(3)
+ 318:src/main.c    **** 				state = 3; 
+ 658               	.LM89:
+ 659 01fe 0797      		sbiw r24,7
+ 660 0200 00F0      		brlo .+2
+ 661 0202 00C0      		rjmp .L48
+ 662 0204 00C0      		rjmp .L8
+ 663               	.L20:
+ 321:src/main.c    **** 		{
+ 665               	.LM90:
+ 666 0206 3D81      		ldd r19,Y+5
+ 667 0208 3330      		cpi r19,lo8(3)
+ 668 020a 01F4      		brne .L21
+ 323:src/main.c    **** 			state = 4;
+ 670               	.LM91:
+ 671 020c 00D0      		rcall manch_init_send
+ 324:src/main.c    **** 		}
+ 673               	.LM92:
+ 674 020e 44E0      		ldi r20,lo8(4)
+ 675               	.L49:
+ 374:src/main.c    **** 			}
+ 677               	.LM93:
+ 678 0210 4D83      		std Y+5,r20
+ 679 0212 00C0      		rjmp .L8
+ 680               	.L21:
+ 326:src/main.c    **** 		{
+ 682               	.LM94:
+ 683 0214 8D81      		ldd r24,Y+5
+ 684 0216 8430      		cpi r24,lo8(4)
+ 685 0218 01F4      		brne .L22
+ 328:src/main.c    **** 			if (com_stat == 1)
+ 687               	.LM95:
+ 688 021a 00D0      		rcall manch_result
+ 329:src/main.c    **** 			{
+ 690               	.LM96:
+ 691 021c 8130      		cpi r24,lo8(1)
+ 692 021e 01F0      		breq .+2
+ 693 0220 00C0      		rjmp .L8
+ 332:src/main.c    **** 			}
+ 695               	.LM97:
+ 696 0222 95E0      		ldi r25,lo8(5)
+ 697 0224 9D83      		std Y+5,r25
+ 698 0226 00C0      		rjmp .L8
+ 699               	.L22:
+ 335:src/main.c    **** 		{
+ 701               	.LM98:
+ 702 0228 2D81      		ldd r18,Y+5
+ 703 022a 2530      		cpi r18,lo8(5)
+ 704 022c 01F4      		brne .L23
+ 337:src/main.c    **** 			manch_init_receive1();
+ 706               	.LM99:
+ 707 022e 81E0      		ldi r24,lo8(1)
+ 708 0230 00D0      		rcall timer_clear_timer
+ 338:src/main.c    **** 			state = 6;
+ 710               	.LM100:
+ 711 0232 00D0      		rcall manch_init_receive1
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 22
+
+
+ 339:src/main.c    **** 		}
+ 713               	.LM101:
+ 714 0234 36E0      		ldi r19,lo8(6)
+ 715 0236 3D83      		std Y+5,r19
+ 716 0238 00C0      		rjmp .L8
+ 717               	.L23:
+ 341:src/main.c    **** 		{
+ 719               	.LM102:
+ 720 023a 4D81      		ldd r20,Y+5
+ 721 023c 4630      		cpi r20,lo8(6)
+ 722 023e 01F4      		brne .L24
+ 343:src/main.c    **** 			
+ 724               	.LM103:
+ 725 0240 00D0      		rcall manch_result
+ 345:src/main.c    **** 			{
+ 727               	.LM104:
+ 728 0242 8111      		cpse r24,__zero_reg__
+ 729 0244 00C0      		rjmp .L25
+ 347:src/main.c    **** 			}
+ 731               	.LM105:
+ 732 0246 00D0      		rcall stat_led_off
+ 733               	.L26:
+ 361:src/main.c    **** 				state = 0;
+ 735               	.LM106:
+ 736 0248 81E0      		ldi r24,lo8(1)
+ 737 024a 00D0      		rcall timer_get_timer
+ 738 024c 0F97      		sbiw r24,15
+ 739 024e 00F4      		brsh .+2
+ 740 0250 00C0      		rjmp .L8
+ 741 0252 00C0      		rjmp .L47
+ 742               	.L25:
+ 349:src/main.c    **** 			{
+ 744               	.LM107:
+ 745 0254 8130      		cpi r24,lo8(1)
+ 746 0256 01F4      		brne .L27
+ 351:src/main.c    **** 				state=7;
+ 748               	.LM108:
+ 749 0258 00D0      		rcall stat_led_green
+ 352:src/main.c    **** 			}
+ 751               	.LM109:
+ 752 025a 87E0      		ldi r24,lo8(7)
+ 753 025c 8D83      		std Y+5,r24
+ 754 025e 00C0      		rjmp .L26
+ 755               	.L27:
+ 354:src/main.c    **** 			{
+ 757               	.LM110:
+ 758 0260 8230      		cpi r24,lo8(2)
+ 759 0262 01F4      		brne .L26
+ 356:src/main.c    **** 				_delay_ms(100); //???
+ 761               	.LM111:
+ 762 0264 00D0      		rcall stat_led_red
+ 763               	.LBB42:
+ 764               	.LBB43:
+ 766               	.Ltext15:
+ 768               	.LM112:
+ 769 0266 8FE4      		ldi r24,lo8(-15537)
+ 770 0268 93EC      		ldi r25,hi8(-15537)
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 23
+
+
+ 771 026a 0197      	1:	sbiw r24,1
+ 772 026c 01F4      		brne 1b
+ 773 026e 00C0      		rjmp .
+ 774 0270 0000      		nop
+ 775               	.LBE43:
+ 776               	.LBE42:
+ 778               	.Ltext16:
+ 358:src/main.c    **** 			}
+ 780               	.LM113:
+ 781 0272 1D82      		std Y+5,__zero_reg__
+ 782 0274 00C0      		rjmp .L26
+ 783               	.L24:
+ 364:src/main.c    **** 		{
+ 785               	.LM114:
+ 786 0276 9D81      		ldd r25,Y+5
+ 787 0278 9730      		cpi r25,lo8(7)
+ 788 027a 01F4      		brne .L28
+ 366:src/main.c    **** 			state = 8;
+ 790               	.LM115:
+ 791 027c 00D0      		rcall manch_init_send
+ 367:src/main.c    **** 		}
+ 793               	.LM116:
+ 794 027e 28E0      		ldi r18,lo8(8)
+ 795 0280 00C0      		rjmp .L48
+ 796               	.L28:
+ 369:src/main.c    **** 		{
+ 798               	.LM117:
+ 799 0282 3D81      		ldd r19,Y+5
+ 800 0284 3830      		cpi r19,lo8(8)
+ 801 0286 01F0      		breq .+2
+ 802 0288 00C0      		rjmp .L8
+ 371:src/main.c    **** 			if (com_stat == 1)
+ 804               	.LM118:
+ 805 028a 00D0      		rcall manch_result
+ 372:src/main.c    **** 			{
+ 807               	.LM119:
+ 808 028c 8130      		cpi r24,lo8(1)
+ 809 028e 01F0      		breq .+2
+ 810 0290 00C0      		rjmp .L8
+ 374:src/main.c    **** 			}
+ 812               	.LM120:
+ 813 0292 45E0      		ldi r20,lo8(5)
+ 814 0294 00C0      		rjmp .L49
+ 815               	.L29:
+ 392:src/main.c    **** 		}
+ 817               	.LM121:
+ 818 0296 C498      		cbi 0x18,4
+ 819 0298 00C0      		rjmp .L30
+ 820               	.L33:
+ 387:src/main.c    **** 			
+ 822               	.LM122:
+ 823 029a 1E82      		std Y+6,__zero_reg__
+ 824 029c 00C0      		rjmp .L30
+ 825               	.L31:
+ 408:src/main.c    **** 			if (volt_raw) // make sure conversion is done
+ 827               	.LM123:
+ 828 029e 00D0      		rcall measure_temperature
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 24
+
+
+ 409:src/main.c    **** 			{
+ 830               	.LM124:
+ 831 02a0 0097      		sbiw r24,0
+ 832 02a2 01F4      		brne .+2
+ 833 02a4 00C0      		rjmp .L6
+ 411:src/main.c    **** 				ADCstat = MEASURE_VOLT;
+ 835               	.LM125:
+ 836 02a6 25E0      		ldi r18,5
+ 837               		1:
+ 838 02a8 9695      		lsr r25
+ 839 02aa 8795      		ror r24
+ 840 02ac 2A95      		dec r18
+ 841 02ae 01F4      		brne 1b
+ 842 02b0 6C01      		movw r12,r24
+ 843 02b2 CA0C      		add r12,r10
+ 844 02b4 DB1C      		adc r13,r11
+ 412:src/main.c    **** 			}
+ 846               	.LM126:
+ 847 02b6 10E0      		ldi r17,0
+ 848 02b8 00C0      		rjmp .L6
+ 849               	.LBE44:
+ 868               	.Lscope2:
+ 870               		.text
+ 872               	.Letext0:
+ 873               		.ident	"GCC: (AVR_8_bit_GNU_Toolchain_3.7.0_1796) 7.3.0"
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\cceL62PV.s 			page 25
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 main.c
+C:\Users\Markus\AppData\Local\Temp\cceL62PV.s:2      *ABS*:000000000000003d __SP_L__
+C:\Users\Markus\AppData\Local\Temp\cceL62PV.s:3      *ABS*:000000000000003f __SREG__
+C:\Users\Markus\AppData\Local\Temp\cceL62PV.s:4      *ABS*:0000000000000000 __tmp_reg__
+C:\Users\Markus\AppData\Local\Temp\cceL62PV.s:5      *ABS*:0000000000000001 __zero_reg__
+C:\Users\Markus\AppData\Local\Temp\cceL62PV.s:122    .text:0000000000000000 bms_slave_init
+C:\Users\Markus\AppData\Local\Temp\cceL62PV.s:168    .text.startup:0000000000000000 main
+
+UNDEFINED SYMBOLS
+timer_init_timer
+ADC_init
+stat_led_init
+__mulsi3
+eeprom_read_word
+stat_led_off
+stat_led_red
+__udivmodsi4
+timer_add_time
+manch_init_receive
+manch_result
+timer_get_timer
+stat_led_orange
+measure_voltage
+gl_manch_dat
+gl_manch_dat1
+stat_led_green
+timer_clear_timer
+manch_init_send
+manch_init_receive1
+measure_temperature

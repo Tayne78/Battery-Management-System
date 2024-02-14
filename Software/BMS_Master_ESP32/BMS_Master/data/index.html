@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Battery Management System</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Custom Styles -->
+  <style>
+    body {
+      background-color: #f8f9fa;
+      color: #495057;
+    } 
+
+    .navbar {
+      background-color: #343a40;
+    }
+
+    .navbar-brand {
+      color: #ffffff !important;
+      font-weight: bold;
+      font-size: 24px;
+    }
+
+    .table {
+      background-color: #ffffff;
+      border-radius: 10px;
+    }
+
+    th,
+    td {
+      text-align: center;
+    }
+
+    th {
+      background-color: #343a40;
+      color: #ffffff;
+    }
+
+    tbody tr:nth-child(odd) {
+      background-color: #f8f9fa;
+      /* Lighter color for odd rows */
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #e9ecef;
+      /* Slightly darker color for even rows */
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <a class="navbar-brand" href="#">
+      BMS
+    </a>
+  
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item active">
+          <a class="nav-link" href="./index.html">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="./about-us.html">About us</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/log" target="_blank">Log</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container mt-4">
+    <!-- Zellspannung, Temperatur und Status Tabellen -->
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Zelle</th>
+            <th scope="col">Spannung (V)</th>
+            <th scope="col">Temperatur (°C)</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody id="batteryDataTableBody">
+          <!-- Hier werden die Zellspannung, Temperatur und Statuswerte eingefügt -->
+          
+        </tbody>
+      </table>
+    </div>
+    <div class="batteryInput container mt-4">
+      <p>Wähle deinen Akku-Typ: </p>
+      <select name="batterySelect" id="batterySelect" class="form-select mt-4 form-select-lg" aria-label=".form-select-lg">
+        <option value="lithiumIonen" selected>Lithium Ionen Akku</option>
+        <option value="eisen">Eisen</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Bootstrap JavaScript (optional) -->
+  <script src="js/jquery-3.2.1.slim.min.js"></script>
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/script.js"></script>
+
+</body>
+
+</html>

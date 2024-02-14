@@ -1,0 +1,428 @@
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccXDFY3X.s 			page 1
+
+
+   1               		.file	"ADC.c"
+   2               	__SP_L__ = 0x3d
+   3               	__SREG__ = 0x3f
+   4               	__tmp_reg__ = 0
+   5               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+ 107               	.global	ADC_init
+ 109               	ADC_init:
+   1:../Modules/ADC/ADC.c **** /*********************************************/
+   2:../Modules/ADC/ADC.c **** /*  file:   ADC.c                            */
+   3:../Modules/ADC/ADC.c **** /*						                     */
+   4:../Modules/ADC/ADC.c **** /*  Diploma Thesis:                          */
+   5:../Modules/ADC/ADC.c **** /*   Battery Management System 2021/22       */
+   6:../Modules/ADC/ADC.c **** /* 						                     */
+   7:../Modules/ADC/ADC.c **** /*  brief:  Functions for analog measurement */
+   8:../Modules/ADC/ADC.c **** /* 						                     */
+   9:../Modules/ADC/ADC.c **** /*  Author: Simon Ball                       */
+  10:../Modules/ADC/ADC.c **** /*********************************************/
+  11:../Modules/ADC/ADC.c **** 
+  12:../Modules/ADC/ADC.c **** #include <avr/io.h>
+  13:../Modules/ADC/ADC.c **** #include <stdint.h>
+  14:../Modules/ADC/ADC.c **** #include "ADC.h"
+  15:../Modules/ADC/ADC.c **** #include "manch_m.h"
+  16:../Modules/ADC/ADC.c **** 
+  17:../Modules/ADC/ADC.c **** static uint8_t adc_state = ST_REGISTER;
+  18:../Modules/ADC/ADC.c **** static uint16_t adc_values;
+  19:../Modules/ADC/ADC.c **** static uint8_t adc_counter;
+  20:../Modules/ADC/ADC.c **** static uint16_t adc_value = 0;
+  21:../Modules/ADC/ADC.c **** static uint16_t sort; // sort algorithm
+  22:../Modules/ADC/ADC.c **** 
+  23:../Modules/ADC/ADC.c **** void ADC_init()
+  24:../Modules/ADC/ADC.c **** {
+ 111               	.LM0:
+ 112               	.LFBB1:
+ 113               	/* prologue: function */
+ 114               	/* frame size = 0 */
+ 115               	/* stack size = 0 */
+ 116               	.L__stack_usage = 0
+  25:../Modules/ADC/ADC.c **** 	ADCSRA = 0x84; // ADC enabled // Clock Prescaler of 16
+ 118               	.LM1:
+ 119 0000 84E8      		ldi r24,lo8(-124)
+ 120 0002 86B9      		out 0x6,r24
+ 121               	/* epilogue start */
+  26:../Modules/ADC/ADC.c **** 
+  27:../Modules/ADC/ADC.c **** 	// Result is right adjusted
+  28:../Modules/ADC/ADC.c **** 
+  29:../Modules/ADC/ADC.c **** 	//  Single Conversion mode
+  30:../Modules/ADC/ADC.c **** 	//  ADATE is not enabled, which means that the ADC is in Single Conversion Mode.
+  31:../Modules/ADC/ADC.c **** 	//  By setting the ADSC bit(ADC Start Conversion) the conversion is started.
+  32:../Modules/ADC/ADC.c **** 	//  Once the conversion is done, ADSC is cleared and the ADIF flag will be set.
+  33:../Modules/ADC/ADC.c **** 	//  When its completed the channel can safely be changed. The next conversion takes 25 clock cycle
+  34:../Modules/ADC/ADC.c **** 	//  ADIE is not set as ADIF gets set when the conversion is done
+  35:../Modules/ADC/ADC.c **** 	//  ADIF must be written to 1 in order to clear it
+  36:../Modules/ADC/ADC.c **** }
+ 123               	.LM2:
+ 124 0004 0895      		ret
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccXDFY3X.s 			page 2
+
+
+ 126               	.Lscope1:
+ 128               	.global	measure_temperature
+ 130               	measure_temperature:
+  37:../Modules/ADC/ADC.c **** 
+  38:../Modules/ADC/ADC.c **** //===============================================================================
+  39:../Modules/ADC/ADC.c **** uint16_t measure_temperature()
+  40:../Modules/ADC/ADC.c **** {
+ 132               	.LM3:
+ 133               	.LFBB2:
+ 134               	/* prologue: function */
+ 135               	/* frame size = 0 */
+ 136               	/* stack size = 0 */
+ 137               	.L__stack_usage = 0
+  41:../Modules/ADC/ADC.c **** 	uint16_t temperature = 0;
+  42:../Modules/ADC/ADC.c **** 
+  43:../Modules/ADC/ADC.c **** 	switch (adc_state)
+ 139               	.LM4:
+ 140 0006 8091 0000 		lds r24,adc_state
+ 141 000a 8823      		tst r24
+ 142 000c 01F0      		breq .L4
+ 143 000e 8130      		cpi r24,lo8(1)
+ 144 0010 01F0      		breq .L5
+ 145               	.L9:
+  41:../Modules/ADC/ADC.c **** 	uint16_t temperature = 0;
+ 147               	.LM5:
+ 148 0012 90E0      		ldi r25,0
+ 149 0014 80E0      		ldi r24,0
+ 150               	/* epilogue start */
+  44:../Modules/ADC/ADC.c **** 	{
+  45:../Modules/ADC/ADC.c **** 	case ST_REGISTER:
+  46:../Modules/ADC/ADC.c **** 		ADMUX = 0xDF;  // Internal Reference Voltage 1.1V // Attaching Channel 11 to the ADC... Temperatu
+  47:../Modules/ADC/ADC.c **** 		ADCSRB = 0x08; // clearing REFS2, mux 5 bit set
+  48:../Modules/ADC/ADC.c **** 		adc_state = ST_MEASURE;
+  49:../Modules/ADC/ADC.c **** 		adc_counter = 0;
+  50:../Modules/ADC/ADC.c **** 		adc_values = 0;
+  51:../Modules/ADC/ADC.c **** 		ADC_START_CONVERSION();
+  52:../Modules/ADC/ADC.c **** 		break;
+  53:../Modules/ADC/ADC.c **** 		
+  54:../Modules/ADC/ADC.c **** 	case ST_MEASURE:
+  55:../Modules/ADC/ADC.c **** 		if (ADC_INTERRUPT)
+  56:../Modules/ADC/ADC.c **** 		{
+  57:../Modules/ADC/ADC.c **** 			ADC_CLEAR_INT();
+  58:../Modules/ADC/ADC.c **** 			if (adc_counter == 0) // 1. messung nach umschalten verwerfen!
+  59:../Modules/ADC/ADC.c **** 			{
+  60:../Modules/ADC/ADC.c **** 				adc_counter++;
+  61:../Modules/ADC/ADC.c **** 				ADC_START_CONVERSION();
+  62:../Modules/ADC/ADC.c **** 			}
+  63:../Modules/ADC/ADC.c **** 			else if (adc_counter < ADC_SAMPLES_T+1)
+  64:../Modules/ADC/ADC.c **** 			{
+  65:../Modules/ADC/ADC.c **** 				adc_values += ADC;
+  66:../Modules/ADC/ADC.c **** 				adc_counter++;
+  67:../Modules/ADC/ADC.c **** 				ADC_START_CONVERSION();
+  68:../Modules/ADC/ADC.c **** 			}
+  69:../Modules/ADC/ADC.c **** 			else
+  70:../Modules/ADC/ADC.c **** 			{
+  71:../Modules/ADC/ADC.c **** 				temperature = adc_values;
+  72:../Modules/ADC/ADC.c **** 				adc_state = ST_REGISTER;
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccXDFY3X.s 			page 3
+
+
+  73:../Modules/ADC/ADC.c **** 			}
+  74:../Modules/ADC/ADC.c **** 		}
+  75:../Modules/ADC/ADC.c **** 		break;		
+  76:../Modules/ADC/ADC.c **** 	}
+  77:../Modules/ADC/ADC.c **** 	return temperature;
+  78:../Modules/ADC/ADC.c **** }
+ 152               	.LM6:
+ 153 0016 0895      		ret
+ 154               	.L4:
+  46:../Modules/ADC/ADC.c **** 		ADCSRB = 0x08; // clearing REFS2, mux 5 bit set
+ 156               	.LM7:
+ 157 0018 8FED      		ldi r24,lo8(-33)
+ 158 001a 87B9      		out 0x7,r24
+  47:../Modules/ADC/ADC.c **** 		adc_state = ST_MEASURE;
+ 160               	.LM8:
+ 161 001c 88E0      		ldi r24,lo8(8)
+ 162 001e 83B9      		out 0x3,r24
+  48:../Modules/ADC/ADC.c **** 		adc_counter = 0;
+ 164               	.LM9:
+ 165 0020 81E0      		ldi r24,lo8(1)
+ 166 0022 8093 0000 		sts adc_state,r24
+  49:../Modules/ADC/ADC.c **** 		adc_values = 0;
+ 168               	.LM10:
+ 169 0026 1092 0000 		sts adc_counter,__zero_reg__
+  50:../Modules/ADC/ADC.c **** 		ADC_START_CONVERSION();
+ 171               	.LM11:
+ 172 002a 1092 0000 		sts adc_values+1,__zero_reg__
+ 173 002e 1092 0000 		sts adc_values,__zero_reg__
+ 174               	.L11:
+  61:../Modules/ADC/ADC.c **** 			}
+ 176               	.LM12:
+ 177 0032 369A      		sbi 0x6,6
+ 178 0034 00C0      		rjmp .L9
+ 179               	.L5:
+  55:../Modules/ADC/ADC.c **** 		{
+ 181               	.LM13:
+ 182 0036 349B      		sbis 0x6,4
+ 183 0038 00C0      		rjmp .L9
+  57:../Modules/ADC/ADC.c **** 			if (adc_counter == 0) // 1. messung nach umschalten verwerfen!
+ 185               	.LM14:
+ 186 003a 349A      		sbi 0x6,4
+  58:../Modules/ADC/ADC.c **** 			{
+ 188               	.LM15:
+ 189 003c 2091 0000 		lds r18,adc_counter
+ 190 0040 2111      		cpse r18,__zero_reg__
+ 191 0042 00C0      		rjmp .L6
+  60:../Modules/ADC/ADC.c **** 				ADC_START_CONVERSION();
+ 193               	.LM16:
+ 194 0044 8093 0000 		sts adc_counter,r24
+ 195 0048 00C0      		rjmp .L11
+ 196               	.L6:
+ 197 004a 8091 0000 		lds r24,adc_values
+ 198 004e 9091 0000 		lds r25,adc_values+1
+  63:../Modules/ADC/ADC.c **** 			{
+ 200               	.LM17:
+ 201 0052 2132      		cpi r18,lo8(33)
+ 202 0054 00F4      		brsh .L7
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccXDFY3X.s 			page 4
+
+
+  65:../Modules/ADC/ADC.c **** 				adc_counter++;
+ 204               	.LM18:
+ 205 0056 44B1      		in r20,0x4
+ 206 0058 55B1      		in r21,0x4+1
+ 207 005a 840F      		add r24,r20
+ 208 005c 951F      		adc r25,r21
+ 209 005e 9093 0000 		sts adc_values+1,r25
+ 210 0062 8093 0000 		sts adc_values,r24
+  66:../Modules/ADC/ADC.c **** 				ADC_START_CONVERSION();
+ 212               	.LM19:
+ 213 0066 2F5F      		subi r18,lo8(-(1))
+ 214 0068 2093 0000 		sts adc_counter,r18
+ 215 006c 00C0      		rjmp .L11
+ 216               	.L7:
+  72:../Modules/ADC/ADC.c **** 			}
+ 218               	.LM20:
+ 219 006e 1092 0000 		sts adc_state,__zero_reg__
+ 220 0072 0895      		ret
+ 225               	.Lscope2:
+ 227               	.global	measure_voltage
+ 229               	measure_voltage:
+  79:../Modules/ADC/ADC.c **** 
+  80:../Modules/ADC/ADC.c **** //=====================================================================================
+  81:../Modules/ADC/ADC.c **** uint16_t measure_voltage()
+  82:../Modules/ADC/ADC.c **** {
+ 231               	.LM21:
+ 232               	.LFBB3:
+ 233               	/* prologue: function */
+ 234               	/* frame size = 0 */
+ 235               	/* stack size = 0 */
+ 236               	.L__stack_usage = 0
+  83:../Modules/ADC/ADC.c **** 	adc_value = 0;
+ 238               	.LM22:
+ 239 0074 1092 0000 		sts adc_value+1,__zero_reg__
+ 240 0078 1092 0000 		sts adc_value,__zero_reg__
+  84:../Modules/ADC/ADC.c **** 
+  85:../Modules/ADC/ADC.c **** 	switch (adc_state)
+ 242               	.LM23:
+ 243 007c 9091 0000 		lds r25,adc_state
+ 244 0080 9130      		cpi r25,lo8(1)
+ 245 0082 01F0      		breq .L14
+ 246 0084 00F0      		brlo .L15
+ 247 0086 9230      		cpi r25,lo8(2)
+ 248 0088 01F0      		breq .L16
+ 249               	.L13:
+  86:../Modules/ADC/ADC.c **** 	{
+  87:../Modules/ADC/ADC.c **** 	case ST_REGISTER:
+  88:../Modules/ADC/ADC.c **** 		ADMUX = 0x86;  // Internal Reference Voltage 2.56V, ADC attached to Channel 6 aka PA7
+  89:../Modules/ADC/ADC.c **** 		ADCSRB = 0x10; // Internal Reference Voltage 2.56V
+  90:../Modules/ADC/ADC.c **** 		adc_state = ST_MEASURE;
+  91:../Modules/ADC/ADC.c **** 		adc_counter = 0;
+  92:../Modules/ADC/ADC.c **** 		adc_values = 0;
+  93:../Modules/ADC/ADC.c **** 		ADC_START_CONVERSION();
+  94:../Modules/ADC/ADC.c **** 		break;
+  95:../Modules/ADC/ADC.c **** 	case ST_MEASURE:
+  96:../Modules/ADC/ADC.c **** 		if (ADC_INTERRUPT)
+  97:../Modules/ADC/ADC.c **** 		{
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccXDFY3X.s 			page 5
+
+
+  98:../Modules/ADC/ADC.c **** 			ADC_CLEAR_INT();
+  99:../Modules/ADC/ADC.c **** 			if (adc_counter == 0) // 1. messung nach umschalten verwerfen!
+ 100:../Modules/ADC/ADC.c **** 			{
+ 101:../Modules/ADC/ADC.c **** 				adc_counter++;
+ 102:../Modules/ADC/ADC.c **** 				ADC_START_CONVERSION();
+ 103:../Modules/ADC/ADC.c **** 			}
+ 104:../Modules/ADC/ADC.c **** 			else if (adc_counter < ADC_SAMPLES_V+1)
+ 105:../Modules/ADC/ADC.c **** 			{
+ 106:../Modules/ADC/ADC.c **** 				adc_values += ADC;
+ 107:../Modules/ADC/ADC.c **** 				adc_counter++;
+ 108:../Modules/ADC/ADC.c **** 				ADC_START_CONVERSION();
+ 109:../Modules/ADC/ADC.c **** 			}
+ 110:../Modules/ADC/ADC.c **** 			else
+ 111:../Modules/ADC/ADC.c **** 			{
+ 112:../Modules/ADC/ADC.c **** 				adc_state = ST_FILTER;
+ 113:../Modules/ADC/ADC.c **** 			}
+ 114:../Modules/ADC/ADC.c **** 		}
+ 115:../Modules/ADC/ADC.c **** 		break;
+ 116:../Modules/ADC/ADC.c **** 	case ST_FILTER:
+ 117:../Modules/ADC/ADC.c **** //PINA=0x80;
+ 118:../Modules/ADC/ADC.c **** 		#if ADC_FILTER_V == 1 // filters out the greatest and the smallest value measured for higher prec
+ 119:../Modules/ADC/ADC.c **** 			// shifting the greatest value to the right
+ 120:../Modules/ADC/ADC.c **** /*			for (adc_counter = 0; adc_counter <= conversions; adc_counter++)
+ 121:../Modules/ADC/ADC.c **** 			{
+ 122:../Modules/ADC/ADC.c **** 				if (adc_values[adc_counter + 1] < adc_values[adc_counter])
+ 123:../Modules/ADC/ADC.c **** 				{
+ 124:../Modules/ADC/ADC.c **** 					sort = adc_values[adc_counter + 1];
+ 125:../Modules/ADC/ADC.c **** 					adc_values[adc_counter + 1] = adc_values[adc_counter];
+ 126:../Modules/ADC/ADC.c **** 					adc_values[adc_counter] = sort;
+ 127:../Modules/ADC/ADC.c **** 				}
+ 128:../Modules/ADC/ADC.c **** 			}
+ 129:../Modules/ADC/ADC.c **** 
+ 130:../Modules/ADC/ADC.c **** 			// shifting the lowest value to the left
+ 131:../Modules/ADC/ADC.c **** 			for (adc_counter = conversions; adc_counter > 0; adc_counter--)
+ 132:../Modules/ADC/ADC.c **** 			{
+ 133:../Modules/ADC/ADC.c **** 				if (adc_values[adc_counter] < adc_values[adc_counter - 1])
+ 134:../Modules/ADC/ADC.c **** 				{
+ 135:../Modules/ADC/ADC.c **** 					sort = adc_values[adc_counter - 1];
+ 136:../Modules/ADC/ADC.c **** 					adc_values[adc_counter - 1] = adc_values[adc_counter];
+ 137:../Modules/ADC/ADC.c **** 					adc_values[adc_counter] = sort;
+ 138:../Modules/ADC/ADC.c **** 				}
+ 139:../Modules/ADC/ADC.c **** 			}
+ 140:../Modules/ADC/ADC.c **** 
+ 141:../Modules/ADC/ADC.c **** 			// Adding all measured values to variable, except the outer ones
+ 142:../Modules/ADC/ADC.c **** 			adc_value = 0; // Resetting variable
+ 143:../Modules/ADC/ADC.c **** 			for (adc_counter = 1; adc_counter < (conversions - 1); adc_counter++)
+ 144:../Modules/ADC/ADC.c **** 				adc_value += adc_values[adc_counter];
+ 145:../Modules/ADC/ADC.c **** 			adc_value /= (conversions - 2);
+ 146:../Modules/ADC/ADC.c **** */
+ 147:../Modules/ADC/ADC.c **** 		#else
+ 148:../Modules/ADC/ADC.c **** 			// Adding all measured values to variable
+ 149:../Modules/ADC/ADC.c **** //			adc_value = 0; // Resetting variable
+ 150:../Modules/ADC/ADC.c **** //			for (adc_counter = 1; adc_counter < ADC_SAMPLES_V; adc_counter++)
+ 151:../Modules/ADC/ADC.c **** //				adc_value += adc_values[adc_counter];
+ 152:../Modules/ADC/ADC.c **** 			adc_value = adc_values; //(ADC_SAMPLES_V);
+ 153:../Modules/ADC/ADC.c **** 		#endif
+ 154:../Modules/ADC/ADC.c **** 		// voltage = (float)adc_value / 400; //divided by 1024 aka 10-bit, multiplied by 2,56 aka interna
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccXDFY3X.s 			page 6
+
+
+ 155:../Modules/ADC/ADC.c **** 			adc_state = ST_REGISTER;
+ 156:../Modules/ADC/ADC.c **** 		break;
+ 157:../Modules/ADC/ADC.c **** 	}
+ 158:../Modules/ADC/ADC.c **** 	return adc_value;
+ 159:../Modules/ADC/ADC.c **** }
+ 251               	.LM24:
+ 252 008a 8091 0000 		lds r24,adc_value
+ 253 008e 9091 0000 		lds r25,adc_value+1
+ 254               	/* epilogue start */
+ 255 0092 0895      		ret
+ 256               	.L15:
+  88:../Modules/ADC/ADC.c **** 		ADCSRB = 0x10; // Internal Reference Voltage 2.56V
+ 258               	.LM25:
+ 259 0094 86E8      		ldi r24,lo8(-122)
+ 260 0096 87B9      		out 0x7,r24
+  89:../Modules/ADC/ADC.c **** 		adc_state = ST_MEASURE;
+ 262               	.LM26:
+ 263 0098 80E1      		ldi r24,lo8(16)
+ 264 009a 83B9      		out 0x3,r24
+  90:../Modules/ADC/ADC.c **** 		adc_counter = 0;
+ 266               	.LM27:
+ 267 009c 81E0      		ldi r24,lo8(1)
+ 268 009e 8093 0000 		sts adc_state,r24
+  91:../Modules/ADC/ADC.c **** 		adc_values = 0;
+ 270               	.LM28:
+ 271 00a2 1092 0000 		sts adc_counter,__zero_reg__
+  92:../Modules/ADC/ADC.c **** 		ADC_START_CONVERSION();
+ 273               	.LM29:
+ 274 00a6 1092 0000 		sts adc_values+1,__zero_reg__
+ 275 00aa 1092 0000 		sts adc_values,__zero_reg__
+ 276               	.L22:
+ 108:../Modules/ADC/ADC.c **** 			}
+ 278               	.LM30:
+ 279 00ae 369A      		sbi 0x6,6
+ 280 00b0 00C0      		rjmp .L13
+ 281               	.L14:
+  96:../Modules/ADC/ADC.c **** 		{
+ 283               	.LM31:
+ 284 00b2 349B      		sbis 0x6,4
+ 285 00b4 00C0      		rjmp .L13
+  98:../Modules/ADC/ADC.c **** 			if (adc_counter == 0) // 1. messung nach umschalten verwerfen!
+ 287               	.LM32:
+ 288 00b6 349A      		sbi 0x6,4
+  99:../Modules/ADC/ADC.c **** 			{
+ 290               	.LM33:
+ 291 00b8 8091 0000 		lds r24,adc_counter
+ 292 00bc 8111      		cpse r24,__zero_reg__
+ 293 00be 00C0      		rjmp .L17
+ 101:../Modules/ADC/ADC.c **** 				ADC_START_CONVERSION();
+ 295               	.LM34:
+ 296 00c0 9093 0000 		sts adc_counter,r25
+ 297 00c4 00C0      		rjmp .L22
+ 298               	.L17:
+ 104:../Modules/ADC/ADC.c **** 			{
+ 300               	.LM35:
+ 301 00c6 8132      		cpi r24,lo8(33)
+ 302 00c8 00F4      		brsh .L18
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccXDFY3X.s 			page 7
+
+
+ 106:../Modules/ADC/ADC.c **** 				adc_counter++;
+ 304               	.LM36:
+ 305 00ca 44B1      		in r20,0x4
+ 306 00cc 55B1      		in r21,0x4+1
+ 307 00ce 2091 0000 		lds r18,adc_values
+ 308 00d2 3091 0000 		lds r19,adc_values+1
+ 309 00d6 240F      		add r18,r20
+ 310 00d8 351F      		adc r19,r21
+ 311 00da 3093 0000 		sts adc_values+1,r19
+ 312 00de 2093 0000 		sts adc_values,r18
+ 107:../Modules/ADC/ADC.c **** 				ADC_START_CONVERSION();
+ 314               	.LM37:
+ 315 00e2 8F5F      		subi r24,lo8(-(1))
+ 316 00e4 8093 0000 		sts adc_counter,r24
+ 317 00e8 00C0      		rjmp .L22
+ 318               	.L18:
+ 112:../Modules/ADC/ADC.c **** 			}
+ 320               	.LM38:
+ 321 00ea 82E0      		ldi r24,lo8(2)
+ 322 00ec 8093 0000 		sts adc_state,r24
+ 323 00f0 00C0      		rjmp .L13
+ 324               	.L16:
+ 152:../Modules/ADC/ADC.c **** 		#endif
+ 326               	.LM39:
+ 327 00f2 8091 0000 		lds r24,adc_values
+ 328 00f6 9091 0000 		lds r25,adc_values+1
+ 329 00fa 9093 0000 		sts adc_value+1,r25
+ 330 00fe 8093 0000 		sts adc_value,r24
+ 155:../Modules/ADC/ADC.c **** 		break;
+ 332               	.LM40:
+ 333 0102 1092 0000 		sts adc_state,__zero_reg__
+ 156:../Modules/ADC/ADC.c **** 	}
+ 335               	.LM41:
+ 336 0106 00C0      		rjmp .L13
+ 338               	.Lscope3:
+ 339               		.local	adc_value
+ 340               		.comm	adc_value,2,1
+ 342               		.local	adc_counter
+ 343               		.comm	adc_counter,1,1
+ 345               		.local	adc_values
+ 346               		.comm	adc_values,2,1
+ 348               		.local	adc_state
+ 349               		.comm	adc_state,1,1
+ 352               	.Letext0:
+ 353               		.ident	"GCC: (AVR_8_bit_GNU_Toolchain_3.7.0_1796) 7.3.0"
+ 354               	.global __do_clear_bss
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccXDFY3X.s 			page 8
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 ADC.c
+C:\Users\Markus\AppData\Local\Temp\ccXDFY3X.s:2      *ABS*:000000000000003d __SP_L__
+C:\Users\Markus\AppData\Local\Temp\ccXDFY3X.s:3      *ABS*:000000000000003f __SREG__
+C:\Users\Markus\AppData\Local\Temp\ccXDFY3X.s:4      *ABS*:0000000000000000 __tmp_reg__
+C:\Users\Markus\AppData\Local\Temp\ccXDFY3X.s:5      *ABS*:0000000000000001 __zero_reg__
+C:\Users\Markus\AppData\Local\Temp\ccXDFY3X.s:109    .text:0000000000000000 ADC_init
+C:\Users\Markus\AppData\Local\Temp\ccXDFY3X.s:130    .text:0000000000000006 measure_temperature
+C:\Users\Markus\AppData\Local\Temp\ccXDFY3X.s:346    .bss:0000000000000005 adc_state
+C:\Users\Markus\AppData\Local\Temp\ccXDFY3X.s:340    .bss:0000000000000002 adc_counter
+C:\Users\Markus\AppData\Local\Temp\ccXDFY3X.s:343    .bss:0000000000000003 adc_values
+C:\Users\Markus\AppData\Local\Temp\ccXDFY3X.s:229    .text:0000000000000074 measure_voltage
+                             .bss:0000000000000000 adc_value
+
+UNDEFINED SYMBOLS
+__do_clear_bss

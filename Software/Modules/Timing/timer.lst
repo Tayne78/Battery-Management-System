@@ -1,0 +1,222 @@
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccz3AKQf.s 			page 1
+
+
+   1               		.file	"timer.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   8               		.text
+   9               	.Ltext0:
+ 108               	.global	timer_init_timer
+ 110               	timer_init_timer:
+   1:../Modules/Timing/timer.c **** //===============================================================
+   2:../Modules/Timing/timer.c **** //
+   3:../Modules/Timing/timer.c **** //   Projekt sax-extender master
+   4:../Modules/Timing/timer.c **** //
+   5:../Modules/Timing/timer.c **** //   rst, jan 2022
+   6:../Modules/Timing/timer.c **** //
+   7:../Modules/Timing/timer.c **** //   Author: Reinhard Steindl
+   8:../Modules/Timing/timer.c **** //
+   9:../Modules/Timing/timer.c **** //   Update by: Simon Ball
+  10:../Modules/Timing/timer.c **** //
+  11:../Modules/Timing/timer.c **** //================================================================
+  12:../Modules/Timing/timer.c **** 
+  13:../Modules/Timing/timer.c **** 
+  14:../Modules/Timing/timer.c **** #include <avr/io.h>
+  15:../Modules/Timing/timer.c **** #include "timer.h"
+  16:../Modules/Timing/timer.c **** #include "manch_m.h"
+  17:../Modules/Timing/timer.c **** 
+  18:../Modules/Timing/timer.c **** uint16_t timer_timer[TIMER_MAX_TIMER];
+  19:../Modules/Timing/timer.c **** uint16_t timer_tick;  // zählt die ms (genauer: 1024µs)
+  20:../Modules/Timing/timer.c **** 
+  21:../Modules/Timing/timer.c **** //==================================================================
+  22:../Modules/Timing/timer.c **** void timer_init_timer()
+  23:../Modules/Timing/timer.c **** // sartet timer 0
+  24:../Modules/Timing/timer.c **** {
+ 112               	.LM0:
+ 113               	.LFBB1:
+ 114               	/* prologue: function */
+ 115               	/* frame size = 0 */
+ 116               	/* stack size = 0 */
+ 117               	.L__stack_usage = 0
+  25:../Modules/Timing/timer.c **** #if F_CPU == 2000000L
+  26:../Modules/Timing/timer.c ****    TCCR0B |= (1<<CS02); // clk/256 => 8 takte je ms
+ 119               	.LM1:
+ 120 0000 85B5      		in r24,0x25
+ 121 0002 8460      		ori r24,lo8(4)
+ 122 0004 85BD      		out 0x25,r24
+ 123               	/* epilogue start */
+  27:../Modules/Timing/timer.c **** #elif F_CPU == 1000000L
+  28:../Modules/Timing/timer.c ****    TCCR0B |= (1<<CS02); // clk/256 => 4 takte je ms
+  29:../Modules/Timing/timer.c **** #else
+  30:../Modules/Timing/timer.c **** //noch nicht implementiert
+  31:../Modules/Timing/timer.c **** #endif // F_CPU
+  32:../Modules/Timing/timer.c **** }
+ 125               	.LM2:
+ 126 0006 0895      		ret
+ 128               	.Lscope1:
+ 130               	.global	timer_add_time
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccz3AKQf.s 			page 2
+
+
+ 132               	timer_add_time:
+  33:../Modules/Timing/timer.c **** 
+  34:../Modules/Timing/timer.c **** //====================================================================
+  35:../Modules/Timing/timer.c **** void timer_add_time(void)
+  36:../Modules/Timing/timer.c **** // liest timer aus und addiert die timer_tick
+  37:../Modules/Timing/timer.c **** {
+ 134               	.LM3:
+ 135               	.LFBB2:
+ 136               	/* prologue: function */
+ 137               	/* frame size = 0 */
+ 138               	/* stack size = 0 */
+ 139               	.L__stack_usage = 0
+  38:../Modules/Timing/timer.c ****    uint8_t t;
+  39:../Modules/Timing/timer.c ****    #ifdef __AVR_ATmega32U4__
+  40:../Modules/Timing/timer.c ****    t=TCNT0; //Atmega32u4
+ 141               	.LM4:
+ 142 0008 86B5      		in r24,0x26
+  41:../Modules/Timing/timer.c ****    #endif
+  42:../Modules/Timing/timer.c ****    #ifdef __AVR_ATtiny261A__
+  43:../Modules/Timing/timer.c ****    t=TCNT0L;
+  44:../Modules/Timing/timer.c ****    #endif //Attiny261A
+  45:../Modules/Timing/timer.c **** 
+  46:../Modules/Timing/timer.c **** #if F_CPU == 2000000L
+  47:../Modules/Timing/timer.c ****    #ifdef __AVR_ATmega32U4__
+  48:../Modules/Timing/timer.c ****    TCNT0 = t & 0x07; //stellen für die ganzen ms löschen, geht in simul nicht?
+ 144               	.LM5:
+ 145 000a 982F      		mov r25,r24
+ 146 000c 9770      		andi r25,lo8(7)
+ 147 000e 96BD      		out 0x26,r25
+  49:../Modules/Timing/timer.c ****    timer_tick += (t >> 3); // ganze ms dazuaddieren.
+ 149               	.LM6:
+ 150 0010 8695      		lsr r24
+ 151 0012 8695      		lsr r24
+ 152 0014 8695      		lsr r24
+ 153 0016 2091 0000 		lds r18,timer_tick
+ 154 001a 3091 0000 		lds r19,timer_tick+1
+ 155 001e 820F      		add r24,r18
+ 156 0020 932F      		mov r25,r19
+ 157 0022 911D      		adc r25,__zero_reg__
+ 158 0024 9093 0000 		sts timer_tick+1,r25
+ 159 0028 8093 0000 		sts timer_tick,r24
+ 160               	/* epilogue start */
+  50:../Modules/Timing/timer.c ****    #endif //Atmega32u4
+  51:../Modules/Timing/timer.c **** 
+  52:../Modules/Timing/timer.c ****    #ifdef __AVR_ATtiny261A__
+  53:../Modules/Timing/timer.c ****    TCNT0L = t & 0x07; //stellen für die ganzen ms löschen, geht in simul nicht?
+  54:../Modules/Timing/timer.c ****    timer_tick += (t >> 3); // ganze ms dazuaddieren.
+  55:../Modules/Timing/timer.c ****    #endif //Attiny261A
+  56:../Modules/Timing/timer.c **** 
+  57:../Modules/Timing/timer.c **** #elif F_CPU == 1000000L
+  58:../Modules/Timing/timer.c ****    #ifdef __AVR_ATmega32U4__
+  59:../Modules/Timing/timer.c ****    TCNT0 = t & 0x03; //stellen für die ganzen ms löschen
+  60:../Modules/Timing/timer.c ****    timer_tick += (t >> 2);
+  61:../Modules/Timing/timer.c ****    #endif //Atmega32u4
+  62:../Modules/Timing/timer.c **** 
+  63:../Modules/Timing/timer.c ****    #ifdef __AVR_ATtiny261A__
+  64:../Modules/Timing/timer.c ****    TCNT0L = t & 0x03; //stellen für die ganzen ms löschen
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccz3AKQf.s 			page 3
+
+
+  65:../Modules/Timing/timer.c ****    timer_tick += (t >> 2);
+  66:../Modules/Timing/timer.c ****    #endif //Attiny261A
+  67:../Modules/Timing/timer.c **** 
+  68:../Modules/Timing/timer.c **** #else
+  69:../Modules/Timing/timer.c ****    #error f_CPU not set or no function implemented
+  70:../Modules/Timing/timer.c **** #endif // F_CPU
+  71:../Modules/Timing/timer.c **** }
+ 162               	.LM7:
+ 163 002c 0895      		ret
+ 168               	.Lscope2:
+ 171               	.global	timer_clear_timer
+ 173               	timer_clear_timer:
+  72:../Modules/Timing/timer.c **** 
+  73:../Modules/Timing/timer.c **** //======================================================================
+  74:../Modules/Timing/timer.c **** void timer_clear_timer(uint8_t nr)
+  75:../Modules/Timing/timer.c **** // setzt den timer auf aktuellen wert
+  76:../Modules/Timing/timer.c **** {
+ 175               	.LM8:
+ 176               	.LFBB3:
+ 177               	/* prologue: function */
+ 178               	/* frame size = 0 */
+ 179               	/* stack size = 0 */
+ 180               	.L__stack_usage = 0
+  77:../Modules/Timing/timer.c ****    timer_timer[nr] = timer_tick;
+ 182               	.LM9:
+ 183 002e E82F      		mov r30,r24
+ 184 0030 F0E0      		ldi r31,0
+ 185 0032 EE0F      		lsl r30
+ 186 0034 FF1F      		rol r31
+ 187 0036 E050      		subi r30,lo8(-(timer_timer))
+ 188 0038 F040      		sbci r31,hi8(-(timer_timer))
+ 189 003a 8091 0000 		lds r24,timer_tick
+ 190 003e 9091 0000 		lds r25,timer_tick+1
+ 191 0042 9183      		std Z+1,r25
+ 192 0044 8083      		st Z,r24
+ 193               	/* epilogue start */
+  78:../Modules/Timing/timer.c **** }
+ 195               	.LM10:
+ 196 0046 0895      		ret
+ 198               	.Lscope3:
+ 201               	.global	timer_get_timer
+ 203               	timer_get_timer:
+  79:../Modules/Timing/timer.c **** 
+  80:../Modules/Timing/timer.c **** //======================================================================
+  81:../Modules/Timing/timer.c **** uint16_t timer_get_timer(uint8_t nr)
+  82:../Modules/Timing/timer.c **** // liefert die zeit des timers seit dem letzten clear in ms zurück
+  83:../Modules/Timing/timer.c **** {
+ 205               	.LM11:
+ 206               	.LFBB4:
+ 207               	/* prologue: function */
+ 208               	/* frame size = 0 */
+ 209               	/* stack size = 0 */
+ 210               	.L__stack_usage = 0
+  84:../Modules/Timing/timer.c ****    return (timer_tick - timer_timer[nr]);
+ 212               	.LM12:
+ 213 0048 E82F      		mov r30,r24
+ 214 004a F0E0      		ldi r31,0
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccz3AKQf.s 			page 4
+
+
+ 215 004c EE0F      		lsl r30
+ 216 004e FF1F      		rol r31
+ 217 0050 E050      		subi r30,lo8(-(timer_timer))
+ 218 0052 F040      		sbci r31,hi8(-(timer_timer))
+ 219 0054 8091 0000 		lds r24,timer_tick
+ 220 0058 9091 0000 		lds r25,timer_tick+1
+ 221 005c 2081      		ld r18,Z
+ 222 005e 3181      		ldd r19,Z+1
+  85:../Modules/Timing/timer.c **** }
+ 224               	.LM13:
+ 225 0060 821B      		sub r24,r18
+ 226 0062 930B      		sbc r25,r19
+ 227               	/* epilogue start */
+ 228 0064 0895      		ret
+ 230               	.Lscope4:
+ 231               		.comm	timer_tick,2,1
+ 233               		.comm	timer_timer,4,1
+ 236               	.Letext0:
+ 237               		.ident	"GCC: (AVR_8_bit_GNU_Toolchain_3.7.0_1796) 7.3.0"
+ 238               	.global __do_clear_bss
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccz3AKQf.s 			page 5
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 timer.c
+C:\Users\Markus\AppData\Local\Temp\ccz3AKQf.s:2      *ABS*:000000000000003e __SP_H__
+C:\Users\Markus\AppData\Local\Temp\ccz3AKQf.s:3      *ABS*:000000000000003d __SP_L__
+C:\Users\Markus\AppData\Local\Temp\ccz3AKQf.s:4      *ABS*:000000000000003f __SREG__
+C:\Users\Markus\AppData\Local\Temp\ccz3AKQf.s:5      *ABS*:0000000000000000 __tmp_reg__
+C:\Users\Markus\AppData\Local\Temp\ccz3AKQf.s:6      *ABS*:0000000000000001 __zero_reg__
+C:\Users\Markus\AppData\Local\Temp\ccz3AKQf.s:110    .text:0000000000000000 timer_init_timer
+C:\Users\Markus\AppData\Local\Temp\ccz3AKQf.s:132    .text:0000000000000008 timer_add_time
+                            *COM*:0000000000000002 timer_tick
+C:\Users\Markus\AppData\Local\Temp\ccz3AKQf.s:173    .text:000000000000002e timer_clear_timer
+                            *COM*:0000000000000004 timer_timer
+C:\Users\Markus\AppData\Local\Temp\ccz3AKQf.s:203    .text:0000000000000048 timer_get_timer
+
+UNDEFINED SYMBOLS
+__do_clear_bss

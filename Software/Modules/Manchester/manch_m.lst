@@ -1,0 +1,900 @@
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccewL71k.s 			page 1
+
+
+   1               		.file	"manch_m.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   8               		.text
+   9               	.Ltext0:
+ 105               	.global	manch_init_send
+ 107               	manch_init_send:
+   1:../Modules/Manchester/manch_m.c **** //===============================================================
+   2:../Modules/Manchester/manch_m.c **** //
+   3:../Modules/Manchester/manch_m.c **** //   Projekt sax-extender master
+   4:../Modules/Manchester/manch_m.c **** //
+   5:../Modules/Manchester/manch_m.c **** //   rst, jan 2022
+   6:../Modules/Manchester/manch_m.c **** //
+   7:../Modules/Manchester/manch_m.c **** //   Author: Reinhard Steindl
+   8:../Modules/Manchester/manch_m.c **** //
+   9:../Modules/Manchester/manch_m.c **** //   Update by: Simon Ball
+  10:../Modules/Manchester/manch_m.c **** //
+  11:../Modules/Manchester/manch_m.c **** //================================================================
+  12:../Modules/Manchester/manch_m.c **** 
+  13:../Modules/Manchester/manch_m.c **** #define MANCH_M
+  14:../Modules/Manchester/manch_m.c **** #include <avr/io.h>
+  15:../Modules/Manchester/manch_m.c **** #include "avr/interrupt.h"
+  16:../Modules/Manchester/manch_m.c **** //#include <util/delay.h>
+  17:../Modules/Manchester/manch_m.c **** #include <compat/deprecated.h>
+  18:../Modules/Manchester/manch_m.c **** #include "manch_m.h"
+  19:../Modules/Manchester/manch_m.c **** #include "status.h"
+  20:../Modules/Manchester/manch_m.c **** 
+  21:../Modules/Manchester/manch_m.c **** static uint8_t manch_x; // manch_x: differs betwenn long and short 
+  22:../Modules/Manchester/manch_m.c **** static uint8_t manch_nr; // welche schnittstelle empfängt?
+  23:../Modules/Manchester/manch_m.c **** 
+  24:../Modules/Manchester/manch_m.c **** //=============================================================================
+  25:../Modules/Manchester/manch_m.c **** void manch_init_send(void)
+  26:../Modules/Manchester/manch_m.c **** {
+ 109               	.LM0:
+ 110               	.LFBB1:
+ 111               	/* prologue: function */
+ 112               	/* frame size = 0 */
+ 113               	/* stack size = 0 */
+ 114               	.L__stack_usage = 0
+  27:../Modules/Manchester/manch_m.c ****    manch_res = 0;
+ 116               	.LM1:
+ 117 0000 312C      		mov r3,__zero_reg__
+  28:../Modules/Manchester/manch_m.c ****    manch_i = 0;
+ 119               	.LM2:
+ 120 0002 412C      		mov r4,__zero_reg__
+  29:../Modules/Manchester/manch_m.c ****    manch_d = (uint8_t)(gl_manch_dat >> 8) | 0x80; // msb als startbit immer 1
+ 122               	.LM3:
+ 123 0004 8091 0000 		lds r24,gl_manch_dat+1
+ 124 0008 8068      		ori r24,lo8(-128)
+ 125 000a 582E      		mov r5,r24
+  30:../Modules/Manchester/manch_m.c ****    manch_d1 = (uint8_t)(gl_manch_dat & 0x00ff);
+ 127               	.LM4:
+ 128 000c 6090 0000 		lds r6,gl_manch_dat
+  31:../Modules/Manchester/manch_m.c ****    DDRMANCH |= PN_MANCH_SEND; // pin als ausgang
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccewL71k.s 			page 2
+
+
+ 130               	.LM5:
+ 131 0010 269A      		sbi 0x4,6
+  32:../Modules/Manchester/manch_m.c ****    CLRMANCH;                  // und auf 0
+ 133               	.LM6:
+ 134 0012 2E98      		cbi 0x5,6
+  33:../Modules/Manchester/manch_m.c **** #ifdef MANCHESTER1
+  34:../Modules/Manchester/manch_m.c ****    manch1_d = (uint8_t)(gl_manch_dat1 >> 8) | 0x80; // msb als startbit immer 1
+  35:../Modules/Manchester/manch_m.c ****    manch1_d1 = (uint8_t)(gl_manch_dat1 & 0x00ff);
+  36:../Modules/Manchester/manch_m.c ****    DDRMANCH1 |= PN_MANCH1_SEND; // pin als ausgang
+  37:../Modules/Manchester/manch_m.c ****    SETMANCH1;              // und auf 1
+  38:../Modules/Manchester/manch_m.c **** #endif
+  39:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATmega32U4__
+  40:../Modules/Manchester/manch_m.c ****    TCCR1A = 0x02; // mode 14, fast pwm, top is icr1
+ 136               	.LM7:
+ 137 0014 82E0      		ldi r24,lo8(2)
+ 138 0016 8093 8000 		sts 128,r24
+  41:../Modules/Manchester/manch_m.c ****    TCCR1B = 0x18; //  - " -
+ 140               	.LM8:
+ 141 001a E1E8      		ldi r30,lo8(-127)
+ 142 001c F0E0      		ldi r31,0
+ 143 001e 88E1      		ldi r24,lo8(24)
+ 144 0020 8083      		st Z,r24
+  42:../Modules/Manchester/manch_m.c ****    OCR1B = F_CPU / BAUDRATE / CLOCK_PR / 2 +10;
+ 146               	.LM9:
+ 147 0022 8AEA      		ldi r24,lo8(-86)
+ 148 0024 91E0      		ldi r25,lo8(1)
+ 149 0026 9093 8B00 		sts 138+1,r25
+ 150 002a 8093 8A00 		sts 138,r24
+  43:../Modules/Manchester/manch_m.c ****    ICR1 = F_CPU / BAUDRATE / CLOCK_PR; // Bitdauern
+ 152               	.LM10:
+ 153 002e 81E4      		ldi r24,lo8(65)
+ 154 0030 93E0      		ldi r25,lo8(3)
+ 155 0032 9093 8700 		sts 134+1,r25
+ 156 0036 8093 8600 		sts 134,r24
+  44:../Modules/Manchester/manch_m.c ****    TIFR1 = 0xff;                // flags löschen		fx
+ 158               	.LM11:
+ 159 003a 8FEF      		ldi r24,lo8(-1)
+ 160 003c 86BB      		out 0x16,r24
+  45:../Modules/Manchester/manch_m.c ****    TIMSK1 = 0x05;               // ocr1b match und overflow interrupt;
+ 162               	.LM12:
+ 163 003e 85E0      		ldi r24,lo8(5)
+ 164 0040 8093 6F00 		sts 111,r24
+  46:../Modules/Manchester/manch_m.c **** #endif                          //__AVR_ATmega32u4
+  47:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATtiny261A__
+  48:../Modules/Manchester/manch_m.c ****    // ist default TCCR1A = 0x00; // normal mode
+  49:../Modules/Manchester/manch_m.c ****    OCR1B = F_CPU / BAUDRATE / CLOCK_PR / 2;
+  50:../Modules/Manchester/manch_m.c ****    OCR1C = F_CPU / BAUDRATE / CLOCK_PR; // Bitdauer
+  51:../Modules/Manchester/manch_m.c ****    TIFR = 0xFF;     // Flags cleared, erst nach synchronization clock cycle!!
+  52:../Modules/Manchester/manch_m.c ****    TC1H = 0;	// 10-bit register!
+  53:../Modules/Manchester/manch_m.c **** #endif
+  54:../Modules/Manchester/manch_m.c ****    TCNT1 = F_CPU / BAUDRATE / CLOCK_PR - 20; 
+ 166               	.LM13:
+ 167 0044 8DE2      		ldi r24,lo8(45)
+ 168 0046 93E0      		ldi r25,lo8(3)
+ 169 0048 9093 8500 		sts 132+1,r25
+ 170 004c 8093 8400 		sts 132,r24
+  55:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATtiny261A__
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccewL71k.s 			page 3
+
+
+  56:../Modules/Manchester/manch_m.c ****    TIMSK = 0x24;                            // ocr1b match und overflow interrupt
+  57:../Modules/Manchester/manch_m.c **** #endif
+  58:../Modules/Manchester/manch_m.c ****    TCCR1B |= TCCR1B_TIMER_START;
+ 172               	.LM14:
+ 173 0050 8081      		ld r24,Z
+ 174 0052 8160      		ori r24,lo8(1)
+ 175 0054 8083      		st Z,r24
+ 176               	/* epilogue start */
+  59:../Modules/Manchester/manch_m.c **** }
+ 178               	.LM15:
+ 179 0056 0895      		ret
+ 181               	.Lscope1:
+ 183               	.global	manch_init_rec_all
+ 185               	manch_init_rec_all:
+  60:../Modules/Manchester/manch_m.c **** 
+  61:../Modules/Manchester/manch_m.c **** //============================================================================
+  62:../Modules/Manchester/manch_m.c **** void manch_init_rec_all()
+  63:../Modules/Manchester/manch_m.c **** {
+ 187               	.LM16:
+ 188               	.LFBB2:
+ 189               	/* prologue: function */
+ 190               	/* frame size = 0 */
+ 191               	/* stack size = 0 */
+ 192               	.L__stack_usage = 0
+  64:../Modules/Manchester/manch_m.c ****    manch_i = 0;
+ 194               	.LM17:
+ 195 0058 412C      		mov r4,__zero_reg__
+  65:../Modules/Manchester/manch_m.c ****    manch_res = 0;
+ 197               	.LM18:
+ 198 005a 312C      		mov r3,__zero_reg__
+ 199               	/* epilogue start */
+  66:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATtiny261A__   
+  67:../Modules/Manchester/manch_m.c ****    // default! TCCR1A = 0x00;          // normal mode, top is ocr1c
+  68:../Modules/Manchester/manch_m.c ****    TC1H = 0;	// 10-bit register!
+  69:../Modules/Manchester/manch_m.c ****    TCNT1 = 0;
+  70:../Modules/Manchester/manch_m.c ****    OCR1A = 2 * F_CPU / BAUDRATE / CLOCK_PR; // timeout => bit zu lang
+  71:../Modules/Manchester/manch_m.c ****    OCR1C = 0xFF;				// top-wert
+  72:../Modules/Manchester/manch_m.c ****    TIFR = 0xFF; 				// flags löschen
+  73:../Modules/Manchester/manch_m.c ****    TIMSK = 0x40;           // ocr1a match interrupt;
+  74:../Modules/Manchester/manch_m.c ****    GIMSK = 0x20;    
+  75:../Modules/Manchester/manch_m.c **** #endif //__AVR_ATtiny261A__    
+  76:../Modules/Manchester/manch_m.c **** }
+ 201               	.LM19:
+ 202 005c 0895      		ret
+ 204               	.Lscope2:
+ 206               	.global	manch_init_receive
+ 208               	manch_init_receive:
+  77:../Modules/Manchester/manch_m.c **** 
+  78:../Modules/Manchester/manch_m.c **** //===========================================================================	
+  79:../Modules/Manchester/manch_m.c **** void manch_init_receive()
+  80:../Modules/Manchester/manch_m.c **** {
+ 210               	.LM20:
+ 211               	.LFBB3:
+ 212               	/* prologue: function */
+ 213               	/* frame size = 0 */
+ 214               	/* stack size = 0 */
+ 215               	.L__stack_usage = 0
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccewL71k.s 			page 4
+
+
+  81:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATmega32U4__
+  82:../Modules/Manchester/manch_m.c ****    DDRMANCH &= ~PN_MANCH_REC; // pin als Eingang
+ 217               	.LM21:
+ 218 005e 2598      		cbi 0x4,5
+  83:../Modules/Manchester/manch_m.c ****    CLRMANCH;                  // no pull-up
+ 220               	.LM22:
+ 221 0060 2E98      		cbi 0x5,6
+  84:../Modules/Manchester/manch_m.c ****    // timer OCRA für receive error, timeout, wenn keine flanke kommt
+  85:../Modules/Manchester/manch_m.c ****    TCCR1A = 0x00;                                // mode 12, fast pwm, top is icr1
+ 223               	.LM23:
+ 224 0062 1092 8000 		sts 128,__zero_reg__
+  86:../Modules/Manchester/manch_m.c ****    TCCR1B = 0x18;                                //  - " -
+ 226               	.LM24:
+ 227 0066 88E1      		ldi r24,lo8(24)
+ 228 0068 8093 8100 		sts 129,r24
+  87:../Modules/Manchester/manch_m.c ****    TCNT1 = 0;
+ 230               	.LM25:
+ 231 006c 1092 8500 		sts 132+1,__zero_reg__
+ 232 0070 1092 8400 		sts 132,__zero_reg__
+  88:../Modules/Manchester/manch_m.c ****    OCR1A = 2 * F_CPU / BAUDRATE / CLOCK_PR + 18; // timeout => bit zu lang
+ 234               	.LM26:
+ 235 0074 84E9      		ldi r24,lo8(-108)
+ 236 0076 96E0      		ldi r25,lo8(6)
+ 237 0078 9093 8900 		sts 136+1,r25
+ 238 007c 8093 8800 		sts 136,r24
+  89:../Modules/Manchester/manch_m.c ****    ICR1 = 0xffff;  // top-wert
+ 240               	.LM27:
+ 241 0080 8FEF      		ldi r24,lo8(-1)
+ 242 0082 9FEF      		ldi r25,lo8(-1)
+ 243 0084 9093 8700 		sts 134+1,r25
+ 244 0088 8093 8600 		sts 134,r24
+  90:../Modules/Manchester/manch_m.c ****    TIFR1 = 0xff;   // flags löschen
+ 246               	.LM28:
+ 247 008c 86BB      		out 0x16,r24
+  91:../Modules/Manchester/manch_m.c ****    PCIFR = 0xff;	// flags löschen
+ 249               	.LM29:
+ 250 008e 8BBB      		out 0x1b,r24
+  92:../Modules/Manchester/manch_m.c ****    TIMSK1 = 0x02;          // ocr1a match interrupt;
+ 252               	.LM30:
+ 253 0090 82E0      		ldi r24,lo8(2)
+ 254 0092 8093 6F00 		sts 111,r24
+  93:../Modules/Manchester/manch_m.c ****    PCICR = 0x01;           // flankeninterrupt
+ 256               	.LM31:
+ 257 0096 81E0      		ldi r24,lo8(1)
+ 258 0098 8093 6800 		sts 104,r24
+  94:../Modules/Manchester/manch_m.c ****    PCMSK0 = PN_MANCH_REC; // enable pcint on receive pin
+ 260               	.LM32:
+ 261 009c 80E2      		ldi r24,lo8(32)
+ 262 009e 8093 6B00 		sts 107,r24
+  95:../Modules/Manchester/manch_m.c **** #endif                     //__AVR_ATmega32u4
+  96:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATtiny261A__
+  97:../Modules/Manchester/manch_m.c ****    DDRMANCH &= ~PN_MANCH_REC; // pin als Eingang
+  98:../Modules/Manchester/manch_m.c ****    CLRMANCH;                  // no pull-up
+  99:../Modules/Manchester/manch_m.c ****    PCMSK1 = PN_MANCH_REC; // enable pcint on receive pin
+ 100:../Modules/Manchester/manch_m.c ****    PCMSK0 = 0;		// defaultmäßig nicht auf 0!!
+ 101:../Modules/Manchester/manch_m.c ****    manch_nr = 0; 
+ 102:../Modules/Manchester/manch_m.c **** #endif                     //__AVR_ATtiny261A__
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccewL71k.s 			page 5
+
+
+ 103:../Modules/Manchester/manch_m.c **** 	manch_init_rec_all();
+ 264               	.LM33:
+ 265 00a2 0C94 0000 		jmp manch_init_rec_all
+ 267               	.Lscope3:
+ 269               	.global	manch_result
+ 271               	manch_result:
+ 104:../Modules/Manchester/manch_m.c **** }
+ 105:../Modules/Manchester/manch_m.c **** 
+ 106:../Modules/Manchester/manch_m.c **** 
+ 107:../Modules/Manchester/manch_m.c **** //====================================================================
+ 108:../Modules/Manchester/manch_m.c **** uint8_t manch_result()
+ 109:../Modules/Manchester/manch_m.c **** {
+ 273               	.LM34:
+ 274               	.LFBB4:
+ 275               	/* prologue: function */
+ 276               	/* frame size = 0 */
+ 277               	/* stack size = 0 */
+ 278               	.L__stack_usage = 0
+ 110:../Modules/Manchester/manch_m.c **** 	return manch_res;
+ 111:../Modules/Manchester/manch_m.c **** }
+ 280               	.LM35:
+ 281 00a6 832D      		mov r24,r3
+ 282               	/* epilogue start */
+ 283 00a8 0895      		ret
+ 285               	.Lscope4:
+ 287               	.global	manch_stop_receive
+ 289               	manch_stop_receive:
+ 112:../Modules/Manchester/manch_m.c **** 
+ 113:../Modules/Manchester/manch_m.c **** //====================================================================
+ 114:../Modules/Manchester/manch_m.c **** manch_stop_receive()
+ 115:../Modules/Manchester/manch_m.c **** {
+ 291               	.LM36:
+ 292               	.LFBB5:
+ 293               	/* prologue: function */
+ 294               	/* frame size = 0 */
+ 295               	/* stack size = 0 */
+ 296               	.L__stack_usage = 0
+ 116:../Modules/Manchester/manch_m.c ****                TCCR1B =0; // timer stoppen
+ 298               	.LM37:
+ 299 00aa 1092 8100 		sts 129,__zero_reg__
+ 117:../Modules/Manchester/manch_m.c **** 
+ 118:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATmega32U4__
+ 119:../Modules/Manchester/manch_m.c ****                TIMSK1 = 0x00; // overflow interrupt stoppen
+ 301               	.LM38:
+ 302 00ae 1092 6F00 		sts 111,__zero_reg__
+ 120:../Modules/Manchester/manch_m.c ****                PCICR = 0x00;  // flankeninterrupt stoppen
+ 304               	.LM39:
+ 305 00b2 1092 6800 		sts 104,__zero_reg__
+ 121:../Modules/Manchester/manch_m.c **** #endif                        //__AVR_ATmega32u4
+ 122:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATtiny261A__
+ 123:../Modules/Manchester/manch_m.c ****                TIMSK = 0x00;            // overflow interrupt stoppen
+ 124:../Modules/Manchester/manch_m.c ****                GIMSK = 0;  // flankeninterrupt stoppen
+ 125:../Modules/Manchester/manch_m.c ****                PCMSK1 = 0; // enable pcint on receive pin
+ 126:../Modules/Manchester/manch_m.c ****                PCMSK0 = 0; // - " -
+ 127:../Modules/Manchester/manch_m.c **** #endif                                  //__AVR_ATtiny261A__
+ 128:../Modules/Manchester/manch_m.c **** 	gl_manch_dat = (manch_d<<8) + manch_d1;
+ 307               	.LM40:
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccewL71k.s 			page 6
+
+
+ 308 00b6 852D      		mov r24,r5
+ 309 00b8 90E0      		ldi r25,0
+ 310 00ba 982F      		mov r25,r24
+ 311 00bc 8827      		clr r24
+ 312 00be 860D      		add r24,r6
+ 313 00c0 911D      		adc r25,__zero_reg__
+ 314 00c2 9093 0000 		sts gl_manch_dat+1,r25
+ 315 00c6 8093 0000 		sts gl_manch_dat,r24
+ 316               	/* epilogue start */
+ 129:../Modules/Manchester/manch_m.c **** }
+ 318               	.LM41:
+ 319 00ca 0895      		ret
+ 321               	.Lscope5:
+ 323               	.global	__vector_9
+ 325               	__vector_9:
+ 130:../Modules/Manchester/manch_m.c **** 
+ 131:../Modules/Manchester/manch_m.c **** //======================================================================
+ 132:../Modules/Manchester/manch_m.c **** // fürs empfangen, rst: ISR_NAKED!
+ 133:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATmega32U4__
+ 134:../Modules/Manchester/manch_m.c **** ISR(PCINT0_vect)
+ 135:../Modules/Manchester/manch_m.c **** {
+ 327               	.LM42:
+ 328               	.LFBB6:
+ 329 00cc 1F92      		push r1
+ 330 00ce 0F92      		push r0
+ 331 00d0 0FB6      		in r0,__SREG__
+ 332 00d2 0F92      		push r0
+ 333 00d4 1124      		clr __zero_reg__
+ 334 00d6 2F93      		push r18
+ 335 00d8 3F93      		push r19
+ 336 00da 4F93      		push r20
+ 337 00dc 5F93      		push r21
+ 338 00de 6F93      		push r22
+ 339 00e0 7F93      		push r23
+ 340 00e2 8F93      		push r24
+ 341 00e4 9F93      		push r25
+ 342 00e6 AF93      		push r26
+ 343 00e8 BF93      		push r27
+ 344 00ea EF93      		push r30
+ 345 00ec FF93      		push r31
+ 346               	/* prologue: Signal */
+ 347               	/* frame size = 0 */
+ 348               	/* stack size = 15 */
+ 349               	.L__stack_usage = 15
+ 136:../Modules/Manchester/manch_m.c ****    uint16_t tim;
+ 137:../Modules/Manchester/manch_m.c **** #endif //__AVR_ATmega32u4
+ 138:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATtiny261A__
+ 139:../Modules/Manchester/manch_m.c **** ISR(PCINT_vect, ISR_NAKED)
+ 140:../Modules/Manchester/manch_m.c **** {
+ 141:../Modules/Manchester/manch_m.c **** asm volatile (	"push r24" "\n\t"
+ 142:../Modules/Manchester/manch_m.c **** 					"in r24,__SREG__" "\n\t"
+ 143:../Modules/Manchester/manch_m.c **** 					"push r24" "\n\t"
+ 144:../Modules/Manchester/manch_m.c **** 					"push r18" "\n\t"
+ 145:../Modules/Manchester/manch_m.c **** 					"push r25" "\n\t");
+ 146:../Modules/Manchester/manch_m.c **** 	uint8_t tim;
+ 147:../Modules/Manchester/manch_m.c **** #endif //__AVR_ATtiny261A__
+ 148:../Modules/Manchester/manch_m.c **** 
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccewL71k.s 			page 7
+
+
+ 149:../Modules/Manchester/manch_m.c **** // timer einlesen und neu starten, für zeitmessung
+ 150:../Modules/Manchester/manch_m.c **** 	tim = TCNT1;
+ 351               	.LM43:
+ 352 00ee 8091 8400 		lds r24,132
+ 353 00f2 9091 8500 		lds r25,132+1
+ 151:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATtiny261A__
+ 152:../Modules/Manchester/manch_m.c **** 	TC1H = 0;	// 10-bit register!
+ 153:../Modules/Manchester/manch_m.c **** #endif
+ 154:../Modules/Manchester/manch_m.c **** 	TCNT1 = 0; // reset timer
+ 355               	.LM44:
+ 356 00f6 1092 8500 		sts 132+1,__zero_reg__
+ 357 00fa 1092 8400 		sts 132,__zero_reg__
+ 155:../Modules/Manchester/manch_m.c **** 
+ 156:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATtiny261A__
+ 157:../Modules/Manchester/manch_m.c **** // eingangspin einlesen
+ 158:../Modules/Manchester/manch_m.c **** 	if ( (manch_nr&0x01) == 0)
+ 159:../Modules/Manchester/manch_m.c **** 	{
+ 160:../Modules/Manchester/manch_m.c **** 		if ((PINMANCH&PN_MANCH_REC) == PN_MANCH_REC)
+ 161:../Modules/Manchester/manch_m.c **** 			manch_bit = manch_bit|0x01; // comp.optimierung
+ 162:../Modules/Manchester/manch_m.c **** 		else	
+ 163:../Modules/Manchester/manch_m.c **** 		{
+ 164:../Modules/Manchester/manch_m.c **** 			manch_bit = 0;
+ 165:../Modules/Manchester/manch_m.c **** //PINA=0x80;		//fx
+ 166:../Modules/Manchester/manch_m.c **** 		}
+ 167:../Modules/Manchester/manch_m.c **** 	}
+ 168:../Modules/Manchester/manch_m.c ****   #ifdef MANCHESTER1
+ 169:../Modules/Manchester/manch_m.c **** 	else // schnittstelle von oben invertiert!
+ 170:../Modules/Manchester/manch_m.c **** 	{
+ 171:../Modules/Manchester/manch_m.c **** 		if ((PINMANCH1&PN_MANCH1_REC) == PN_MANCH1_REC)
+ 172:../Modules/Manchester/manch_m.c **** 			manch_bit = 0; // comp.optimierung
+ 173:../Modules/Manchester/manch_m.c **** 		else	
+ 174:../Modules/Manchester/manch_m.c **** 			manch_bit = manch_bit|0x01; // comp.optimierung
+ 175:../Modules/Manchester/manch_m.c **** 	}
+ 176:../Modules/Manchester/manch_m.c ****   #endif //MANCHESTER1
+ 177:../Modules/Manchester/manch_m.c **** //PINA=0x80;		//fx
+ 178:../Modules/Manchester/manch_m.c **** #endif //__AVR_ATtiny261A__
+ 179:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATmega32U4__
+ 180:../Modules/Manchester/manch_m.c **** //	if ((PINMANCH&PN_MANCH_REC) == PN_MANCH_REC)
+ 181:../Modules/Manchester/manch_m.c **** //		manch_bit = manch_bit|0x01; // comp.optimierung
+ 182:../Modules/Manchester/manch_m.c **** //	else	
+ 183:../Modules/Manchester/manch_m.c **** //		manch_bit = 0;
+ 184:../Modules/Manchester/manch_m.c **** //PINB|=(1<<PINB3);
+ 185:../Modules/Manchester/manch_m.c **** #endif 
+ 186:../Modules/Manchester/manch_m.c **** 
+ 187:../Modules/Manchester/manch_m.c ****    if (manch_i == 0) // anfang
+ 359               	.LM45:
+ 360 00fe 4110      		cpse r4,__zero_reg__
+ 361 0100 00C0      		rjmp .L7
+ 188:../Modules/Manchester/manch_m.c ****    {
+ 189:../Modules/Manchester/manch_m.c **** //   	stat_led_green();
+ 190:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATmega32U4__
+ 191:../Modules/Manchester/manch_m.c ****       if (READMANCH == 0) // 1 als startbit, neg. logik! fx
+ 363               	.LM46:
+ 364 0102 1D99      		sbic 0x3,5
+ 365 0104 00C0      		rjmp .L6
+ 192:../Modules/Manchester/manch_m.c **** #endif //__AVR_ATmega32u4
+ 193:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATtiny261A__
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccewL71k.s 			page 8
+
+
+ 194:../Modules/Manchester/manch_m.c ****       if (manch_bit&0x01 == 1) // 1 als startbit, neg. logik! compiler-optimiert
+ 195:../Modules/Manchester/manch_m.c **** #endif 
+ 196:../Modules/Manchester/manch_m.c ****       {
+ 197:../Modules/Manchester/manch_m.c **** //			PORTD^=(1<<PIND3);		//fx
+ 198:../Modules/Manchester/manch_m.c ****          TCCR1B |= TCCR1B_TIMER_START; // timer starten
+ 367               	.LM47:
+ 368 0106 8091 8100 		lds r24,129
+ 369 010a 8160      		ori r24,lo8(1)
+ 370 010c 8093 8100 		sts 129,r24
+ 199:../Modules/Manchester/manch_m.c ****          manch_x = 'k';
+ 372               	.LM48:
+ 373 0110 8BE6      		ldi r24,lo8(107)
+ 374 0112 8093 0000 		sts manch_x,r24
+ 200:../Modules/Manchester/manch_m.c ****          manch_i++;
+ 376               	.LM49:
+ 377 0116 4394      		inc r4
+ 378               	.L6:
+ 379               	/* epilogue start */
+ 201:../Modules/Manchester/manch_m.c ****       }
+ 202:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATtiny261A__
+ 203:../Modules/Manchester/manch_m.c **** //PINA=0x80;
+ 204:../Modules/Manchester/manch_m.c **** #endif
+ 205:../Modules/Manchester/manch_m.c ****    }
+ 206:../Modules/Manchester/manch_m.c ****    else
+ 207:../Modules/Manchester/manch_m.c ****    {
+ 208:../Modules/Manchester/manch_m.c **** //flanke nach halben bit:
+ 209:../Modules/Manchester/manch_m.c ****       if ((F_CPU / BAUDRATE / CLOCK_PR ) / 3 < tim && tim < (F_CPU / BAUDRATE / CLOCK_PR * 2) / 3) 
+ 210:../Modules/Manchester/manch_m.c ****       {
+ 211:../Modules/Manchester/manch_m.c **** //PINB|=0x08;
+ 212:../Modules/Manchester/manch_m.c ****          if (manch_x == 'l') // weiter
+ 213:../Modules/Manchester/manch_m.c ****             manch_x = 'k';
+ 214:../Modules/Manchester/manch_m.c ****          else // bit einlesen!
+ 215:../Modules/Manchester/manch_m.c ****          {
+ 216:../Modules/Manchester/manch_m.c ****             manch_d1 = manch_d1 << 1;
+ 217:../Modules/Manchester/manch_m.c ****             manch_x = 'l';      // nächstes mal einlesen nach ganzem bit
+ 218:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATmega32U4__
+ 219:../Modules/Manchester/manch_m.c ****             if (READMANCH == 0) // vergleich mit 1 geht nicht!!!
+ 220:../Modules/Manchester/manch_m.c **** #endif //__AVR_ATmega32u4
+ 221:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATtiny261A__
+ 222:../Modules/Manchester/manch_m.c ****             if (manch_bit&0x01 == 1) //comp. optimierung, vgl mit 0 geht nicht!!!
+ 223:../Modules/Manchester/manch_m.c **** #endif
+ 224:../Modules/Manchester/manch_m.c ****             {
+ 225:../Modules/Manchester/manch_m.c ****             	manch_d1 &= 0xFE;
+ 226:../Modules/Manchester/manch_m.c **** //PINB|=0x8;
+ 227:../Modules/Manchester/manch_m.c ****             }
+ 228:../Modules/Manchester/manch_m.c ****             else
+ 229:../Modules/Manchester/manch_m.c ****             {
+ 230:../Modules/Manchester/manch_m.c ****             	manch_d1 |= 0x01;
+ 231:../Modules/Manchester/manch_m.c **** //PINB|=0x8;//PINA=0x80;		//fx
+ 232:../Modules/Manchester/manch_m.c ****             }
+ 233:../Modules/Manchester/manch_m.c ****             manch_i++;
+ 234:../Modules/Manchester/manch_m.c ****             if (manch_i == 9) // 1. byte fertig
+ 235:../Modules/Manchester/manch_m.c ****             {
+ 236:../Modules/Manchester/manch_m.c ****                manch_d = manch_d1;
+ 237:../Modules/Manchester/manch_m.c ****             }
+ 238:../Modules/Manchester/manch_m.c ****             else if (manch_i == 17) // fertig, empfang stoppen
+ 239:../Modules/Manchester/manch_m.c ****             {
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccewL71k.s 			page 9
+
+
+ 240:../Modules/Manchester/manch_m.c ****             	manch_stop_receive();
+ 241:../Modules/Manchester/manch_m.c ****                manch_res = 1;
+ 242:../Modules/Manchester/manch_m.c ****             }
+ 243:../Modules/Manchester/manch_m.c ****          }
+ 244:../Modules/Manchester/manch_m.c ****       }
+ 245:../Modules/Manchester/manch_m.c **** // flanke nach ganzem bit
+ 246:../Modules/Manchester/manch_m.c ****       else if ((F_CPU / BAUDRATE / CLOCK_PR * 2) / 3 < tim && tim < (F_CPU / BAUDRATE / CLOCK_PR * 
+ 247:../Modules/Manchester/manch_m.c ****       {
+ 248:../Modules/Manchester/manch_m.c **** //PINB|=0x8;
+ 249:../Modules/Manchester/manch_m.c ****          if (manch_x == 'l') // bit einlesen
+ 250:../Modules/Manchester/manch_m.c ****          {
+ 251:../Modules/Manchester/manch_m.c ****             manch_d1 = manch_d1 << 1;
+ 252:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATmega32U4__
+ 253:../Modules/Manchester/manch_m.c ****             if (READMANCH == 0)
+ 254:../Modules/Manchester/manch_m.c **** #endif //__AVR_ATmega32u4
+ 255:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATtiny261A__
+ 256:../Modules/Manchester/manch_m.c ****             if (manch_bit&0x01 == 1) //comp. optimierung
+ 257:../Modules/Manchester/manch_m.c **** #endif
+ 258:../Modules/Manchester/manch_m.c ****             {
+ 259:../Modules/Manchester/manch_m.c ****             	manch_d1 &= 0xFE;
+ 260:../Modules/Manchester/manch_m.c **** //PINB|=0x8;
+ 261:../Modules/Manchester/manch_m.c ****             }
+ 262:../Modules/Manchester/manch_m.c ****             else
+ 263:../Modules/Manchester/manch_m.c ****             {
+ 264:../Modules/Manchester/manch_m.c ****             	manch_d1 |= 0x01;
+ 265:../Modules/Manchester/manch_m.c **** //PINB|=0x8;//PINA=0x80;		//fx
+ 266:../Modules/Manchester/manch_m.c ****             }
+ 267:../Modules/Manchester/manch_m.c ****             manch_i++;
+ 268:../Modules/Manchester/manch_m.c ****             if (manch_i == 9) // 1. byte fertig
+ 269:../Modules/Manchester/manch_m.c ****             {
+ 270:../Modules/Manchester/manch_m.c ****                manch_d = manch_d1;
+ 271:../Modules/Manchester/manch_m.c ****             }
+ 272:../Modules/Manchester/manch_m.c ****             else if (manch_i == 17) // fertig, empfang stoppen
+ 273:../Modules/Manchester/manch_m.c ****             {
+ 274:../Modules/Manchester/manch_m.c **** 					manch_stop_receive();
+ 275:../Modules/Manchester/manch_m.c ****                manch_res = 1;
+ 276:../Modules/Manchester/manch_m.c ****             }
+ 277:../Modules/Manchester/manch_m.c ****          }
+ 278:../Modules/Manchester/manch_m.c ****          else // es hätte nur ein kurzer sein sollen! neu beginnen
+ 279:../Modules/Manchester/manch_m.c ****          {
+ 280:../Modules/Manchester/manch_m.c ****          	manch_stop_receive();
+ 281:../Modules/Manchester/manch_m.c ****             manch_res = 2;
+ 282:../Modules/Manchester/manch_m.c ****          }
+ 283:../Modules/Manchester/manch_m.c ****       }
+ 284:../Modules/Manchester/manch_m.c ****       else // fehler, flanke nicht zum richtigen zeitpunkt! neu beginnen
+ 285:../Modules/Manchester/manch_m.c ****       {
+ 286:../Modules/Manchester/manch_m.c ****       	manch_stop_receive();
+ 287:../Modules/Manchester/manch_m.c **** 			manch_res = 3;
+ 288:../Modules/Manchester/manch_m.c ****       }
+ 289:../Modules/Manchester/manch_m.c ****    }
+ 290:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATtiny261A__
+ 291:../Modules/Manchester/manch_m.c **** asm volatile (	"pop r25" "\n\t"
+ 292:../Modules/Manchester/manch_m.c **** 					"pop r18" "\n\t"
+ 293:../Modules/Manchester/manch_m.c **** 					"pop r24" "\n\t"
+ 294:../Modules/Manchester/manch_m.c **** 					"out __SREG__, r24" "\n\t"
+ 295:../Modules/Manchester/manch_m.c **** 					"pop r24" "\n\t"
+ 296:../Modules/Manchester/manch_m.c **** 					"reti");
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccewL71k.s 			page 10
+
+
+ 297:../Modules/Manchester/manch_m.c **** #endif
+ 298:../Modules/Manchester/manch_m.c **** }
+ 381               	.LM50:
+ 382 0118 FF91      		pop r31
+ 383 011a EF91      		pop r30
+ 384 011c BF91      		pop r27
+ 385 011e AF91      		pop r26
+ 386 0120 9F91      		pop r25
+ 387 0122 8F91      		pop r24
+ 388 0124 7F91      		pop r23
+ 389 0126 6F91      		pop r22
+ 390 0128 5F91      		pop r21
+ 391 012a 4F91      		pop r20
+ 392 012c 3F91      		pop r19
+ 393 012e 2F91      		pop r18
+ 394 0130 0F90      		pop r0
+ 395 0132 0FBE      		out __SREG__,r0
+ 396 0134 0F90      		pop r0
+ 397 0136 1F90      		pop r1
+ 398 0138 1895      		reti
+ 399               	.L7:
+ 209:../Modules/Manchester/manch_m.c ****       {
+ 401               	.LM51:
+ 402 013a 9C01      		movw r18,r24
+ 403 013c 2651      		subi r18,22
+ 404 013e 3140      		sbci r19,1
+ 405 0140 2531      		cpi r18,21
+ 406 0142 3140      		sbci r19,1
+ 407 0144 00F4      		brsh .L10
+ 212:../Modules/Manchester/manch_m.c ****             manch_x = 'k';
+ 409               	.LM52:
+ 410 0146 8091 0000 		lds r24,manch_x
+ 411 014a 8C36      		cpi r24,lo8(108)
+ 412 014c 01F4      		brne .L11
+ 213:../Modules/Manchester/manch_m.c ****          else // bit einlesen!
+ 414               	.LM53:
+ 415 014e 8BE6      		ldi r24,lo8(107)
+ 416 0150 8093 0000 		sts manch_x,r24
+ 417 0154 00C0      		rjmp .L6
+ 418               	.L11:
+ 216:../Modules/Manchester/manch_m.c ****             manch_x = 'l';      // nächstes mal einlesen nach ganzem bit
+ 420               	.LM54:
+ 421 0156 862D      		mov r24,r6
+ 422 0158 880F      		lsl r24
+ 423 015a 682E      		mov r6,r24
+ 217:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATmega32U4__
+ 425               	.LM55:
+ 426 015c 9CE6      		ldi r25,lo8(108)
+ 427 015e 9093 0000 		sts manch_x,r25
+ 428               	.L26:
+ 253:../Modules/Manchester/manch_m.c **** #endif //__AVR_ATmega32u4
+ 430               	.LM56:
+ 431 0162 1D9B      		sbis 0x3,5
+ 432 0164 00C0      		rjmp .L19
+ 264:../Modules/Manchester/manch_m.c **** //PINB|=0x8;//PINA=0x80;		//fx
+ 434               	.LM57:
+ 435 0166 8160      		ori r24,lo8(1)
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccewL71k.s 			page 11
+
+
+ 436 0168 682E      		mov r6,r24
+ 437               	.L19:
+ 267:../Modules/Manchester/manch_m.c ****             if (manch_i == 9) // 1. byte fertig
+ 439               	.LM58:
+ 440 016a 81E0      		ldi r24,lo8(1)
+ 441 016c 840D      		add r24,r4
+ 442 016e 482E      		mov r4,r24
+ 268:../Modules/Manchester/manch_m.c ****             {
+ 444               	.LM59:
+ 445 0170 8930      		cpi r24,lo8(9)
+ 446 0172 01F4      		brne .L20
+ 270:../Modules/Manchester/manch_m.c ****             }
+ 448               	.LM60:
+ 449 0174 562C      		mov r5,r6
+ 450 0176 00C0      		rjmp .L6
+ 451               	.L10:
+ 246:../Modules/Manchester/manch_m.c ****       {
+ 453               	.LM61:
+ 454 0178 8C52      		subi r24,44
+ 455 017a 9240      		sbci r25,2
+ 456 017c 8A32      		cpi r24,42
+ 457 017e 9240      		sbci r25,2
+ 458 0180 00F4      		brsh .L16
+ 249:../Modules/Manchester/manch_m.c ****          {
+ 460               	.LM62:
+ 461 0182 8091 0000 		lds r24,manch_x
+ 462 0186 8C36      		cpi r24,lo8(108)
+ 463 0188 01F4      		brne .L17
+ 251:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATmega32U4__
+ 465               	.LM63:
+ 466 018a 862D      		mov r24,r6
+ 467 018c 880F      		lsl r24
+ 468 018e 682E      		mov r6,r24
+ 469 0190 00C0      		rjmp .L26
+ 470               	.L20:
+ 272:../Modules/Manchester/manch_m.c ****             {
+ 472               	.LM64:
+ 473 0192 8131      		cpi r24,lo8(17)
+ 474 0194 01F4      		brne .L6
+ 274:../Modules/Manchester/manch_m.c ****                manch_res = 1;
+ 476               	.LM65:
+ 477 0196 0E94 0000 		call manch_stop_receive
+ 275:../Modules/Manchester/manch_m.c ****             }
+ 479               	.LM66:
+ 480 019a 3324      		clr r3
+ 481 019c 3394      		inc r3
+ 482 019e 00C0      		rjmp .L6
+ 483               	.L17:
+ 280:../Modules/Manchester/manch_m.c ****             manch_res = 2;
+ 485               	.LM67:
+ 486 01a0 0E94 0000 		call manch_stop_receive
+ 281:../Modules/Manchester/manch_m.c ****          }
+ 488               	.LM68:
+ 489 01a4 92E0      		ldi r25,lo8(2)
+ 490 01a6 392E      		mov r3,r25
+ 491 01a8 00C0      		rjmp .L6
+ 492               	.L16:
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccewL71k.s 			page 12
+
+
+ 286:../Modules/Manchester/manch_m.c **** 			manch_res = 3;
+ 494               	.LM69:
+ 495 01aa 0E94 0000 		call manch_stop_receive
+ 287:../Modules/Manchester/manch_m.c ****       }
+ 497               	.LM70:
+ 498 01ae 83E0      		ldi r24,lo8(3)
+ 499 01b0 382E      		mov r3,r24
+ 501               	.LM71:
+ 502 01b2 00C0      		rjmp .L6
+ 507               	.Lscope6:
+ 509               	.global	__vector_17
+ 511               	__vector_17:
+ 299:../Modules/Manchester/manch_m.c **** 
+ 300:../Modules/Manchester/manch_m.c **** //==========================================================================
+ 301:../Modules/Manchester/manch_m.c **** ISR(TIMER1_COMPA_vect, ISR_NAKED) // timeout, eine erwartete flanke ist nicht gekommen
+ 302:../Modules/Manchester/manch_m.c **** // gilt für beide empfänger!!
+ 303:../Modules/Manchester/manch_m.c **** {
+ 513               	.LM72:
+ 514               	.LFBB7:
+ 515               	/* prologue: naked */
+ 516               	/* frame size = 0 */
+ 517               	/* stack size = 0 */
+ 518               	.L__stack_usage = 0
+ 304:../Modules/Manchester/manch_m.c **** //PORTA ^=0x04;
+ 305:../Modules/Manchester/manch_m.c **** 	asm volatile ("push r24" "\n\t");
+ 520               	.LM73:
+ 521               	/* #APP */
+ 522               	 ;  305 "../Modules/Manchester/manch_m.c" 1
+ 523 01b4 8F93      		push r24
+ 524               		
+ 525               	 ;  0 "" 2
+ 306:../Modules/Manchester/manch_m.c **** 	manch_stop_receive();
+ 527               	.LM74:
+ 528               	/* #NOAPP */
+ 529 01b6 0E94 0000 		call manch_stop_receive
+ 307:../Modules/Manchester/manch_m.c **** //	manch_res = 4;
+ 308:../Modules/Manchester/manch_m.c **** 	asm volatile ("ldi r24,lo8(4)" "\n\t"
+ 531               	.LM75:
+ 532               	/* #APP */
+ 533               	 ;  308 "../Modules/Manchester/manch_m.c" 1
+ 534 01ba 84E0      		ldi r24,lo8(4)
+ 535 01bc 382E      		mov r3,r24
+ 536 01be 8F91      		pop r24
+ 537 01c0 1895      		reti
+ 538               	 ;  0 "" 2
+ 539               	/* epilogue start */
+ 309:../Modules/Manchester/manch_m.c ****  					"mov r3,r24"  "\n\t"
+ 310:../Modules/Manchester/manch_m.c **** 					"pop r24" "\n\t"	
+ 311:../Modules/Manchester/manch_m.c **** 						"reti");
+ 312:../Modules/Manchester/manch_m.c **** }
+ 541               	.LM76:
+ 542               	/* #NOAPP */
+ 544               	.Lscope7:
+ 546               	.global	__vector_20
+ 548               	__vector_20:
+ 313:../Modules/Manchester/manch_m.c **** 
+ 314:../Modules/Manchester/manch_m.c **** //===========================================================================
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccewL71k.s 			page 13
+
+
+ 315:../Modules/Manchester/manch_m.c **** // fürs senden
+ 316:../Modules/Manchester/manch_m.c **** ISR(TIMER1_OVF_vect)
+ 317:../Modules/Manchester/manch_m.c **** {
+ 550               	.LM77:
+ 551               	.LFBB8:
+ 552 01c2 1F92      		push r1
+ 553 01c4 0F92      		push r0
+ 554 01c6 0FB6      		in r0,__SREG__
+ 555 01c8 0F92      		push r0
+ 556 01ca 1124      		clr __zero_reg__
+ 557 01cc 8F93      		push r24
+ 558               	/* prologue: Signal */
+ 559               	/* frame size = 0 */
+ 560               	/* stack size = 4 */
+ 561               	.L__stack_usage = 4
+ 318:../Modules/Manchester/manch_m.c **** //stat_led_green();
+ 319:../Modules/Manchester/manch_m.c ****    if (manch_i == 16) // ende
+ 563               	.LM78:
+ 564 01ce 842D      		mov r24,r4
+ 565 01d0 8031      		cpi r24,lo8(16)
+ 566 01d2 01F4      		brne .L29
+ 320:../Modules/Manchester/manch_m.c ****    {
+ 321:../Modules/Manchester/manch_m.c ****       CLRMANCH;
+ 568               	.LM79:
+ 569 01d4 2E98      		cbi 0x5,6
+ 322:../Modules/Manchester/manch_m.c **** #ifdef MANCHESTER1
+ 323:../Modules/Manchester/manch_m.c ****       SETMANCH1;
+ 324:../Modules/Manchester/manch_m.c **** #endif // MANCHESTER1
+ 325:../Modules/Manchester/manch_m.c **** 	   TCCR1B = 0; // timer stoppen
+ 571               	.LM80:
+ 572 01d6 1092 8100 		sts 129,__zero_reg__
+ 326:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATmega32U4__
+ 327:../Modules/Manchester/manch_m.c **** 	   TIMSK1 = 0x00; // overflow interrupt stoppen
+ 574               	.LM81:
+ 575 01da 1092 6F00 		sts 111,__zero_reg__
+ 328:../Modules/Manchester/manch_m.c **** #endif
+ 329:../Modules/Manchester/manch_m.c **** #ifdef __AVR_ATtiny261A__
+ 330:../Modules/Manchester/manch_m.c **** 		TIMSK = 0x00; // overflow interrupt stoppen
+ 331:../Modules/Manchester/manch_m.c **** #endif
+ 332:../Modules/Manchester/manch_m.c **** 	   manch_res = 1;
+ 577               	.LM82:
+ 578 01de 3324      		clr r3
+ 579 01e0 3394      		inc r3
+ 580               	.L28:
+ 581               	/* epilogue start */
+ 333:../Modules/Manchester/manch_m.c ****    }
+ 334:../Modules/Manchester/manch_m.c ****    else
+ 335:../Modules/Manchester/manch_m.c ****    {
+ 336:../Modules/Manchester/manch_m.c ****       if (manch_i == 8) // 2. byte
+ 337:../Modules/Manchester/manch_m.c ****       {
+ 338:../Modules/Manchester/manch_m.c ****          manch_d = manch_d1;
+ 339:../Modules/Manchester/manch_m.c **** #ifdef MANCHESTER1
+ 340:../Modules/Manchester/manch_m.c ****          manch1_d = manch1_d1;
+ 341:../Modules/Manchester/manch_m.c **** #endif // MANCHESTER1
+ 342:../Modules/Manchester/manch_m.c ****       }
+ 343:../Modules/Manchester/manch_m.c ****       if (manch_d & 0x80)
+ 344:../Modules/Manchester/manch_m.c ****          SETMANCH;
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccewL71k.s 			page 14
+
+
+ 345:../Modules/Manchester/manch_m.c ****       else
+ 346:../Modules/Manchester/manch_m.c ****          CLRMANCH;
+ 347:../Modules/Manchester/manch_m.c ****        manch_d = manch_d << 1;
+ 348:../Modules/Manchester/manch_m.c **** #ifdef MANCHESTER1
+ 349:../Modules/Manchester/manch_m.c ****       if (manch1_d & 0x80)
+ 350:../Modules/Manchester/manch_m.c ****          CLRMANCH1;
+ 351:../Modules/Manchester/manch_m.c ****       else
+ 352:../Modules/Manchester/manch_m.c ****          SETMANCH1;
+ 353:../Modules/Manchester/manch_m.c ****       manch1_d = manch1_d << 1;
+ 354:../Modules/Manchester/manch_m.c **** #endif // MANCHESTER1
+ 355:../Modules/Manchester/manch_m.c ****       manch_i++;
+ 356:../Modules/Manchester/manch_m.c ****    }
+ 357:../Modules/Manchester/manch_m.c **** //stat_led_off();
+ 358:../Modules/Manchester/manch_m.c **** }
+ 583               	.LM83:
+ 584 01e2 8F91      		pop r24
+ 585 01e4 0F90      		pop r0
+ 586 01e6 0FBE      		out __SREG__,r0
+ 587 01e8 0F90      		pop r0
+ 588 01ea 1F90      		pop r1
+ 589 01ec 1895      		reti
+ 590               	.L29:
+ 336:../Modules/Manchester/manch_m.c ****       {
+ 592               	.LM84:
+ 593 01ee 8830      		cpi r24,lo8(8)
+ 594 01f0 01F4      		brne .L31
+ 338:../Modules/Manchester/manch_m.c **** #ifdef MANCHESTER1
+ 596               	.LM85:
+ 597 01f2 562C      		mov r5,r6
+ 598               	.L31:
+ 343:../Modules/Manchester/manch_m.c ****          SETMANCH;
+ 600               	.LM86:
+ 601 01f4 57FE      		sbrs r5,7
+ 602 01f6 00C0      		rjmp .L32
+ 344:../Modules/Manchester/manch_m.c ****       else
+ 604               	.LM87:
+ 605 01f8 2E9A      		sbi 0x5,6
+ 606               	.L33:
+ 347:../Modules/Manchester/manch_m.c **** #ifdef MANCHESTER1
+ 608               	.LM88:
+ 609 01fa 550C      		lsl r5
+ 355:../Modules/Manchester/manch_m.c ****    }
+ 611               	.LM89:
+ 612 01fc 4394      		inc r4
+ 614               	.LM90:
+ 615 01fe 00C0      		rjmp .L28
+ 616               	.L32:
+ 346:../Modules/Manchester/manch_m.c ****        manch_d = manch_d << 1;
+ 618               	.LM91:
+ 619 0200 2E98      		cbi 0x5,6
+ 620 0202 00C0      		rjmp .L33
+ 622               	.Lscope8:
+ 624               	.global	__vector_18
+ 626               	__vector_18:
+ 359:../Modules/Manchester/manch_m.c **** 
+ 360:../Modules/Manchester/manch_m.c **** //================================================================
+ 361:../Modules/Manchester/manch_m.c **** ISR(TIMER1_COMPB_vect, ISR_NAKED)
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccewL71k.s 			page 15
+
+
+ 362:../Modules/Manchester/manch_m.c **** {
+ 628               	.LM92:
+ 629               	.LFBB9:
+ 630               	/* prologue: naked */
+ 631               	/* frame size = 0 */
+ 632               	/* stack size = 0 */
+ 633               	.L__stack_usage = 0
+ 363:../Modules/Manchester/manch_m.c **** //stat_led_red();
+ 364:../Modules/Manchester/manch_m.c ****    TOGMANCH; // pin toggeln
+ 635               	.LM93:
+ 636 0204 1E9A      		sbi 0x3,6
+ 365:../Modules/Manchester/manch_m.c **** #ifdef MANCHESTER1
+ 366:../Modules/Manchester/manch_m.c ****    // ein paar nop's!
+ 367:../Modules/Manchester/manch_m.c ****    TOGMANCH1;
+ 368:../Modules/Manchester/manch_m.c **** #endif // MANCHESTER1
+ 369:../Modules/Manchester/manch_m.c **** //stat_led_off();
+ 370:../Modules/Manchester/manch_m.c **** asm volatile("reti");
+ 638               	.LM94:
+ 639               	/* #APP */
+ 640               	 ;  370 "../Modules/Manchester/manch_m.c" 1
+ 641 0206 1895      		reti
+ 642               	 ;  0 "" 2
+ 643               	/* epilogue start */
+ 371:../Modules/Manchester/manch_m.c **** }
+ 645               	.LM95:
+ 646               	/* #NOAPP */
+ 648               	.Lscope9:
+ 649               		.local	manch_x
+ 650               		.comm	manch_x,1,1
+ 652               		.comm	gl_manch_dat,2,1
+ 655               	.Letext0:
+ 656               		.ident	"GCC: (AVR_8_bit_GNU_Toolchain_3.7.0_1796) 7.3.0"
+ 657               	.global __do_clear_bss
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccewL71k.s 			page 16
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 manch_m.c
+C:\Users\Markus\AppData\Local\Temp\ccewL71k.s:2      *ABS*:000000000000003e __SP_H__
+C:\Users\Markus\AppData\Local\Temp\ccewL71k.s:3      *ABS*:000000000000003d __SP_L__
+C:\Users\Markus\AppData\Local\Temp\ccewL71k.s:4      *ABS*:000000000000003f __SREG__
+C:\Users\Markus\AppData\Local\Temp\ccewL71k.s:5      *ABS*:0000000000000000 __tmp_reg__
+C:\Users\Markus\AppData\Local\Temp\ccewL71k.s:6      *ABS*:0000000000000001 __zero_reg__
+C:\Users\Markus\AppData\Local\Temp\ccewL71k.s:107    .text:0000000000000000 manch_init_send
+                            *COM*:0000000000000002 gl_manch_dat
+C:\Users\Markus\AppData\Local\Temp\ccewL71k.s:185    .text:0000000000000058 manch_init_rec_all
+C:\Users\Markus\AppData\Local\Temp\ccewL71k.s:208    .text:000000000000005e manch_init_receive
+C:\Users\Markus\AppData\Local\Temp\ccewL71k.s:271    .text:00000000000000a6 manch_result
+C:\Users\Markus\AppData\Local\Temp\ccewL71k.s:289    .text:00000000000000aa manch_stop_receive
+C:\Users\Markus\AppData\Local\Temp\ccewL71k.s:325    .text:00000000000000cc __vector_9
+                             .bss:0000000000000000 manch_x
+C:\Users\Markus\AppData\Local\Temp\ccewL71k.s:511    .text:00000000000001b4 __vector_17
+C:\Users\Markus\AppData\Local\Temp\ccewL71k.s:548    .text:00000000000001c2 __vector_20
+C:\Users\Markus\AppData\Local\Temp\ccewL71k.s:626    .text:0000000000000204 __vector_18
+
+UNDEFINED SYMBOLS
+__do_clear_bss

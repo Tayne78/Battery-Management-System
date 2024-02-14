@@ -1,0 +1,312 @@
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s 			page 1
+
+
+   1               		.file	"status.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   8               		.text
+   9               	.Ltext0:
+ 105               	.global	stat_led_init
+ 107               	stat_led_init:
+   1:../Modules/Status/status.c **** /***************************/
+   2:../Modules/Status/status.c **** /*         status.c        */
+   3:../Modules/Status/status.c **** /*          Status         */
+   4:../Modules/Status/status.c **** /*						   */
+   5:../Modules/Status/status.c **** /*    Battery Management   */
+   6:../Modules/Status/status.c **** /*        System           */
+   7:../Modules/Status/status.c **** /* 						   */
+   8:../Modules/Status/status.c **** /* Author: Tristan Horvath */
+   9:../Modules/Status/status.c **** /***************************/
+  10:../Modules/Status/status.c **** 
+  11:../Modules/Status/status.c **** #include <avr/io.h>
+  12:../Modules/Status/status.c **** #include "status.h"
+  13:../Modules/Status/status.c **** #include "manch_m.h"
+  14:../Modules/Status/status.c **** 
+  15:../Modules/Status/status.c **** //Status LED
+  16:../Modules/Status/status.c **** void stat_led_init(){
+ 109               	.LM0:
+ 110               	.LFBB1:
+ 111               	/* prologue: function */
+ 112               	/* frame size = 0 */
+ 113               	/* stack size = 0 */
+ 114               	.L__stack_usage = 0
+  17:../Modules/Status/status.c ****     LEDDDR|=(1<<LEDPINR)|(1<<LEDPING);
+ 116               	.LM1:
+ 117 0000 8AB1      		in r24,0xa
+ 118 0002 806C      		ori r24,lo8(-64)
+ 119 0004 8AB9      		out 0xa,r24
+ 120               	/* epilogue start */
+  18:../Modules/Status/status.c **** }
+ 122               	.LM2:
+ 123 0006 0895      		ret
+ 125               	.Lscope1:
+ 127               	.global	stat_led_red
+ 129               	stat_led_red:
+  19:../Modules/Status/status.c **** void stat_led_red(){
+ 131               	.LM3:
+ 132               	.LFBB2:
+ 133               	/* prologue: function */
+ 134               	/* frame size = 0 */
+ 135               	/* stack size = 0 */
+ 136               	.L__stack_usage = 0
+  20:../Modules/Status/status.c ****     LEDPORT|=(1<<LEDPINR);
+ 138               	.LM4:
+ 139 0008 5E9A      		sbi 0xb,6
+  21:../Modules/Status/status.c ****     LEDPORT&=~(1<<LEDPING);
+ 141               	.LM5:
+ 142 000a 5F98      		cbi 0xb,7
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s 			page 2
+
+
+ 143               	/* epilogue start */
+  22:../Modules/Status/status.c **** }
+ 145               	.LM6:
+ 146 000c 0895      		ret
+ 148               	.Lscope2:
+ 150               	.global	stat_led_green
+ 152               	stat_led_green:
+  23:../Modules/Status/status.c **** void stat_led_green(){
+ 154               	.LM7:
+ 155               	.LFBB3:
+ 156               	/* prologue: function */
+ 157               	/* frame size = 0 */
+ 158               	/* stack size = 0 */
+ 159               	.L__stack_usage = 0
+  24:../Modules/Status/status.c ****     LEDPORT|=(1<<LEDPING);
+ 161               	.LM8:
+ 162 000e 5F9A      		sbi 0xb,7
+  25:../Modules/Status/status.c ****     LEDPORT&=~(1<<LEDPINR);
+ 164               	.LM9:
+ 165 0010 5E98      		cbi 0xb,6
+ 166               	/* epilogue start */
+  26:../Modules/Status/status.c **** }
+ 168               	.LM10:
+ 169 0012 0895      		ret
+ 171               	.Lscope3:
+ 173               	.global	stat_led_orange
+ 175               	stat_led_orange:
+  27:../Modules/Status/status.c **** void stat_led_orange(){
+ 177               	.LM11:
+ 178               	.LFBB4:
+ 179               	/* prologue: function */
+ 180               	/* frame size = 0 */
+ 181               	/* stack size = 0 */
+ 182               	.L__stack_usage = 0
+  28:../Modules/Status/status.c ****     LEDPORT|=(1<<LEDPING);
+ 184               	.LM12:
+ 185 0014 5F9A      		sbi 0xb,7
+  29:../Modules/Status/status.c ****     LEDPORT|=(1<<LEDPINR);
+ 187               	.LM13:
+ 188 0016 5E9A      		sbi 0xb,6
+ 189               	/* epilogue start */
+  30:../Modules/Status/status.c **** }
+ 191               	.LM14:
+ 192 0018 0895      		ret
+ 194               	.Lscope4:
+ 196               	.global	stat_led_off
+ 198               	stat_led_off:
+  31:../Modules/Status/status.c **** void stat_led_off(){
+ 200               	.LM15:
+ 201               	.LFBB5:
+ 202               	/* prologue: function */
+ 203               	/* frame size = 0 */
+ 204               	/* stack size = 0 */
+ 205               	.L__stack_usage = 0
+  32:../Modules/Status/status.c ****     LEDPORT&=~(1<<LEDPING);
+ 207               	.LM16:
+ 208 001a 5F98      		cbi 0xb,7
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s 			page 3
+
+
+  33:../Modules/Status/status.c ****     LEDPORT&=~(1<<LEDPINR);
+ 210               	.LM17:
+ 211 001c 5E98      		cbi 0xb,6
+ 212               	/* epilogue start */
+  34:../Modules/Status/status.c **** }
+ 214               	.LM18:
+ 215 001e 0895      		ret
+ 217               	.Lscope5:
+ 219               	.global	stat_led_toggle_green
+ 221               	stat_led_toggle_green:
+  35:../Modules/Status/status.c **** void stat_led_toggle_green(){
+ 223               	.LM19:
+ 224               	.LFBB6:
+ 225               	/* prologue: function */
+ 226               	/* frame size = 0 */
+ 227               	/* stack size = 0 */
+ 228               	.L__stack_usage = 0
+  36:../Modules/Status/status.c ****     LEDPORT^=(1<<LEDPING);
+ 230               	.LM20:
+ 231 0020 8BB1      		in r24,0xb
+ 232 0022 8058      		subi r24,lo8(-(-128))
+ 233 0024 8BB9      		out 0xb,r24
+ 234               	/* epilogue start */
+  37:../Modules/Status/status.c **** }
+ 236               	.LM21:
+ 237 0026 0895      		ret
+ 239               	.Lscope6:
+ 241               	.global	stat_led_toggle_red
+ 243               	stat_led_toggle_red:
+  38:../Modules/Status/status.c **** void stat_led_toggle_red(){
+ 245               	.LM22:
+ 246               	.LFBB7:
+ 247               	/* prologue: function */
+ 248               	/* frame size = 0 */
+ 249               	/* stack size = 0 */
+ 250               	.L__stack_usage = 0
+  39:../Modules/Status/status.c ****     LEDPORT^=(1<<LEDPINR);
+ 252               	.LM23:
+ 253 0028 8BB1      		in r24,0xb
+ 254 002a 90E4      		ldi r25,lo8(64)
+ 255 002c 8927      		eor r24,r25
+ 256 002e 8BB9      		out 0xb,r24
+ 257               	/* epilogue start */
+  40:../Modules/Status/status.c **** }
+ 259               	.LM24:
+ 260 0030 0895      		ret
+ 262               	.Lscope7:
+ 264               	.global	stat_rel_init
+ 266               	stat_rel_init:
+  41:../Modules/Status/status.c **** 
+  42:../Modules/Status/status.c **** #ifdef __AVR_ATmega32U4__
+  43:../Modules/Status/status.c **** //Status Relay
+  44:../Modules/Status/status.c **** void stat_rel_init()
+  45:../Modules/Status/status.c **** {
+ 268               	.LM25:
+ 269               	.LFBB8:
+ 270               	/* prologue: function */
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s 			page 4
+
+
+ 271               	/* frame size = 0 */
+ 272               	/* stack size = 0 */
+ 273               	.L__stack_usage = 0
+  46:../Modules/Status/status.c ****     RELAYDDR|=(1<<RELAYPIN);
+ 275               	.LM26:
+ 276 0032 869A      		sbi 0x10,6
+ 277               	/* epilogue start */
+  47:../Modules/Status/status.c **** }
+ 279               	.LM27:
+ 280 0034 0895      		ret
+ 282               	.Lscope8:
+ 284               	.global	stat_rel_on
+ 286               	stat_rel_on:
+  48:../Modules/Status/status.c **** void stat_rel_on(){
+ 288               	.LM28:
+ 289               	.LFBB9:
+ 290               	/* prologue: function */
+ 291               	/* frame size = 0 */
+ 292               	/* stack size = 0 */
+ 293               	.L__stack_usage = 0
+  49:../Modules/Status/status.c ****     RELAYPORT|=(1<<RELAYPIN);
+ 295               	.LM29:
+ 296 0036 8E9A      		sbi 0x11,6
+ 297               	/* epilogue start */
+  50:../Modules/Status/status.c **** }
+ 299               	.LM30:
+ 300 0038 0895      		ret
+ 302               	.Lscope9:
+ 304               	.global	stat_rel_off
+ 306               	stat_rel_off:
+  51:../Modules/Status/status.c **** void stat_rel_off(){
+ 308               	.LM31:
+ 309               	.LFBB10:
+ 310               	/* prologue: function */
+ 311               	/* frame size = 0 */
+ 312               	/* stack size = 0 */
+ 313               	.L__stack_usage = 0
+  52:../Modules/Status/status.c ****     RELAYPORT&=~(1<<RELAYPIN);
+ 315               	.LM32:
+ 316 003a 8E98      		cbi 0x11,6
+ 317               	/* epilogue start */
+  53:../Modules/Status/status.c **** }
+ 319               	.LM33:
+ 320 003c 0895      		ret
+ 322               	.Lscope10:
+ 324               	.global	stat_ssr_init
+ 326               	stat_ssr_init:
+  54:../Modules/Status/status.c **** 
+  55:../Modules/Status/status.c **** //Status solid state relais
+  56:../Modules/Status/status.c **** void stat_ssr_init()
+  57:../Modules/Status/status.c **** {
+ 328               	.LM34:
+ 329               	.LFBB11:
+ 330               	/* prologue: function */
+ 331               	/* frame size = 0 */
+ 332               	/* stack size = 0 */
+ 333               	.L__stack_usage = 0
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s 			page 5
+
+
+  58:../Modules/Status/status.c ****     SSRDDR|=(1<<SSRPIN);
+ 335               	.LM35:
+ 336 003e 859A      		sbi 0x10,5
+ 337               	/* epilogue start */
+  59:../Modules/Status/status.c **** }
+ 339               	.LM36:
+ 340 0040 0895      		ret
+ 342               	.Lscope11:
+ 344               	.global	stat_ssr_on
+ 346               	stat_ssr_on:
+  60:../Modules/Status/status.c **** void stat_ssr_on(){
+ 348               	.LM37:
+ 349               	.LFBB12:
+ 350               	/* prologue: function */
+ 351               	/* frame size = 0 */
+ 352               	/* stack size = 0 */
+ 353               	.L__stack_usage = 0
+  61:../Modules/Status/status.c ****     SSRPORT|=(1<<SSRPIN);
+ 355               	.LM38:
+ 356 0042 8D9A      		sbi 0x11,5
+ 357               	/* epilogue start */
+  62:../Modules/Status/status.c **** }
+ 359               	.LM39:
+ 360 0044 0895      		ret
+ 362               	.Lscope12:
+ 364               	.global	stat_ssr_off
+ 366               	stat_ssr_off:
+  63:../Modules/Status/status.c **** void stat_ssr_off(){
+ 368               	.LM40:
+ 369               	.LFBB13:
+ 370               	/* prologue: function */
+ 371               	/* frame size = 0 */
+ 372               	/* stack size = 0 */
+ 373               	.L__stack_usage = 0
+  64:../Modules/Status/status.c ****     SSRPORT&=~(1<<SSRPIN);
+ 375               	.LM41:
+ 376 0046 8D98      		cbi 0x11,5
+ 377               	/* epilogue start */
+  65:../Modules/Status/status.c **** }
+ 379               	.LM42:
+ 380 0048 0895      		ret
+ 382               	.Lscope13:
+ 384               	.Letext0:
+ 385               		.ident	"GCC: (AVR_8_bit_GNU_Toolchain_3.7.0_1796) 7.3.0"
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s 			page 6
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 status.c
+C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s:2      *ABS*:000000000000003e __SP_H__
+C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s:3      *ABS*:000000000000003d __SP_L__
+C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s:4      *ABS*:000000000000003f __SREG__
+C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s:5      *ABS*:0000000000000000 __tmp_reg__
+C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s:6      *ABS*:0000000000000001 __zero_reg__
+C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s:107    .text:0000000000000000 stat_led_init
+C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s:129    .text:0000000000000008 stat_led_red
+C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s:152    .text:000000000000000e stat_led_green
+C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s:175    .text:0000000000000014 stat_led_orange
+C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s:198    .text:000000000000001a stat_led_off
+C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s:221    .text:0000000000000020 stat_led_toggle_green
+C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s:243    .text:0000000000000028 stat_led_toggle_red
+C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s:266    .text:0000000000000032 stat_rel_init
+C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s:286    .text:0000000000000036 stat_rel_on
+C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s:306    .text:000000000000003a stat_rel_off
+C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s:326    .text:000000000000003e stat_ssr_init
+C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s:346    .text:0000000000000042 stat_ssr_on
+C:\Users\Markus\AppData\Local\Temp\ccKsQqYz.s:366    .text:0000000000000046 stat_ssr_off
+
+NO UNDEFINED SYMBOLS

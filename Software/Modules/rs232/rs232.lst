@@ -1,0 +1,112 @@
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccaAXBCP.s 			page 1
+
+
+   1               		.file	"rs232.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   8               		.text
+   9               	.Ltext0:
+ 106               	.global	uart_putc
+ 108               	uart_putc:
+   1:../Modules/rs232/rs232.c **** //===============================================================
+   2:../Modules/rs232/rs232.c **** //
+   3:../Modules/rs232/rs232.c **** //   Projekt sax-extender master
+   4:../Modules/rs232/rs232.c **** //
+   5:../Modules/rs232/rs232.c **** //   rst, jan 2022
+   6:../Modules/rs232/rs232.c **** //
+   7:../Modules/rs232/rs232.c **** //   Author: Reinhard Steindl
+   8:../Modules/rs232/rs232.c **** //
+   9:../Modules/rs232/rs232.c **** //   Update by: Simon Ball
+  10:../Modules/rs232/rs232.c **** //
+  11:../Modules/rs232/rs232.c **** //================================================================
+  12:../Modules/rs232/rs232.c **** 
+  13:../Modules/rs232/rs232.c **** #define RS232
+  14:../Modules/rs232/rs232.c **** #include <avr/io.h>
+  15:../Modules/rs232/rs232.c **** #include "rs232.h"
+  16:../Modules/rs232/rs232.c **** #include "manch_m.h"
+  17:../Modules/rs232/rs232.c **** 
+  18:../Modules/rs232/rs232.c **** void RS232_init()
+  19:../Modules/rs232/rs232.c **** {
+  20:../Modules/rs232/rs232.c **** 	UBRR1 = F_CPU / 16 / RS232_BAUDRATE -1;
+  21:../Modules/rs232/rs232.c **** 	UCSR1B = (1<<TXEN1);
+  22:../Modules/rs232/rs232.c **** 	fdevopen(uart_putc, 0, 0);
+  23:../Modules/rs232/rs232.c **** }
+  24:../Modules/rs232/rs232.c **** 
+  25:../Modules/rs232/rs232.c **** 
+  26:../Modules/rs232/rs232.c **** int uart_putc(unsigned char c)
+  27:../Modules/rs232/rs232.c **** {
+ 110               	.LM0:
+ 111               	.LFBB1:
+ 112               	/* prologue: function */
+ 113               	/* frame size = 0 */
+ 114               	/* stack size = 0 */
+ 115               	.L__stack_usage = 0
+ 116               	.L2:
+  28:../Modules/rs232/rs232.c **** 	while (!(UCSR1A & (1<<UDRE1))); //Wait till transmission is possible
+ 118               	.LM1:
+ 119 0000 9091 C800 		lds r25,200
+ 120 0004 95FF      		sbrs r25,5
+ 121 0006 00C0      		rjmp .L2
+  29:../Modules/rs232/rs232.c **** 	UDR1 = c; /* send */
+ 123               	.LM2:
+ 124 0008 8093 CE00 		sts 206,r24
+  30:../Modules/rs232/rs232.c **** 	return 0;
+  31:../Modules/rs232/rs232.c **** }
+ 126               	.LM3:
+ 127 000c 90E0      		ldi r25,0
+ 128 000e 80E0      		ldi r24,0
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccaAXBCP.s 			page 2
+
+
+ 129               	/* epilogue start */
+ 130 0010 0895      		ret
+ 132               	.Lscope1:
+ 134               	.global	RS232_init
+ 136               	RS232_init:
+  19:../Modules/rs232/rs232.c **** 	UBRR1 = F_CPU / 16 / RS232_BAUDRATE -1;
+ 138               	.LM4:
+ 139               	.LFBB2:
+ 140               	/* prologue: function */
+ 141               	/* frame size = 0 */
+ 142               	/* stack size = 0 */
+ 143               	.L__stack_usage = 0
+  20:../Modules/rs232/rs232.c **** 	UCSR1B = (1<<TXEN1);
+ 145               	.LM5:
+ 146 0012 8CE0      		ldi r24,lo8(12)
+ 147 0014 90E0      		ldi r25,0
+ 148 0016 9093 CD00 		sts 204+1,r25
+ 149 001a 8093 CC00 		sts 204,r24
+  21:../Modules/rs232/rs232.c **** 	fdevopen(uart_putc, 0, 0);
+ 151               	.LM6:
+ 152 001e 88E0      		ldi r24,lo8(8)
+ 153 0020 8093 C900 		sts 201,r24
+  22:../Modules/rs232/rs232.c **** }
+ 155               	.LM7:
+ 156 0024 50E0      		ldi r21,0
+ 157 0026 40E0      		ldi r20,0
+ 158 0028 70E0      		ldi r23,0
+ 159 002a 60E0      		ldi r22,0
+ 160 002c 80E0      		ldi r24,lo8(gs(uart_putc))
+ 161 002e 90E0      		ldi r25,hi8(gs(uart_putc))
+ 162 0030 0C94 0000 		jmp fdevopen
+ 164               	.Lscope2:
+ 166               	.Letext0:
+ 167               		.ident	"GCC: (AVR_8_bit_GNU_Toolchain_3.7.0_1796) 7.3.0"
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccaAXBCP.s 			page 3
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 rs232.c
+C:\Users\Markus\AppData\Local\Temp\ccaAXBCP.s:2      *ABS*:000000000000003e __SP_H__
+C:\Users\Markus\AppData\Local\Temp\ccaAXBCP.s:3      *ABS*:000000000000003d __SP_L__
+C:\Users\Markus\AppData\Local\Temp\ccaAXBCP.s:4      *ABS*:000000000000003f __SREG__
+C:\Users\Markus\AppData\Local\Temp\ccaAXBCP.s:5      *ABS*:0000000000000000 __tmp_reg__
+C:\Users\Markus\AppData\Local\Temp\ccaAXBCP.s:6      *ABS*:0000000000000001 __zero_reg__
+C:\Users\Markus\AppData\Local\Temp\ccaAXBCP.s:108    .text:0000000000000000 uart_putc
+C:\Users\Markus\AppData\Local\Temp\ccaAXBCP.s:136    .text:0000000000000012 RS232_init
+
+UNDEFINED SYMBOLS
+fdevopen

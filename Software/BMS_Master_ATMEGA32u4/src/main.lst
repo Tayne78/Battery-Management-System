@@ -1,0 +1,911 @@
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s 			page 1
+
+
+   1               		.file	"main.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   8               		.text
+   9               	.Ltext0:
+ 119               		.section	.rodata.str1.1,"aMS",@progbits,1
+ 120               	.LC0:
+ 121 0000 5520 00   		.string	"U "
+ 122               	.LC1:
+ 123 0003 2564 2000 		.string	"%d "
+ 124               	.LC2:
+ 125 0007 5520 4552 		.string	"U ERROR"
+ 125      524F 5200 
+ 126               	.LC3:
+ 127 000f 5420 00   		.string	"T "
+ 128               	.LC4:
+ 129 0012 5420 4552 		.string	"T ERROR"
+ 129      524F 5200 
+ 130               	.LC5:
+ 131 001a 4220 00   		.string	"B "
+ 132               		.text
+ 134               	.global	main_control
+ 136               	main_control:
+   1:src/main.c    **** /*
+   2:src/main.c    ****  * Recieve_Test.c
+   3:src/main.c    ****  *
+   4:src/main.c    ****  * Created: 06.04.2022 08:51:21
+   5:src/main.c    ****  * Author : trist
+   6:src/main.c    ****  */ 
+   7:src/main.c    **** 
+   8:src/main.c    **** #include <avr/io.h>
+   9:src/main.c    **** #include <avr/interrupt.h>
+  10:src/main.c    **** #include <util/delay.h>
+  11:src/main.c    **** #include <stdio.h>
+  12:src/main.c    **** 
+  13:src/main.c    **** 
+  14:src/main.c    **** #include "communication.h"
+  15:src/main.c    **** #include "status.h"
+  16:src/main.c    **** #include "manch_m.h"
+  17:src/main.c    **** #include "timer.h" 
+  18:src/main.c    **** 
+  19:src/main.c    **** #define ANZ_ZELLEN 2 // max. 15 (wegen berechnungen mittelwert mean
+  20:src/main.c    **** 
+  21:src/main.c    **** uint8_t register manch_bit asm("r16"); // in manch_h verschieben!
+  22:src/main.c    **** 
+  23:src/main.c    **** uint16_t spg[ANZ_ZELLEN+1];
+  24:src/main.c    **** uint16_t temp[ANZ_ZELLEN+1];
+  25:src/main.c    **** uint16_t xyz[ANZ_ZELLEN];
+  26:src/main.c    **** uint16_t min;
+  27:src/main.c    **** uint16_t *p_data;
+  28:src/main.c    **** uint8_t rec_nr;	// wieviel antworten wurden empfangen?
+  29:src/main.c    **** uint8_t state=8;	// für die communikation mit slaves, 0 => startet abfrage, 8 => fertig, nix zu tu
+  30:src/main.c    **** uint8_t cont_state=0;	// state für die control-funktion
+  31:src/main.c    **** uint8_t balance_nr;
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s 			page 2
+
+
+  32:src/main.c    **** 
+  33:src/main.c    **** void main_control(void)
+  34:src/main.c    **** {
+ 138               	.LM0:
+ 139               	.LFBB1:
+ 140 0000 CF93      		push r28
+ 141 0002 DF93      		push r29
+ 142               	/* prologue: function */
+ 143               	/* frame size = 0 */
+ 144               	/* stack size = 2 */
+ 145               	.L__stack_usage = 2
+  35:src/main.c    **** 	uint8_t i;
+  36:src/main.c    **** 	switch (cont_state)
+ 147               	.LM1:
+ 148 0004 E091 0000 		lds r30,cont_state
+ 149 0008 EE30      		cpi r30,lo8(14)
+ 150 000a 00F0      		brlo .+2
+ 151 000c 00C0      		rjmp .L1
+ 152 000e F0E0      		ldi r31,0
+ 153 0010 E050      		subi r30,lo8(-(gs(.L4)))
+ 154 0012 F040      		sbci r31,hi8(-(gs(.L4)))
+ 155 0014 0C94 0000 		jmp __tablejump2__
+ 156               		.p2align	1
+ 157               	.L4:
+ 158 0018 0000      		.word gs(.L3)
+ 159 001a 0000      		.word gs(.L5)
+ 160 001c 0000      		.word gs(.L6)
+ 161 001e 0000      		.word gs(.L7)
+ 162 0020 0000      		.word gs(.L8)
+ 163 0022 0000      		.word gs(.L1)
+ 164 0024 0000      		.word gs(.L1)
+ 165 0026 0000      		.word gs(.L1)
+ 166 0028 0000      		.word gs(.L1)
+ 167 002a 0000      		.word gs(.L1)
+ 168 002c 0000      		.word gs(.L9)
+ 169 002e 0000      		.word gs(.L10)
+ 170 0030 0000      		.word gs(.L11)
+ 171 0032 0000      		.word gs(.L12)
+ 172               	.L3:
+  37:src/main.c    **** 	{
+  38:src/main.c    **** 
+  39:src/main.c    **** //--------- spg. abfragen ------------------------------------------
+  40:src/main.c    **** 		case 0: // spg. abfragen
+  41:src/main.c    **** 			gl_manch_dat = REQ_VOLT_G;	// spannungsabfrage
+ 174               	.LM2:
+ 175 0034 83E3      		ldi r24,lo8(51)
+ 176 0036 96EC      		ldi r25,lo8(-58)
+ 177 0038 9093 0000 		sts gl_manch_dat+1,r25
+ 178 003c 8093 0000 		sts gl_manch_dat,r24
+  42:src/main.c    **** 			p_data = spg;
+ 180               	.LM3:
+ 181 0040 80E0      		ldi r24,lo8(spg)
+ 182 0042 90E0      		ldi r25,hi8(spg)
+ 183 0044 9093 0000 		sts p_data+1,r25
+ 184 0048 8093 0000 		sts p_data,r24
+  43:src/main.c    **** 			state = 0;
+ 186               	.LM4:
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s 			page 3
+
+
+ 187 004c 1092 0000 		sts state,__zero_reg__
+  44:src/main.c    **** 			timer_clear_timer(CONTROL);
+ 189               	.LM5:
+ 190 0050 81E0      		ldi r24,lo8(1)
+ 191 0052 0E94 0000 		call timer_clear_timer
+  45:src/main.c    **** 			cont_state = 1;
+ 193               	.LM6:
+ 194 0056 81E0      		ldi r24,lo8(1)
+ 195               	.L23:
+  46:src/main.c    **** 			break;
+  47:src/main.c    **** 
+  48:src/main.c    **** 		case 1: // warten auf spannungen und auswerten
+  49:src/main.c    **** 			if (state == 8) //fertig!
+  50:src/main.c    **** 			{
+  51:src/main.c    **** 				if (rec_nr == ANZ_ZELLEN) // ohne fehler empfangen
+  52:src/main.c    **** 				{
+  53:src/main.c    **** 					spg[ANZ_ZELLEN]=1; // aktuelle daten
+  54:src/main.c    **** 					printf("U ");
+  55:src/main.c    **** 					for (i=0; i<ANZ_ZELLEN; i++)
+  56:src/main.c    **** 						printf("%d ",spg[i]);
+  57:src/main.c    **** 					printf("\n");
+  58:src/main.c    **** 				}
+  59:src/main.c    **** 				else
+  60:src/main.c    **** 				{
+  61:src/main.c    **** 					spg[ANZ_ZELLEN]=0; // fehlerhafte daten
+  62:src/main.c    **** 					printf("U ERROR\n");
+  63:src/main.c    **** 				}
+  64:src/main.c    **** 				cont_state = 2;
+  65:src/main.c    **** 			}
+  66:src/main.c    **** 			break;
+  67:src/main.c    **** 
+  68:src/main.c    **** //----------- temp abfragen ----------------------------------------------
+  69:src/main.c    **** 		case 2: // temp. abfragen
+  70:src/main.c    **** 			gl_manch_dat = REQ_TEMP_G;	// spannungsabfrage
+  71:src/main.c    **** 			p_data = temp;
+  72:src/main.c    **** 			state = 0;
+  73:src/main.c    **** 			cont_state = 3;
+  74:src/main.c    **** 			break;
+  75:src/main.c    **** 
+  76:src/main.c    **** 		case 3: // warten auf temperatur und auswerten
+  77:src/main.c    **** 			if (state == 8) //fertig!
+  78:src/main.c    **** 			{
+  79:src/main.c    **** 				if (rec_nr == ANZ_ZELLEN) // ohne fehler empfangen
+  80:src/main.c    **** 				{
+  81:src/main.c    **** 					temp[ANZ_ZELLEN]=1; // aktuelle daten
+  82:src/main.c    **** 					printf("T ");
+  83:src/main.c    **** 					for (i=0; i<ANZ_ZELLEN; i++)
+  84:src/main.c    **** 						printf("%d ",temp[i]-275);
+  85:src/main.c    **** 					printf("\n");
+  86:src/main.c    **** 				}
+  87:src/main.c    **** 				else
+  88:src/main.c    **** 				{
+  89:src/main.c    **** 					temp[ANZ_ZELLEN]=0; // fehlerhafte daten
+  90:src/main.c    **** 					printf("T ERROR\n");
+  91:src/main.c    **** 				}
+  92:src/main.c    **** 				cont_state = 10;
+  93:src/main.c    **** 			}
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s 			page 4
+
+
+  94:src/main.c    **** 			break;
+  95:src/main.c    **** 
+  96:src/main.c    **** //-------------- pause ----------------------------------------------
+  97:src/main.c    **** 		case 4: // pause
+  98:src/main.c    **** 			if (timer_get_timer(CONTROL) >= 1000)
+  99:src/main.c    **** 			{
+ 100:src/main.c    **** 				cont_state = 0;
+ 101:src/main.c    **** 			}
+ 102:src/main.c    **** 			break;
+ 103:src/main.c    **** 
+ 104:src/main.c    **** //------------ balancing --------------------------------------------
+ 105:src/main.c    **** // wenn keine zündung und gültige spg. => 
+ 106:src/main.c    **** //        wenn spg. um 50mV größer als kleinste und größer 3,7V -> entladen!
+ 107:src/main.c    **** 		case 10: // balancing
+ 108:src/main.c    **** 			printf("B ");
+ 109:src/main.c    **** 			min = spg[0];
+ 110:src/main.c    **** 			for (i=1; i<ANZ_ZELLEN; i++)
+ 111:src/main.c    **** 				if (spg[i] < min)
+ 112:src/main.c    **** 					min = spg[i];
+ 113:src/main.c    **** 			min = min + 50;
+ 114:src/main.c    **** 			balance_nr = 0;
+ 115:src/main.c    **** 			cont_state = 11;
+ 116:src/main.c    **** 			break;
+ 117:src/main.c    **** 			
+ 118:src/main.c    **** 		case 11:
+ 119:src/main.c    **** 			if ( (spg[balance_nr] > 3700) & (spg[balance_nr] > min) )
+ 120:src/main.c    **** 			{
+ 121:src/main.c    **** 				gl_manch_dat = COM_BLC_A + balance_nr+1;	// balancing
+ 122:src/main.c    **** 				p_data = xyz;
+ 123:src/main.c    **** 				state = 0;
+ 124:src/main.c    **** 				cont_state = 12;
+ 125:src/main.c    **** 			}
+ 126:src/main.c    **** 			else
+ 127:src/main.c    **** 				cont_state = 13;
+ 128:src/main.c    **** 			break;
+ 129:src/main.c    **** 			
+ 130:src/main.c    **** 		case 12: // warten auf antwort von balancen
+ 131:src/main.c    **** 			if (state == 8) //fertig!
+ 132:src/main.c    **** 			{
+ 133:src/main.c    **** 				if (rec_nr == balance_nr+1) // ohne fehler empfangen
+ 134:src/main.c    **** 				{
+ 135:src/main.c    **** 					printf("%d ",balance_nr);
+ 136:src/main.c    **** 				}
+ 137:src/main.c    **** 				cont_state = 13;
+ 138:src/main.c    **** 			}
+ 139:src/main.c    **** 			break;
+ 140:src/main.c    **** 			
+ 141:src/main.c    **** 		case 13: // nächste zelle
+ 142:src/main.c    **** 			balance_nr ++;
+ 143:src/main.c    **** 			if (balance_nr >= ANZ_ZELLEN)
+ 144:src/main.c    **** 			{
+ 145:src/main.c    **** 				printf("\n");
+ 146:src/main.c    **** 				timer_clear_timer(CONTROL);
+ 147:src/main.c    **** 				cont_state = 4;
+ 148:src/main.c    **** 			}
+ 149:src/main.c    **** 			else
+ 150:src/main.c    **** 				cont_state = 11;
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s 			page 5
+
+
+ 197               	.LM7:
+ 198 0058 8093 0000 		sts cont_state,r24
+ 151:src/main.c    **** 			break;
+ 152:src/main.c    **** 				
+ 153:src/main.c    **** 			
+ 154:src/main.c    **** 				
+ 155:src/main.c    **** 
+ 156:src/main.c    **** 	} // switch
+ 157:src/main.c    **** }
+ 200               	.LM8:
+ 201 005c 00C0      		rjmp .L1
+ 202               	.L5:
+  49:src/main.c    **** 			{
+ 204               	.LM9:
+ 205 005e 8091 0000 		lds r24,state
+ 206 0062 8830      		cpi r24,lo8(8)
+ 207 0064 01F0      		breq .+2
+ 208 0066 00C0      		rjmp .L1
+  51:src/main.c    **** 				{
+ 210               	.LM10:
+ 211 0068 8091 0000 		lds r24,rec_nr
+ 212 006c 8230      		cpi r24,lo8(2)
+ 213 006e 01F4      		brne .L14
+  53:src/main.c    **** 					printf("U ");
+ 215               	.LM11:
+ 216 0070 81E0      		ldi r24,lo8(1)
+ 217 0072 90E0      		ldi r25,0
+ 218 0074 9093 0000 		sts spg+4+1,r25
+ 219 0078 8093 0000 		sts spg+4,r24
+  54:src/main.c    **** 					for (i=0; i<ANZ_ZELLEN; i++)
+ 221               	.LM12:
+ 222 007c 80E0      		ldi r24,lo8(.LC0)
+ 223 007e 90E0      		ldi r25,hi8(.LC0)
+ 224 0080 9F93      		push r25
+ 225 0082 8F93      		push r24
+ 226 0084 0E94 0000 		call printf
+  56:src/main.c    **** 					printf("\n");
+ 228               	.LM13:
+ 229 0088 8091 0000 		lds r24,spg+1
+ 230 008c 8F93      		push r24
+ 231 008e 8091 0000 		lds r24,spg
+ 232 0092 8F93      		push r24
+ 233 0094 C0E0      		ldi r28,lo8(.LC1)
+ 234 0096 D0E0      		ldi r29,hi8(.LC1)
+ 235 0098 DF93      		push r29
+ 236 009a CF93      		push r28
+ 237 009c 0E94 0000 		call printf
+ 238 00a0 8091 0000 		lds r24,spg+3
+ 239 00a4 8F93      		push r24
+ 240 00a6 8091 0000 		lds r24,spg+2
+ 241 00aa 8F93      		push r24
+ 242 00ac DF93      		push r29
+ 243 00ae CF93      		push r28
+ 244 00b0 0E94 0000 		call printf
+  57:src/main.c    **** 				}
+ 246               	.LM14:
+ 247 00b4 8AE0      		ldi r24,lo8(10)
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s 			page 6
+
+
+ 248 00b6 90E0      		ldi r25,0
+ 249 00b8 0E94 0000 		call putchar
+ 250 00bc 8DB7      		in r24,__SP_L__
+ 251 00be 9EB7      		in r25,__SP_H__
+ 252 00c0 0A96      		adiw r24,10
+ 253 00c2 0FB6      		in __tmp_reg__,__SREG__
+ 254 00c4 F894      		cli
+ 255 00c6 9EBF      		out __SP_H__,r25
+ 256 00c8 0FBE      		out __SREG__,__tmp_reg__
+ 257 00ca 8DBF      		out __SP_L__,r24
+ 258               	.L15:
+  64:src/main.c    **** 			}
+ 260               	.LM15:
+ 261 00cc 82E0      		ldi r24,lo8(2)
+ 262 00ce 00C0      		rjmp .L23
+ 263               	.L14:
+  61:src/main.c    **** 					printf("U ERROR\n");
+ 265               	.LM16:
+ 266 00d0 1092 0000 		sts spg+4+1,__zero_reg__
+ 267 00d4 1092 0000 		sts spg+4,__zero_reg__
+  62:src/main.c    **** 				}
+ 269               	.LM17:
+ 270 00d8 80E0      		ldi r24,lo8(.LC2)
+ 271 00da 90E0      		ldi r25,hi8(.LC2)
+ 272 00dc 0E94 0000 		call puts
+ 273 00e0 00C0      		rjmp .L15
+ 274               	.L6:
+  70:src/main.c    **** 			p_data = temp;
+ 276               	.LM18:
+ 277 00e2 8AEA      		ldi r24,lo8(-86)
+ 278 00e4 94ED      		ldi r25,lo8(-44)
+ 279 00e6 9093 0000 		sts gl_manch_dat+1,r25
+ 280 00ea 8093 0000 		sts gl_manch_dat,r24
+  71:src/main.c    **** 			state = 0;
+ 282               	.LM19:
+ 283 00ee 80E0      		ldi r24,lo8(temp)
+ 284 00f0 90E0      		ldi r25,hi8(temp)
+ 285 00f2 9093 0000 		sts p_data+1,r25
+ 286 00f6 8093 0000 		sts p_data,r24
+  72:src/main.c    **** 			cont_state = 3;
+ 288               	.LM20:
+ 289 00fa 1092 0000 		sts state,__zero_reg__
+  73:src/main.c    **** 			break;
+ 291               	.LM21:
+ 292 00fe 83E0      		ldi r24,lo8(3)
+ 293 0100 00C0      		rjmp .L23
+ 294               	.L7:
+  77:src/main.c    **** 			{
+ 296               	.LM22:
+ 297 0102 8091 0000 		lds r24,state
+ 298 0106 8830      		cpi r24,lo8(8)
+ 299 0108 01F0      		breq .+2
+ 300 010a 00C0      		rjmp .L1
+  79:src/main.c    **** 				{
+ 302               	.LM23:
+ 303 010c 8091 0000 		lds r24,rec_nr
+ 304 0110 8230      		cpi r24,lo8(2)
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s 			page 7
+
+
+ 305 0112 01F4      		brne .L17
+  81:src/main.c    **** 					printf("T ");
+ 307               	.LM24:
+ 308 0114 81E0      		ldi r24,lo8(1)
+ 309 0116 90E0      		ldi r25,0
+ 310 0118 9093 0000 		sts temp+4+1,r25
+ 311 011c 8093 0000 		sts temp+4,r24
+  82:src/main.c    **** 					for (i=0; i<ANZ_ZELLEN; i++)
+ 313               	.LM25:
+ 314 0120 80E0      		ldi r24,lo8(.LC3)
+ 315 0122 90E0      		ldi r25,hi8(.LC3)
+ 316 0124 9F93      		push r25
+ 317 0126 8F93      		push r24
+ 318 0128 0E94 0000 		call printf
+  84:src/main.c    **** 					printf("\n");
+ 320               	.LM26:
+ 321 012c 8091 0000 		lds r24,temp
+ 322 0130 9091 0000 		lds r25,temp+1
+ 323 0134 8351      		subi r24,19
+ 324 0136 9140      		sbci r25,1
+ 325 0138 9F93      		push r25
+ 326 013a 8F93      		push r24
+ 327 013c C0E0      		ldi r28,lo8(.LC1)
+ 328 013e D0E0      		ldi r29,hi8(.LC1)
+ 329 0140 DF93      		push r29
+ 330 0142 CF93      		push r28
+ 331 0144 0E94 0000 		call printf
+ 332 0148 8091 0000 		lds r24,temp+2
+ 333 014c 9091 0000 		lds r25,temp+2+1
+ 334 0150 8351      		subi r24,19
+ 335 0152 9140      		sbci r25,1
+ 336 0154 9F93      		push r25
+ 337 0156 8F93      		push r24
+ 338 0158 DF93      		push r29
+ 339 015a CF93      		push r28
+ 340 015c 0E94 0000 		call printf
+  85:src/main.c    **** 				}
+ 342               	.LM27:
+ 343 0160 8AE0      		ldi r24,lo8(10)
+ 344 0162 90E0      		ldi r25,0
+ 345 0164 0E94 0000 		call putchar
+ 346 0168 8DB7      		in r24,__SP_L__
+ 347 016a 9EB7      		in r25,__SP_H__
+ 348 016c 0A96      		adiw r24,10
+ 349 016e 0FB6      		in __tmp_reg__,__SREG__
+ 350 0170 F894      		cli
+ 351 0172 9EBF      		out __SP_H__,r25
+ 352 0174 0FBE      		out __SREG__,__tmp_reg__
+ 353 0176 8DBF      		out __SP_L__,r24
+ 354               	.L18:
+  92:src/main.c    **** 			}
+ 356               	.LM28:
+ 357 0178 8AE0      		ldi r24,lo8(10)
+ 358 017a 00C0      		rjmp .L23
+ 359               	.L17:
+  89:src/main.c    **** 					printf("T ERROR\n");
+ 361               	.LM29:
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s 			page 8
+
+
+ 362 017c 1092 0000 		sts temp+4+1,__zero_reg__
+ 363 0180 1092 0000 		sts temp+4,__zero_reg__
+  90:src/main.c    **** 				}
+ 365               	.LM30:
+ 366 0184 80E0      		ldi r24,lo8(.LC4)
+ 367 0186 90E0      		ldi r25,hi8(.LC4)
+ 368 0188 0E94 0000 		call puts
+ 369 018c 00C0      		rjmp .L18
+ 370               	.L8:
+  98:src/main.c    **** 			{
+ 372               	.LM31:
+ 373 018e 81E0      		ldi r24,lo8(1)
+ 374 0190 0E94 0000 		call timer_get_timer
+ 375 0194 883E      		cpi r24,-24
+ 376 0196 9340      		sbci r25,3
+ 377 0198 00F0      		brlo .L1
+ 100:src/main.c    **** 			}
+ 379               	.LM32:
+ 380 019a 1092 0000 		sts cont_state,__zero_reg__
+ 381               	.L1:
+ 382               	/* epilogue start */
+ 384               	.LM33:
+ 385 019e DF91      		pop r29
+ 386 01a0 CF91      		pop r28
+ 387 01a2 0895      		ret
+ 388               	.L9:
+ 108:src/main.c    **** 			min = spg[0];
+ 390               	.LM34:
+ 391 01a4 80E0      		ldi r24,lo8(.LC5)
+ 392 01a6 90E0      		ldi r25,hi8(.LC5)
+ 393 01a8 9F93      		push r25
+ 394 01aa 8F93      		push r24
+ 395 01ac 0E94 0000 		call printf
+ 109:src/main.c    **** 			for (i=1; i<ANZ_ZELLEN; i++)
+ 397               	.LM35:
+ 398 01b0 2091 0000 		lds r18,spg
+ 399 01b4 3091 0000 		lds r19,spg+1
+ 400 01b8 3093 0000 		sts min+1,r19
+ 401 01bc 2093 0000 		sts min,r18
+ 111:src/main.c    **** 					min = spg[i];
+ 403               	.LM36:
+ 404 01c0 8091 0000 		lds r24,spg+2
+ 405 01c4 9091 0000 		lds r25,spg+2+1
+ 406 01c8 0F90      		pop __tmp_reg__
+ 407 01ca 0F90      		pop __tmp_reg__
+ 408 01cc 8217      		cp r24,r18
+ 409 01ce 9307      		cpc r25,r19
+ 410 01d0 00F4      		brsh .L19
+ 112:src/main.c    **** 			min = min + 50;
+ 412               	.LM37:
+ 413 01d2 9093 0000 		sts min+1,r25
+ 414 01d6 8093 0000 		sts min,r24
+ 415               	.L19:
+ 113:src/main.c    **** 			balance_nr = 0;
+ 417               	.LM38:
+ 418 01da 8091 0000 		lds r24,min
+ 419 01de 9091 0000 		lds r25,min+1
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s 			page 9
+
+
+ 420 01e2 C296      		adiw r24,50
+ 421 01e4 9093 0000 		sts min+1,r25
+ 422 01e8 8093 0000 		sts min,r24
+ 114:src/main.c    **** 			cont_state = 11;
+ 424               	.LM39:
+ 425 01ec 1092 0000 		sts balance_nr,__zero_reg__
+ 426               	.L22:
+ 150:src/main.c    **** 			break;
+ 428               	.LM40:
+ 429 01f0 8BE0      		ldi r24,lo8(11)
+ 430 01f2 00C0      		rjmp .L23
+ 431               	.L10:
+ 119:src/main.c    **** 			{
+ 433               	.LM41:
+ 434 01f4 8091 0000 		lds r24,balance_nr
+ 435 01f8 90E0      		ldi r25,0
+ 436 01fa FC01      		movw r30,r24
+ 437 01fc EE0F      		lsl r30
+ 438 01fe FF1F      		rol r31
+ 439 0200 E050      		subi r30,lo8(-(spg))
+ 440 0202 F040      		sbci r31,hi8(-(spg))
+ 441 0204 2091 0000 		lds r18,min
+ 442 0208 3091 0000 		lds r19,min+1
+ 443 020c 2437      		cpi r18,116
+ 444 020e 4EE0      		ldi r20,14
+ 445 0210 3407      		cpc r19,r20
+ 446 0212 00F4      		brsh .L21
+ 447 0214 24E7      		ldi r18,lo8(116)
+ 448 0216 3EE0      		ldi r19,lo8(14)
+ 449               	.L21:
+ 450 0218 4081      		ld r20,Z
+ 451 021a 5181      		ldd r21,Z+1
+ 452 021c 2417      		cp r18,r20
+ 453 021e 3507      		cpc r19,r21
+ 454 0220 00F4      		brsh .L20
+ 121:src/main.c    **** 				p_data = xyz;
+ 456               	.LM42:
+ 457 0222 8F5F      		subi r24,-1
+ 458 0224 9945      		sbci r25,89
+ 459 0226 9093 0000 		sts gl_manch_dat+1,r25
+ 460 022a 8093 0000 		sts gl_manch_dat,r24
+ 122:src/main.c    **** 				state = 0;
+ 462               	.LM43:
+ 463 022e 80E0      		ldi r24,lo8(xyz)
+ 464 0230 90E0      		ldi r25,hi8(xyz)
+ 465 0232 9093 0000 		sts p_data+1,r25
+ 466 0236 8093 0000 		sts p_data,r24
+ 123:src/main.c    **** 				cont_state = 12;
+ 468               	.LM44:
+ 469 023a 1092 0000 		sts state,__zero_reg__
+ 124:src/main.c    **** 			}
+ 471               	.LM45:
+ 472 023e 8CE0      		ldi r24,lo8(12)
+ 473 0240 00C0      		rjmp .L23
+ 474               	.L11:
+ 131:src/main.c    **** 			{
+ 476               	.LM46:
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s 			page 10
+
+
+ 477 0242 8091 0000 		lds r24,state
+ 478 0246 8830      		cpi r24,lo8(8)
+ 479 0248 01F0      		breq .+2
+ 480 024a 00C0      		rjmp .L1
+ 133:src/main.c    **** 				{
+ 482               	.LM47:
+ 483 024c 2091 0000 		lds r18,balance_nr
+ 484 0250 822F      		mov r24,r18
+ 485 0252 90E0      		ldi r25,0
+ 486 0254 3091 0000 		lds r19,rec_nr
+ 487 0258 0196      		adiw r24,1
+ 488 025a 3817      		cp r19,r24
+ 489 025c 1906      		cpc __zero_reg__,r25
+ 490 025e 01F4      		brne .L20
+ 135:src/main.c    **** 				}
+ 492               	.LM48:
+ 493 0260 1F92      		push __zero_reg__
+ 494 0262 2F93      		push r18
+ 495 0264 80E0      		ldi r24,lo8(.LC1)
+ 496 0266 90E0      		ldi r25,hi8(.LC1)
+ 497 0268 9F93      		push r25
+ 498 026a 8F93      		push r24
+ 499 026c 0E94 0000 		call printf
+ 500 0270 0F90      		pop __tmp_reg__
+ 501 0272 0F90      		pop __tmp_reg__
+ 502 0274 0F90      		pop __tmp_reg__
+ 503 0276 0F90      		pop __tmp_reg__
+ 504               	.L20:
+ 127:src/main.c    **** 			break;
+ 506               	.LM49:
+ 507 0278 8DE0      		ldi r24,lo8(13)
+ 508 027a 00C0      		rjmp .L23
+ 509               	.L12:
+ 142:src/main.c    **** 			if (balance_nr >= ANZ_ZELLEN)
+ 511               	.LM50:
+ 512 027c 8091 0000 		lds r24,balance_nr
+ 513 0280 8F5F      		subi r24,lo8(-(1))
+ 514 0282 8093 0000 		sts balance_nr,r24
+ 143:src/main.c    **** 			{
+ 516               	.LM51:
+ 517 0286 8230      		cpi r24,lo8(2)
+ 518 0288 00F4      		brsh .+2
+ 519 028a 00C0      		rjmp .L22
+ 145:src/main.c    **** 				timer_clear_timer(CONTROL);
+ 521               	.LM52:
+ 522 028c 8AE0      		ldi r24,lo8(10)
+ 523 028e 90E0      		ldi r25,0
+ 524 0290 0E94 0000 		call putchar
+ 146:src/main.c    **** 				cont_state = 4;
+ 526               	.LM53:
+ 527 0294 81E0      		ldi r24,lo8(1)
+ 528 0296 0E94 0000 		call timer_clear_timer
+ 147:src/main.c    **** 			}
+ 530               	.LM54:
+ 531 029a 84E0      		ldi r24,lo8(4)
+ 532 029c 00C0      		rjmp .L23
+ 534               	.Lscope1:
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s 			page 11
+
+
+ 535               		.section	.text.startup,"ax",@progbits
+ 537               	.global	main
+ 539               	main:
+ 158:src/main.c    **** 
+ 159:src/main.c    **** 
+ 160:src/main.c    **** int main(void)
+ 161:src/main.c    **** {
+ 541               	.LM55:
+ 542               	.LFBB2:
+ 543               	/* prologue: function */
+ 544               	/* frame size = 0 */
+ 545               	/* stack size = 0 */
+ 546               	.L__stack_usage = 0
+ 162:src/main.c    **** 	
+ 163:src/main.c    **** 	//fx
+ 164:src/main.c    **** DDRB|= (1<<PINB3);
+ 548               	.LM56:
+ 549 0000 239A      		sbi 0x4,3
+ 165:src/main.c    **** //PORTD&=~(1<<PIND0);	
+ 166:src/main.c    **** 	uint16_t daten;
+ 167:src/main.c    **** 	uint8_t com_stat=0;
+ 168:src/main.c    **** 
+ 169:src/main.c    **** 	
+ 170:src/main.c    **** 	timer_init_timer();
+ 551               	.LM57:
+ 552 0002 0E94 0000 		call timer_init_timer
+ 171:src/main.c    **** 	stat_led_init();
+ 554               	.LM58:
+ 555 0006 0E94 0000 		call stat_led_init
+ 172:src/main.c    **** 	RS232_init();
+ 557               	.LM59:
+ 558 000a 0E94 0000 		call RS232_init
+ 173:src/main.c    **** 
+ 174:src/main.c    **** 	uint16_t counter=0;
+ 175:src/main.c    **** 
+ 176:src/main.c    **** 	sei(); 
+ 560               	.LM60:
+ 561               	/* #APP */
+ 562               	 ;  176 "src/main.c" 1
+ 563 000e 7894      		sei
+ 564               	 ;  0 "" 2
+ 177:src/main.c    **** 
+ 178:src/main.c    ****    while (1) 
+ 179:src/main.c    ****    {
+ 180:src/main.c    **** 		timer_add_time();
+ 181:src/main.c    **** 		main_control();
+ 182:src/main.c    **** 		
+ 183:src/main.c    **** // ----------- communication with slave -------------------------------------------------
+ 184:src/main.c    **** 		if (state == 0)
+ 185:src/main.c    **** 		{
+ 186:src/main.c    **** 			//gl_manch_dat = COM_BLC_A+2;
+ 187:src/main.c    **** 			manch_init_send();
+ 188:src/main.c    **** 			state = 1;
+ 189:src/main.c    **** 		}
+ 190:src/main.c    **** 		else if (state==1)	// warten, bis fertig gesendet
+ 191:src/main.c    **** 		{
+ 192:src/main.c    **** 			com_stat=manch_result();
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s 			page 12
+
+
+ 193:src/main.c    **** 			if (com_stat == 1)
+ 194:src/main.c    **** 			{
+ 195:src/main.c    **** 				//_delay_ms(2);
+ 196:src/main.c    **** 				rec_nr=0;
+ 197:src/main.c    **** 				state = 5;
+ 198:src/main.c    **** 			}
+ 199:src/main.c    **** 		}
+ 200:src/main.c    **** 		else if (state==5) // von oben empfangen
+ 201:src/main.c    **** 		{
+ 202:src/main.c    **** 			timer_clear_timer(MAIN); 
+ 203:src/main.c    **** 			manch_init_receive();
+ 204:src/main.c    **** 			state = 6;
+ 205:src/main.c    **** 		}
+ 206:src/main.c    **** 		else if(state==6)		//Daten von oben warten
+ 207:src/main.c    **** 		{
+ 208:src/main.c    **** 			com_stat=manch_result();
+ 209:src/main.c    **** 			
+ 210:src/main.c    **** 			if (com_stat==0)		//während auf Daten gewartet wird LED orange blinken
+ 211:src/main.c    **** 			{
+ 212:src/main.c    **** 				stat_led_off();
+ 213:src/main.c    **** 			}
+ 214:src/main.c    **** 			else if(com_stat==1)			//wenn Daten erfolgreich Empfangen wurden LED grün
+ 215:src/main.c    **** 			{
+ 216:src/main.c    **** 				p_data[rec_nr]=gl_manch_dat & 0x7FFF;
+ 217:src/main.c    **** 				rec_nr++;
+ 218:src/main.c    **** 				stat_led_green();
+ 219:src/main.c    **** 				state=5;
+ 220:src/main.c    **** 			}
+ 221:src/main.c    **** 			else //if (com_stat==2)		//wenn Fehler beim Empfangen LED rot
+ 222:src/main.c    **** 			{
+ 223:src/main.c    **** 				stat_led_red();
+ 224:src/main.c    **** 				//_delay_ms(100);
+ 225:src/main.c    **** 				state=8;
+ 226:src/main.c    **** 			}
+ 227:src/main.c    **** 			
+ 228:src/main.c    **** 			if (timer_get_timer(MAIN) >= 25) // time out, kommt nix von oben
+ 229:src/main.c    **** 			{
+ 230:src/main.c    **** 				manch_stop_receive();
+ 231:src/main.c    **** 				//stat_led_red();
+ 232:src/main.c    **** 				state = 8;
+ 566               	.LM61:
+ 567               	/* #NOAPP */
+ 568 0010 C8E0      		ldi r28,lo8(8)
+ 219:src/main.c    **** 			}
+ 570               	.LM62:
+ 571 0012 D5E0      		ldi r29,lo8(5)
+ 204:src/main.c    **** 		}
+ 573               	.LM63:
+ 574 0014 16E0      		ldi r17,lo8(6)
+ 188:src/main.c    **** 		}
+ 576               	.LM64:
+ 577 0016 FF24      		clr r15
+ 578 0018 F394      		inc r15
+ 579               	.L25:
+ 180:src/main.c    **** 		main_control();
+ 581               	.LM65:
+ 582 001a 0E94 0000 		call timer_add_time
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s 			page 13
+
+
+ 181:src/main.c    **** 		
+ 584               	.LM66:
+ 585 001e 0E94 0000 		call main_control
+ 184:src/main.c    **** 		{
+ 587               	.LM67:
+ 588 0022 8091 0000 		lds r24,state
+ 589 0026 8111      		cpse r24,__zero_reg__
+ 590 0028 00C0      		rjmp .L26
+ 187:src/main.c    **** 			state = 1;
+ 592               	.LM68:
+ 593 002a 0E94 0000 		call manch_init_send
+ 188:src/main.c    **** 		}
+ 595               	.LM69:
+ 596 002e F092 0000 		sts state,r15
+ 597 0032 00C0      		rjmp .L25
+ 598               	.L26:
+ 190:src/main.c    **** 		{
+ 600               	.LM70:
+ 601 0034 8130      		cpi r24,lo8(1)
+ 602 0036 01F4      		brne .L28
+ 192:src/main.c    **** 			if (com_stat == 1)
+ 604               	.LM71:
+ 605 0038 0E94 0000 		call manch_result
+ 193:src/main.c    **** 			{
+ 607               	.LM72:
+ 608 003c 8130      		cpi r24,lo8(1)
+ 609 003e 01F4      		brne .L25
+ 196:src/main.c    **** 				state = 5;
+ 611               	.LM73:
+ 612 0040 1092 0000 		sts rec_nr,__zero_reg__
+ 197:src/main.c    **** 			}
+ 614               	.LM74:
+ 615 0044 D093 0000 		sts state,r29
+ 616 0048 00C0      		rjmp .L25
+ 617               	.L28:
+ 200:src/main.c    **** 		{
+ 619               	.LM75:
+ 620 004a 8530      		cpi r24,lo8(5)
+ 621 004c 01F4      		brne .L30
+ 202:src/main.c    **** 			manch_init_receive();
+ 623               	.LM76:
+ 624 004e 80E0      		ldi r24,0
+ 625 0050 0E94 0000 		call timer_clear_timer
+ 203:src/main.c    **** 			state = 6;
+ 627               	.LM77:
+ 628 0054 0E94 0000 		call manch_init_receive
+ 204:src/main.c    **** 		}
+ 630               	.LM78:
+ 631 0058 1093 0000 		sts state,r17
+ 632 005c 00C0      		rjmp .L25
+ 633               	.L30:
+ 206:src/main.c    **** 		{
+ 635               	.LM79:
+ 636 005e 8630      		cpi r24,lo8(6)
+ 637 0060 01F4      		brne .L25
+ 208:src/main.c    **** 			
+ 639               	.LM80:
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s 			page 14
+
+
+ 640 0062 0E94 0000 		call manch_result
+ 210:src/main.c    **** 			{
+ 642               	.LM81:
+ 643 0066 8111      		cpse r24,__zero_reg__
+ 644 0068 00C0      		rjmp .L31
+ 212:src/main.c    **** 			}
+ 646               	.LM82:
+ 647 006a 0E94 0000 		call stat_led_off
+ 648               	.L32:
+ 228:src/main.c    **** 			{
+ 650               	.LM83:
+ 651 006e 80E0      		ldi r24,0
+ 652 0070 0E94 0000 		call timer_get_timer
+ 653 0074 4997      		sbiw r24,25
+ 654 0076 00F0      		brlo .L25
+ 230:src/main.c    **** 				//stat_led_red();
+ 656               	.LM84:
+ 657 0078 0E94 0000 		call manch_stop_receive
+ 659               	.LM85:
+ 660 007c C093 0000 		sts state,r28
+ 661 0080 00C0      		rjmp .L25
+ 662               	.L31:
+ 214:src/main.c    **** 			{
+ 664               	.LM86:
+ 665 0082 8130      		cpi r24,lo8(1)
+ 666 0084 01F4      		brne .L33
+ 216:src/main.c    **** 				rec_nr++;
+ 668               	.LM87:
+ 669 0086 8091 0000 		lds r24,rec_nr
+ 670 008a 282F      		mov r18,r24
+ 671 008c 30E0      		ldi r19,0
+ 672 008e 220F      		lsl r18
+ 673 0090 331F      		rol r19
+ 674 0092 E091 0000 		lds r30,p_data
+ 675 0096 F091 0000 		lds r31,p_data+1
+ 676 009a E20F      		add r30,r18
+ 677 009c F31F      		adc r31,r19
+ 678 009e 2091 0000 		lds r18,gl_manch_dat
+ 679 00a2 3091 0000 		lds r19,gl_manch_dat+1
+ 680 00a6 3F77      		andi r19,127
+ 681 00a8 3183      		std Z+1,r19
+ 682 00aa 2083      		st Z,r18
+ 217:src/main.c    **** 				stat_led_green();
+ 684               	.LM88:
+ 685 00ac 8F5F      		subi r24,lo8(-(1))
+ 686 00ae 8093 0000 		sts rec_nr,r24
+ 218:src/main.c    **** 				state=5;
+ 688               	.LM89:
+ 689 00b2 0E94 0000 		call stat_led_green
+ 219:src/main.c    **** 			}
+ 691               	.LM90:
+ 692 00b6 D093 0000 		sts state,r29
+ 693 00ba 00C0      		rjmp .L32
+ 694               	.L33:
+ 223:src/main.c    **** 				//_delay_ms(100);
+ 696               	.LM91:
+ 697 00bc 0E94 0000 		call stat_led_red
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s 			page 15
+
+
+ 225:src/main.c    **** 			}
+ 699               	.LM92:
+ 700 00c0 C093 0000 		sts state,r28
+ 701 00c4 00C0      		rjmp .L32
+ 703               	.Lscope2:
+ 704               		.comm	balance_nr,1,1
+ 706               	.global	cont_state
+ 707               		.section .bss
+ 710               	cont_state:
+ 711 0000 00        		.zero	1
+ 713               	.global	state
+ 714               		.data
+ 717               	state:
+ 718 0000 08        		.byte	8
+ 720               		.comm	rec_nr,1,1
+ 722               		.comm	p_data,2,1
+ 724               		.comm	min,2,1
+ 726               		.comm	xyz,4,1
+ 728               		.comm	temp,6,1
+ 730               		.comm	spg,6,1
+ 732               		.text
+ 734               	.Letext0:
+ 735               		.ident	"GCC: (AVR_8_bit_GNU_Toolchain_3.7.0_1796) 7.3.0"
+ 736               	.global __do_copy_data
+ 737               	.global __do_clear_bss
+GAS LISTING C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s 			page 16
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 main.c
+C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s:2      *ABS*:000000000000003e __SP_H__
+C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s:3      *ABS*:000000000000003d __SP_L__
+C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s:4      *ABS*:000000000000003f __SREG__
+C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s:5      *ABS*:0000000000000000 __tmp_reg__
+C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s:6      *ABS*:0000000000000001 __zero_reg__
+C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s:136    .text:0000000000000000 main_control
+C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s:710    .bss:0000000000000000 cont_state
+                            *COM*:0000000000000006 spg
+                            *COM*:0000000000000002 p_data
+C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s:717    .data:0000000000000000 state
+                            *COM*:0000000000000001 rec_nr
+                            *COM*:0000000000000006 temp
+                            *COM*:0000000000000002 min
+                            *COM*:0000000000000001 balance_nr
+                            *COM*:0000000000000004 xyz
+C:\Users\Markus\AppData\Local\Temp\ccZn8LjY.s:539    .text.startup:0000000000000000 main
+
+UNDEFINED SYMBOLS
+__tablejump2__
+gl_manch_dat
+timer_clear_timer
+printf
+putchar
+puts
+timer_get_timer
+timer_init_timer
+stat_led_init
+RS232_init
+timer_add_time
+manch_init_send
+manch_result
+manch_init_receive
+stat_led_off
+manch_stop_receive
+stat_led_green
+stat_led_red
+__do_copy_data
+__do_clear_bss

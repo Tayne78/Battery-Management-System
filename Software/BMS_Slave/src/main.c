@@ -94,10 +94,10 @@ int main(void)
 	uint16_t battery_voltage=0;	// battery_voltage = (float)adc_value / 200; // divided by 1024 aka 10-bit, multiplied by 2,56 aka internal reference voltage * 2 (voltage divider)
 //	uint8_t eeprom_stat = eeprom_read_byte(EEPROM_STATUS_ADR);
 	uint16_t eeprom_voltage_h = eeprom_read_word(EEPROM_4V_ADR);
-//	uint16_t eeprom_voltage_l = eeprom_read_word(EEPROM_3V_ADR);
+	uint16_t eeprom_voltage_l = eeprom_read_word(EEPROM_3V_ADR);
 	uint16_t eeprom_temp = eeprom_read_word(EEPROM_temp_ADR);
 	
-	if ( (eeprom_voltage_h==0xffff) /*|| (eeprom_voltage_l==0xffff)*/ || (eeprom_temp==0xffff) ) // if EEPROM not complite calibrated
+	if ( (eeprom_voltage_h==0xffff) || (eeprom_voltage_l==0xffff) || (eeprom_temp==0xffff) ) // if EEPROM not complite calibrated
 	{
 #ifndef CALIBRATION
 		while (1)
@@ -125,7 +125,7 @@ int main(void)
 		// VOLT CALLIBRATION
 		while (battery_voltage == 0) // Measure SUPPLY voltage
 			battery_voltage = measure_voltage();
-/*
+
 		// 3V detection
 		if ((battery_voltage <= (CAL_VOLT_LT*ADC_SAMPLES_V)) && (battery_voltage >= (CAL_VOLT_LB*ADC_SAMPLES_V)) && 
 								(eeprom_voltage_l==0xffff)) // battery voltage in low borders and not calibrated yet
@@ -147,7 +147,7 @@ int main(void)
 				_delay_ms(500);
 			}
 		}
-*/		// 4V detection
+		 // 4V detection
 		if ((battery_voltage >= (CAL_VOLT_HB*ADC_SAMPLES_V)) && (battery_voltage <= (CAL_VOLT_HT*ADC_SAMPLES_V)) && \
 							(eeprom_voltage_h==0xffff)) // battery voltage in high borders and not calibrated yet
 		{

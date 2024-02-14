@@ -46,7 +46,7 @@ int main(void)
   while (1)
   {
     timer_add_time();
-    blink = timer_get_timer(TIMER_ADC);
+    blink = timer_get_timer(0);
     counter++;
     if (blink >= BLINK_TIME)
     {
@@ -56,7 +56,7 @@ int main(void)
         _delay_ms(BALANCE);
         stat_led_green();
       }
-      timer_clear_timer(TIMER_ADC);
+      timer_clear_timer(0);
       stat_led_green();
       _delay_ms(100);
       stat_led_off();
