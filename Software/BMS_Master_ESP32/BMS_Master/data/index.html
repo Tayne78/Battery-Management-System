@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -58,6 +57,36 @@
     .red{
       color: red;
     }
+
+    /* Custom style for select element */
+    .batteryInput {
+      margin-top: 20px;
+    }
+
+    .form-select {
+      width: 100%;
+      padding: .375rem 2.25rem .375rem .75rem;
+      font-size: 1rem;
+      font-weight: 400;
+      line-height: 1.5;
+      color: #495057;
+      background-color: #fff;
+      background-clip: padding-box;
+      border: 1px solid #ced4da;
+      border-radius: .25rem;
+      transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    }
+
+    .form-select:focus {
+      border-color: #80bdff;
+      outline: 0;
+      box-shadow: 0 0 0 .2rem rgba(0,123,255,.25);
+    }
+
+    /* Custom style for button */
+    .sendButton {
+      margin-top: 20px;
+    }
   </style>
 </head>
 
@@ -110,9 +139,13 @@
     <div class="batteryInput container mt-4">
       <p>Wähle deinen Akku-Typ: </p>
       <select name="batterySelect" id="batterySelect" class="form-select mt-4 form-select-lg" aria-label=".form-select-lg">
-        <option value="lithiumIonen" selected>Lithium Ionen Akku</option>
-        <option value="eisen">Eisen</option>
+        <option value="lithiumIonen" selected>Lithium Ionen</option>
+        <option value="eisen">Lithium Ion Polymer</option>
+        <option value="eisen">Nickel-Kadmium</option>
+        <option value="eisen">Nickel Metall Hybrid</option>
       </select>
+      <!-- Button zum Senden ausgewählten Akkutyps -->
+      <button type="button" class="btn btn-primary sendButton" id="sendAkkuBtn">Akkutyp senden</button>
     </div>
   </div>
 
@@ -121,7 +154,6 @@
   <script src="js/popper.min.js"></script>
   <script src="js/bootstrap.min.js"></script>
   <script src="js/script.js"></script>
-
 </body>
 
 </html>

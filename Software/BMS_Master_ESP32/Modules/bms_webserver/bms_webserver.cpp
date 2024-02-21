@@ -5,6 +5,8 @@ int temperature[NUMBER_OF_SLAVES] = {0};
 float voltage[NUMBER_OF_SLAVES] = {0};
 bool status[NUMBER_OF_SLAVES] = {0};
 
+unsigned char akkutyp = 1;
+
 void notFound(AsyncWebServerRequest *request)
 {
   request->send(404, "text/plain", "Not Found");
@@ -126,6 +128,26 @@ void handleBatteryChange(AsyncWebServerRequest* req) {
   Serial.println(p->value().c_str());
   req->send(200, "text/plain", "ok");
 }
+void handleAkkutype(AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total){
+    // Hier empfängst du die POST-Daten vom Client (Webbrowser)
+    /*Serial.println(request->params());
+    AsyncWebParameter* p = request->getParam(0);
+    if (p) {
+      if (p->name() == "batteryType") {
+        Serial.println("Received battery type: " + p->value());
+      } else {
+        Serial.println("wrong parameter name!");
+      }
+    } else {
+      Serial.println("no parameters sent");
+    }*/
+
+  DynamicJsonDocument json(256);
+  deserializeJson(json, reinterpret_cast<char*>(data));
+  String a{static_cast<char*>(json["batteryType"])};
+  Serial.println(a);
+
+}
 
 void setupWebServer(const char *ssid, const char *password)
 {
@@ -157,6 +179,10 @@ void setupWebServer(const char *ssid, const char *password)
   server.on("/js/script.js", HTTP_GET, handleScriptJS);
   server.on("/log", HTTP_GET, handleLog);
   server.on("/api/measured-values", HTTP_GET, handleFetch);
+
+  server.on("/api/akkutyp", HTTP_POST, [](AsyncWebServerRequest* req){
+    req->send(200, "text/plain", "success");
+  }, NULL, handleAkkutype);
 
   // Fange 404-Fehler ab
   server.onNotFound(notFound);

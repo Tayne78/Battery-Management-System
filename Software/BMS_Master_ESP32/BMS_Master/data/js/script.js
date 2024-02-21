@@ -65,6 +65,10 @@ $(() => {
     });
   }
 
+  $('#sendAkkuBtn').on('click', () => {
+    sendSelectedBatteryType();
+  })
+
   updateMeasuredValues().then(data => {
     console.log("UPDATE")
     renderTable(data.NUMBER_OF_SLAVES);
@@ -75,3 +79,32 @@ $(() => {
     $('body').append($('<p>').text("Error"));
   });
 })
+
+function sendSelectedBatteryType() {
+  var selectedBattery = document.getElementById("batterySelect").value;
+  console.log("sendSelectedBAtteryType()");
+
+  var url = '/api/akkutyp'; 
+
+  var data = { batteryType: selectedBattery };
+
+  // POST-Anfrage konfigurieren
+  var options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  };
+
+  // POST-Anfrage senden
+  fetch(url, options)
+    .then(response => {
+      if (response.ok) {
+        console.log('POST-Anfrage erfolgreich gesendet!');
+      } else {
+        console.error('Fehler beim Senden der POST-Anfrage:', response.statusText);
+      }
+    })
+    .catch(error => console.error('Fehler beim Senden der POST-Anfrage:', error));
+}

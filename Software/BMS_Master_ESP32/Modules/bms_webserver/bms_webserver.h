@@ -5,6 +5,11 @@
 #define BALANCING 1
 #define IDLE 0
 
+#define NiCd 1
+#define NiMH 2
+#define Li_Ion 3
+#define LiPo 4
+
 #include <ESPAsyncWebServer.h>
 #include <WiFi.h>
 #include <FS.h>
@@ -18,6 +23,8 @@ extern AsyncWebServer server;
 extern int temperature[NUMBER_OF_SLAVES];
 extern float voltage[NUMBER_OF_SLAVES];
 extern bool status[NUMBER_OF_SLAVES];
+
+extern unsigned char akkutyp;
 
 void notFound(AsyncWebServerRequest *request);
 void handleRoot(AsyncWebServerRequest *request);
