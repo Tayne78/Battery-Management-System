@@ -65,7 +65,7 @@ $(() => {
     });
   }
 
-  $('#sendAkkuBtn').on('click', () => {
+  $('#batterySelect').on('change', () => {
     sendSelectedBatteryType();
   })
 
