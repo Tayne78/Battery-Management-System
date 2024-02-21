@@ -16,7 +16,7 @@
 #include "manch_m.h"
 #include "timer.h" 
 
-#define ANZ_ZELLEN 2 // max. 15 (wegen berechnungen mittelwert mean
+#define ANZ_ZELLEN 2 // max. 15 (wegen berechnungen mittelwert mean)
 
 uint8_t register manch_bit asm("r16"); // in manch_h verschieben!
 

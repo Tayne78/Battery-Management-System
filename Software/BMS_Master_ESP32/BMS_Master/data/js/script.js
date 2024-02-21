@@ -44,6 +44,12 @@ const updateTable = data => {
   for (let i = 1; i <= data.NUMBER_OF_SLAVES; i++) {
     $("#voltage" + i).text((data["voltage" + i] / 1000).toFixed(2));
     $("#temperature" + i).text(data["temperature" + i]);
+    if(data["status"+i] == 1){
+    $("#status" + i).text("Balancing").addClass("red");
+    }
+    else{
+      $("#status" + i).text("Idle").addClass("green");
+      }
   }
   
 

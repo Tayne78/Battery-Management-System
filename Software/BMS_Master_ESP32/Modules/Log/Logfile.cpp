@@ -24,7 +24,6 @@ void Logfile::begin()
   }
   if (!rtc.isrunning())
   {
-    Serial.println("RTC is NOT running, let's set the time!");
     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
 }
@@ -44,14 +43,8 @@ void Logfile::writeData(const char *path, int t[], float v[], int numofcells)
     Serial.println("Failed to open file for writing");
     return;
   }
-  if (file.print(data))
-  {
-    Serial.println("File written\n");
-  }
-  else
-  {
+  if (!file.print(data))
     Serial.println("Write failed");
-  }
   file.close();
 }
 

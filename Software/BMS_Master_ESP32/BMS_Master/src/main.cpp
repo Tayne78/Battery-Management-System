@@ -3,42 +3,50 @@
 #include "Status.h"
 #include "Logfile.h"
 #include "bms_webserver.h"
+#include "CAN_BMS.h"
 
-TaskHandle_t CAN;
+//TaskHandle_t CAN;
 
 Relay relay(26, 27);
-Led led(12);
+Led led(32);
 OneWireCom oneWireCom(GPIO_NUM_2, GPIO_NUM_4);
 Logfile logfile;
+CAN_BMS canbus(12,14);
 
-#define Cells 2
-#define IgnitondetectionPin 18
+#define Cells 3
+#define IgnitondetectionPin 34
+#define ChargedetectionPin 35
+#define ladeschlusssspannung 4200
 
 int state = 0, com_stat = 0, timelastsend = 0, lastChange = 0;
+bool idle = 0;
 bool error = 0;
+int totale_voltage=0;
 int data[Cells + 1];
 
-void can(void *parameter)
+/*void can(void *parameter)
 {
   while (1)
   {
-    // CAN
-    delay(1);
+    canbus.send(12354,12,CAN_BE_CHARGED,GOOD,0x100);
   }
-}
+  
+}*/
 
 void setup()
 {
-  // relay.begin();
+  relay.begin();
   /*led.begin();
   led.setColor(BLUE);*/
   Serial.begin(112500);
   oneWireCom.begin();
 
+  canbus.begin();
+
   setupWebServer("BMS","Thomas123");
 
   logfile.begin();
-  xTaskCreatePinnedToCore(can, "Core1Task", 10000, NULL, 2, &CAN, 0);
+ // xTaskCreatePinnedToCore(can, "Core1Task", 10000, NULL, 2, &CAN, 0);
 }
 void send()
 {
@@ -61,7 +69,6 @@ void loop()
 {
   if (millis() - timelastsend > 5000 || state == 2)
   {
-    logfile.writeData("/log.txt",temperature,voltage,Cells);
     timelastsend = millis();
     send();
   }
@@ -75,7 +82,7 @@ void loop()
         data[i] = oneWireCom.receive();
         if (data[i] == 0)
         {
-          // led.setColor(RED);
+         // led.setColor(RED);
           Serial.println("ERROR");
           if (error == 0)
           {
@@ -84,14 +91,18 @@ void loop()
         }
         else
         {
-          // led.setColor(GREEN);
+          //led.setColor(GREEN);
         }
       }
       Serial.println("Daten Empfangen");
       if (state == 1)
       {
         if (error == 1)
+        {
           state = 0;
+          for (int i = 0; i < Cells; i++)
+            voltage[i] = 0;
+        }
         else
         {
           state = 2;
@@ -105,7 +116,11 @@ void loop()
       else if (state == 3)
       {
         if (error == 1)
+        {
           state = 2;
+          for (int i = 0; i < Cells; i++)
+            voltage[i] = 0;
+        }
         else
         {
           state = 0;
@@ -115,13 +130,37 @@ void loop()
         Serial.println("TEMPERATUR");
         for (int i = 0; i < Cells; i++)
           Serial.println(temperature[i]);
+
+        idle=0;
       }
     }
     else
     {
-      // led.setColor(BLUE);
+     // led.setColor(BLUE);
     }
   }
+  else if(state==0)
+  {
+    if(idle==0) 
+    {
+      idle=1;
+      logfile.writeData("/log.txt",temperature,voltage,Cells);
+      totale_voltage = 0;
+      for(int i=0;i<Cells;i++)
+      {
+        totale_voltage += voltage[i];
+        status[i]=1;
+      }
+      Serial.println(totale_voltage);
+      status[0]=0;
+
+      //TODO
+      if(IgnitondetectionPin==LOW)
+      {}
+    }
+  }
+
+
   /*
   com_stat = oneWireCom.getstatus();
   Serial.println(com_stat);

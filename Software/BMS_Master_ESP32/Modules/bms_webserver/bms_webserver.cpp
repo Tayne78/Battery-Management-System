@@ -3,6 +3,7 @@
 AsyncWebServer server(80);
 int temperature[NUMBER_OF_SLAVES] = {0};
 float voltage[NUMBER_OF_SLAVES] = {0};
+bool status[NUMBER_OF_SLAVES] = {0};
 
 void notFound(AsyncWebServerRequest *request)
 {
@@ -103,6 +104,7 @@ void handleFetch(AsyncWebServerRequest *request)
   {
     jsonDoc["voltage" + std::to_string(i+1)] = voltage[i];
     jsonDoc["temperature" + std::to_string(i+1)] = temperature[i];
+    jsonDoc["status" + std::to_string(i+1)] = status[i];
   }
 
   String response;
