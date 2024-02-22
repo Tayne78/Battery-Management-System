@@ -143,9 +143,9 @@ void handleAkkutype(AsyncWebServerRequest* request, uint8_t* data, size_t len, s
     }*/
 
   DynamicJsonDocument json(256);
-  deserializeJson(json, reinterpret_cast<char*>(data));
-  String a{static_cast<char*>(json["batteryType"])};
-  Serial.println(a);
+  deserializeJson(json, const_cast<const char*>(reinterpret_cast<char*>(data)));
+  const char* batteryType = json["batteryType"];
+  Serial.println(batteryType);
 
 }
 
