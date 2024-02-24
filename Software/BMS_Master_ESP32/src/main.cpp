@@ -35,10 +35,10 @@ int data[Cells + 1];
 
 void setup()
 {
+  Serial.begin(112500);
   relay.begin();
   /*led.begin();
   led.setColor(BLUE);*/
-  Serial.begin(112500);
   oneWireCom.begin();
 
   canbus.begin();
@@ -46,6 +46,7 @@ void setup()
   setupWebServer("BMS","Thomas123");
 
   logfile.begin();
+  logfile.createLog("/log.csv",Cells);
  // xTaskCreatePinnedToCore(can, "Core1Task", 10000, NULL, 2, &CAN, 0);
 }
 void send()
@@ -131,7 +132,7 @@ void loop()
         for (int i = 0; i < Cells; i++)
           Serial.println(temperature[i]);
 
-        idle=0;
+        idle=1;
       }
     }
     else
@@ -141,10 +142,10 @@ void loop()
   }
   else if(state==0)
   {
-    if(idle==0) 
+    if(idle==1) 
     {
-      idle=1;
-      logfile.writeData("/log.txt",temperature,voltage,Cells);
+      idle=0;
+      logfile.writeData("/log.csv",temperature,voltage,Cells);
       totale_voltage = 0;
       for(int i=0;i<Cells;i++)
       {

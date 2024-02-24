@@ -4,6 +4,7 @@ Logfile::Logfile() {}
 
 void Logfile::begin()
 {
+  Serial.println("HALLO");
   if (!SD.begin(5))
   {
     Serial.println("Card Mount Failed");
@@ -30,10 +31,14 @@ void Logfile::begin()
 
 void Logfile::writeData(const char *path, int t[], float v[], int numofcells)
 {
+  if (!SD.exists(path))
+  {
+    createLog(path,numofcells);
+  }
   DateTime now = rtc.now();
-  String data = String(now.year()) + '.' + String(now.month()) + '.' + String(now.day()) + '/' + String(now.hour()) + ':' + String(now.minute()) + ':' + String(now.second()) + "/";
+  String data = String(now.year()) + '-' + String(now.month()) + '-' + String(now.day()) + ';' + String(now.hour()) + ':' + String(now.minute()) + ':' + String(now.second());
   for (int i = 0; i < numofcells; i++)
-    data += "Cell:" + String(i + 1) + " T:" + String(t[i]) + " V:" + String(v[i]) + '/';
+    data += ';' + String(t[i]) + ';' + String(v[i]);
   data += '\n';
   Serial.print("\nSaving data: ");
   Serial.println(data);
@@ -47,8 +52,7 @@ void Logfile::writeData(const char *path, int t[], float v[], int numofcells)
     Serial.println("Write failed");
   file.close();
 }
-
-void Logfile::createLog(const char *path)
+void Logfile::createLog(const char *path, int numofcells)
 {
   File file = SD.open(path, FILE_WRITE);
   if (!file)
@@ -57,16 +61,25 @@ void Logfile::createLog(const char *path)
     return;
   }
   file.close();
+  String data = String("Datum") + ';' + String("Uhrzeit");
+  for (int i = 0; i < numofcells; i++)
+    data += ';' + "Zelle" + String((i + 1)) + ':' + " Temperatur" + ';' + "Zelle" + String((i + 1)) + ':' + " Spannung";
+  data += '\n';
+  file = SD.open(path, FILE_APPEND);
+  if (!file)
+  {
+    Serial.println("Failed to open file for writing");
+    return;
+  }
+  if (!file.print(data))
+    Serial.println("Write failed");
+  file.close();
 }
-
 void Logfile::readLog(const char *path, int numofLines, String data[][3])
 {
-
-  if (!SD.exists(path)) {
-    createLog(path);
-  }
   File file = SD.open(path);
-  if (!file) {
+  if (!file)
+  {
     Serial.println("Failed to open file for reading");
     return;
   }
@@ -76,21 +89,26 @@ void Logfile::readLog(const char *path, int numofLines, String data[][3])
   while (file.available()) // Daten von SD-Karte zwischenspeichern
   {
     String line = file.readStringUntil('\n');
-    if (lineCount >= numofLines) {
-      for (int i = 0; i < numofLines - 1; i++) {
+    if (lineCount >= numofLines)
+    {
+      for (int i = 0; i < numofLines - 1; i++)
+      {
         lines[i] = lines[i + 1];
       }
       lines[numofLines - 1] = line;
-    } else {
+    }
+    else
+    {
       lines[lineCount] = line;
       lineCount++;
     }
   }
   file.close();
-  for (int i = 0; i < numofLines; i++) {
+  for (int i = 0; i < numofLines; i++)
+  {
     int endfirstIndex = lines[i].indexOf('/');
     data[i][0] = lines[i].substring(0, endfirstIndex);
-    
+
     int endsecondIndex = lines[i].indexOf('/', endfirstIndex + 1);
     data[i][1] = lines[i].substring(endfirstIndex + 1, endsecondIndex);
 
@@ -99,6 +117,5 @@ void Logfile::readLog(const char *path, int numofLines, String data[][3])
     data[i][2] = dataPart;
 
     data[i][2].replace("Cell:", "\nCell:");
-
   }
 }

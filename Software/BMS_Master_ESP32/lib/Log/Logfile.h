@@ -14,7 +14,7 @@ class Logfile {
 
     void begin();
     void writeData(const char *path, int t[], float v[], int numofcells);
-    void createLog(const char *path);
+    void createLog(const char *path, int numofcells);
     void readLog(const char *path, int numofLines, String [][3]);
 
   private:
