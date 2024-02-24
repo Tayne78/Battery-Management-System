@@ -4,7 +4,6 @@ Logfile::Logfile() {}
 
 void Logfile::begin()
 {
-  Serial.println("HALLO");
   if (!SD.begin(5))
   {
     Serial.println("Card Mount Failed");
@@ -63,7 +62,7 @@ void Logfile::createLog(const char *path, int numofcells)
   file.close();
   String data = String("Datum") + ';' + String("Uhrzeit");
   for (int i = 0; i < numofcells; i++)
-    data += ';' + "Zelle" + String((i + 1)) + ':' + " Temperatur" + ';' + "Zelle" + String((i + 1)) + ':' + " Spannung";
+    data += ';' + String("Zelle") + String((i + 1)) + ':' + String(" Temperatur") + ';' + String("Zelle") + String((i + 1)) + ':' + String(" Spannung");
   data += '\n';
   file = SD.open(path, FILE_APPEND);
   if (!file)
