@@ -11,7 +11,7 @@ OneWireCom::OneWireCom(gpio_num_t _txPin, gpio_num_t _rxPin)
     rmt_config_t rmt_tx, rmt_rx;
 
     rmt_tx.rmt_mode = RMT_MODE_TX;
-    rmt_tx.channel = RMT_CHANNEL_0;
+    rmt_tx.channel = RMT_CHANNEL_2;
     rmt_tx.gpio_num = txPin;
     rmt_tx.mem_block_num = true;
     rmt_tx.tx_config.loop_en = false;
@@ -23,7 +23,7 @@ OneWireCom::OneWireCom(gpio_num_t _txPin, gpio_num_t _rxPin)
     rmt_config(&rmt_tx);
     rmt_driver_install(rmt_tx.channel, 0, 0);
 
-    rmt_rx.channel = RMT_CHANNEL_1;
+    rmt_rx.channel = RMT_CHANNEL_3;
     rmt_rx.gpio_num = rxPin;
     rmt_rx.rmt_mode = RMT_MODE_RX;
     rmt_rx.clk_div = 80;
@@ -74,8 +74,8 @@ bool OneWireCom::send(uint16_t data)
         }
     }
 
-    rmt_write_items(RMT_CHANNEL_0, manchester_data, 16, true);
-    if (rmt_wait_tx_done(RMT_CHANNEL_0, portMAX_DELAY) != ESP_OK)
+    rmt_write_items(RMT_CHANNEL_2, manchester_data, 16, true);
+    if (rmt_wait_tx_done(RMT_CHANNEL_2, portMAX_DELAY) != ESP_OK)
     {
         return 0; // Fehler: Senden fehlgeschlagen
     }

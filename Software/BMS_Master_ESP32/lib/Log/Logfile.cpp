@@ -62,7 +62,7 @@ void Logfile::createLog(const char *path, int numofcells)
   file.close();
   String data = String("Datum") + ';' + String("Uhrzeit");
   for (int i = 0; i < numofcells; i++)
-    data += ';' + String("Zelle") + String((i + 1)) + ':' + String(" Temperatur") + ';' + String("Zelle") + String((i + 1)) + ':' + String(" Spannung");
+    data += ';' + String("Zelle") + String((i + 1)) + ':' + String(" Temperatur [°C]") + ';' + String("Zelle") + String((i + 1)) + ':' + String(" Spannung [mV]");
   data += '\n';
   file = SD.open(path, FILE_APPEND);
   if (!file)

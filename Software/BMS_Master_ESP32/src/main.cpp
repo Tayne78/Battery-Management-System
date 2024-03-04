@@ -8,12 +8,13 @@
 //TaskHandle_t CAN;
 
 Relay relay(26, 27);
-Led led(32);
 OneWireCom oneWireCom(GPIO_NUM_2, GPIO_NUM_4);
 Logfile logfile;
 CAN_BMS canbus(12,14);
+Led led(GPIO_NUM_32);
 
-#define Cells 3
+
+#define Cells 2
 #define IgnitondetectionPin 34
 #define ChargedetectionPin 35
 #define ladeschlusssspannung 4200
@@ -28,7 +29,7 @@ int data[Cells + 1];
 {
   while (1)
   {
-    canbus.send(12354,12,CAN_BE_CHARGED,GOOD,0x100);
+    canbus.send(total_voltage,12,CAN_BE_CHARGED,GOOD,0x100);
   }
   
 }*/
@@ -37,8 +38,8 @@ void setup()
 {
   Serial.begin(112500);
   relay.begin();
-  /*led.begin();
-  led.setColor(BLUE);*/
+  delay(1000);
+  
   oneWireCom.begin();
 
   canbus.begin();
@@ -46,7 +47,7 @@ void setup()
   setupWebServer("BMS","Thomas123");
 
   logfile.begin();
-  logfile.createLog("/log.csv",Cells);
+  logfile.createLog("/log.txt",Cells);
  // xTaskCreatePinnedToCore(can, "Core1Task", 10000, NULL, 2, &CAN, 0);
 }
 void send()
@@ -71,6 +72,7 @@ void loop()
   if (millis() - timelastsend > 5000 || state == 2)
   {
     timelastsend = millis();
+    error=0;
     send();
   }
   if (state == 1 || state == 3)
@@ -83,7 +85,7 @@ void loop()
         data[i] = oneWireCom.receive();
         if (data[i] == 0)
         {
-         // led.setColor(RED);
+          led.setColor(RED);  //Fehler
           Serial.println("ERROR");
           if (error == 0)
           {
@@ -92,16 +94,16 @@ void loop()
         }
         else
         {
-          //led.setColor(GREEN);
+          led.setColor(GREEN); //Alle Daten Empfangen
         }
       }
       Serial.println("Daten Empfangen");
-      if (state == 1)
+      if (state == 1)   //Daten Auswerten für Spannung
       {
         if (error == 1)
         {
           state = 0;
-          for (int i = 0; i < Cells; i++)
+          for (int i = 0; i < Cells; i++)   
             voltage[i] = 0;
         }
         else
@@ -114,7 +116,7 @@ void loop()
         for (int i = 0; i < Cells; i++)
           Serial.println(voltage[i]);
       }
-      else if (state == 3)
+      else if (state == 3) //Daten Auswerten für Temperatur
       {
         if (error == 1)
         {
@@ -135,15 +137,12 @@ void loop()
         idle=1;
       }
     }
-    else
-    {
-     // led.setColor(BLUE);
-    }
   }
-  else if(state==0)
+  else if(state==0) //IDLE wenn alle Daten Empfangen sind (Temperatur und Spannung)
   {
     if(idle==1) 
     {
+      led.setColor(BLUE); 
       idle=0;
       logfile.writeData("/log.csv",temperature,voltage,Cells);
       totale_voltage = 0;

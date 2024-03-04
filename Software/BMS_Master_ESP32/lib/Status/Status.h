@@ -2,23 +2,21 @@
 #define Status_h
 
 #include <Arduino.h>
-#include <Adafruit_NeoPixel.h>
+#include <driver/rmt.h>
 
-#define RED 0xFF0000  
-#define GREEN 0x00FF00
+
+#define RED 0x00FF00  
+#define GREEN 0xFF0000
 #define BLUE 0x0000FF
 
 class Led
 {
 public:
-    Led(int pin);
-    void begin();
-    void setColor(int r, int g, int b);
-    void setColor(int color);
-    void clear();
-
+    Led(gpio_num_t _pin);
+    void setColor(uint32_t color);
 private:
-    Adafruit_NeoPixel pixel;
+    gpio_num_t pin;
+    rmt_item32_t led_data_buffer[24];
 };
 
 class Relay

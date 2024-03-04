@@ -9,7 +9,7 @@
 /*  Author: Simon Ball                       */
 /*********************************************/
 
-//erzeugt das programm zum calibrieren
+//erzeugt das programm zum calibrieren ACHTUNG
 //#define CALIBRATION
 
 //--------------CPU-FREQUENCY------------------------------------------------------//
