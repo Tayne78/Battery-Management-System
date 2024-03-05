@@ -22,14 +22,14 @@ Led led(GPIO_NUM_32);
 int state = 0, com_stat = 0, timelastsend = 0, lastChange = 0;
 bool idle = 0;
 bool error = 0;
-int totale_voltage=0;
+int totale_voltage=0,avg_temperature=0;
 int data[Cells + 1];
 
 /*void can(void *parameter)
 {
   while (1)
   {
-    canbus.send(total_voltage,12,CAN_BE_CHARGED,GOOD,0x100);
+    canbus.send(total_voltage,avg_temperature,CAN_BE_CHARGED,GOOD,0x100);
   }
   
 }*/
@@ -146,99 +146,24 @@ void loop()
       idle=0;
       logfile.writeData("/log.csv",temperature,voltage,Cells);
       totale_voltage = 0;
+      avg_temperature = 0;
       for(int i=0;i<Cells;i++)
       {
         totale_voltage += voltage[i];
+        avg_temperature += temperature[i];
         status[i]=1;
       }
+      avg_temperature=avg_temperature/Cells;
       Serial.println(totale_voltage);
-      status[0]=0;
+      Serial.println(avg_temperature);
+
+      //for(int)
 
       //TODO
-      if(IgnitondetectionPin==LOW)
+      if(IgnitondetectionPin==LOW&&ChargedetectionPin==LOW)
       {
         
       }
     }
   }
-
-
-  /*
-  com_stat = oneWireCom.getstatus();
-  Serial.println(com_stat);
-  if (com_stat == 0)
-  {
-    // led.setColor(BLUE);
-  }
-  else if (com_stat == 1)
-  {
-    data[num] = oneWireCom.receive();
-    lastChange = millis();
-    oneWireCom.setstatus();
-    if(data[num]==0)
-    {
-      //ERROR
-      // led.setColor(RED);
-    }
-    else
-    {
-      num++;
-      // led.setColor(GREEN);
-    }
-  }
-  if (com_stat == 0 && (millis() - lastChange >= 25 && millis() - lastChange <= 30))
-  {
-
-    Serial.println("Daten Empfangen");
-    Serial.println(num);
-    if(num==(Cells+1))
-    {
-      //led.setColor(GREEN);
-    }
-    else
-    {
-      //Daten unvollständig
-      //led.setColor(RED);
-    }
-    num = 0;
-    if (state == 1)
-    {
-      for(int i=0;i<Cells;i++)
-        voltages[i]=data[i+1];
-      state = 2;
-    }
-    else if (state == 3)
-    {
-        for(int i=0;i<Cells;i++)
-          temperatures[i]=data[i+1];
-        state = 0;
-    }
-    for(int i=0;i<3;i++)
-    {
-      Serial.println(data[i]);
-      data[i]=0;
-    }
-  }*/
-
-  /* if (digitalRead(IgnitondetectionPin) != HIGH) // Zündung Aus
-   {
-   }
-
-   for (int i = 0; i < Cells - 1; i++)
-   {
-     float temp1, temp2;
-     for (int j = 0; j < Cells - 1 - i; j++)
-     {
-       if (voltages[j][0] > voltages[j + 1][0])
-       {
-         temp1 = voltages[j + 1][0];
-         temp2 = voltages[j + 1][1];
-         voltages[j + 1][0] = voltages[j][0];
-         voltages[j + 1][1] = voltages[j][1];
-         voltages[j][0] = temp1;
-         voltages[j][1] = temp2;
-       }
-     }
-   }
-   delay(1000);*/
 }

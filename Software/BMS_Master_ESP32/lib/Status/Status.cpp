@@ -26,7 +26,7 @@ void Led::setColor(uint32_t color)
     for (uint32_t bit = 0; bit < 24; bit++)
     {
         uint32_t bit_is_set = color & mask;
-        led_data_buffer[24 + bit] = bit_is_set ? (rmt_item32_t){{{42, 1, 12, 0}}} : (rmt_item32_t){{{12, 1, 42, 0}}};
+        led_data_buffer[bit] = bit_is_set ? (rmt_item32_t){{{42, 1, 12, 0}}} : (rmt_item32_t){{{12, 1, 42, 0}}};
         mask >>= 1;
     }
     rmt_write_items(RMT_CHANNEL_0, led_data_buffer, 24, false);
