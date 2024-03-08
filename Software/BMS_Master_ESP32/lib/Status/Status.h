@@ -5,9 +5,11 @@
 #include <driver/rmt.h>
 
 
-#define RED 0x00FF00  
-#define GREEN 0xFF0000
-#define BLUE 0x0000FF
+#define RED 0x000F00  
+#define GREEN 0x0F0000
+#define BLUE 0x00000F
+#define ORANGE 0x0F0F00
+#define TURQOISE 0x4F000F
 
 class Led
 {

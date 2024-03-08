@@ -32,7 +32,6 @@ void Led::setColor(uint32_t color)
     rmt_write_items(RMT_CHANNEL_0, led_data_buffer, 24, false);
     rmt_wait_tx_done(RMT_CHANNEL_0, portMAX_DELAY);
 }
-
 Relay::Relay(int _relayPin1, int _relayPin2)
 {
     relayPin1 = _relayPin1;
@@ -49,13 +48,13 @@ void Relay::begin()
 }
 void Relay::turnOnRelay1()
 {
-    if(relay1State == false)
+    if (relay1State == false)
         digitalWrite(relayPin1, HIGH);
     relay1State = true;
 }
 void Relay::turnOffRelay1()
 {
-    if(relay1State == true)
+    if (relay1State == true)
         digitalWrite(relayPin1, LOW);
     relay1State = false;
 }
@@ -65,13 +64,13 @@ bool Relay::stateRelay1()
 }
 void Relay::turnOnRelay2()
 {
-    if(relay2State == false)
+    if (relay2State == false)
         digitalWrite(relayPin2, HIGH);
     relay2State = true;
 }
 void Relay::turnOffRelay2()
 {
-    if(relay2State == true)
+    if (relay2State == true)
         digitalWrite(relayPin2, LOW);
     relay2State = false;
 }
