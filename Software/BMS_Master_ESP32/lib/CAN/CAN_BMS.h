@@ -7,14 +7,15 @@
 #define GOOD 0x00
 #define CHARGE 0x01
 #define END_VOLTAGE 0x02
-#define ERROR_OVERVOLTAGE 0x10
-#define ERROR_UNDERVOLTAGE 0x20
-#define ERROR_OVERHEATING 0x30
+#define ERROR 0x10
+#define OVERVOLTAGE 0x20
+#define UNDERVOLTAGE 0x30
+#define OVERHEATING 0x40
 
 #define CANNOT_BE_CHARGED 0x00
 #define CAN_BE_CHARGED 0x01
 
-#define DLC 5 //Packetgröße in Byte
+#define DLC 5 //Packetgröße in Byte 
 
 class CAN_BMS
 {

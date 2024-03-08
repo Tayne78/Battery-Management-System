@@ -49,12 +49,14 @@ void Relay::begin()
 }
 void Relay::turnOnRelay1()
 {
-    digitalWrite(relayPin1, HIGH);
+    if(relay1State == false)
+        digitalWrite(relayPin1, HIGH);
     relay1State = true;
 }
 void Relay::turnOffRelay1()
 {
-    digitalWrite(relayPin1, LOW);
+    if(relay1State == true)
+        digitalWrite(relayPin1, LOW);
     relay1State = false;
 }
 bool Relay::stateRelay1()
@@ -63,12 +65,14 @@ bool Relay::stateRelay1()
 }
 void Relay::turnOnRelay2()
 {
-    digitalWrite(relayPin2, HIGH);
+    if(relay2State == false)
+        digitalWrite(relayPin2, HIGH);
     relay2State = true;
 }
 void Relay::turnOffRelay2()
 {
-    digitalWrite(relayPin2, LOW);
+    if(relay2State == true)
+        digitalWrite(relayPin2, LOW);
     relay2State = false;
 }
 bool Relay::stateRelay2()
