@@ -140,33 +140,8 @@ void handleFetch(AsyncWebServerRequest *request)
   request->send(200, "application/json", response);
 }
 
-void handleBatteryChange(AsyncWebServerRequest *req)
-{
-  int params = req->params();
-  if (params != 1)
-    return;
-  AsyncWebParameter *p = req->getParam(0);
-  Serial.print("NAME: ");
-  Serial.println(p->name().c_str());
-  Serial.print("VALUE: ");
-  Serial.println(p->value().c_str());
-  req->send(200, "text/plain", "ok");
-}
 void handleAkkutype(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
 {
-  // Hier empfängst du die POST-Daten vom Client (Webbrowser)
-  /*Serial.println(request->params());
-  AsyncWebParameter* p = request->getParam(0);
-  if (p) {
-    if (p->name() == "batteryType") {
-      Serial.println("Received battery type: " + p->value());
-    } else {
-      Serial.println("wrong parameter name!");
-    }
-  } else {
-    Serial.println("no parameters sent");
-  }*/
-
   DynamicJsonDocument json(256);
   deserializeJson(json, const_cast<const char *>(reinterpret_cast<char *>(data)));
   const char *batteryType = json["batteryType"];
@@ -183,6 +158,13 @@ void handleNumOfSlaves(AsyncWebServerRequest *request, uint8_t *data, size_t len
   voltage = (float *)realloc(voltage, numOfSlaves * sizeof(float));
   status = (bool *)realloc(status, numOfSlaves * sizeof(bool));
 
+  for(int i=0;i<numOfSlaves;i++)
+  {
+    temperature[i]=0;
+    voltage[i]=0;
+    status[i]=0;
+  }
+
   Serial.println(numOfSlaves);
 }
 
@@ -196,6 +178,13 @@ void setupWebServer(const char *ssid, const char *password)
   IPAddress IP = WiFi.softAPIP();
   Serial.print("Access Point IP-Adresse: ");
   Serial.println(IP);
+
+  for(int i=0;i<numOfSlaves;i++)
+  {
+    temperature[i]=0;
+    voltage[i]=0;
+    status[i]=0;
+  }
 
   // Initialisiere SPIFFS
   if (!SPIFFS.begin())

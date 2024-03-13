@@ -77,17 +77,17 @@ $(() => {
 
   });
   $("#sendSlaves").click(function(){
-    if($("#slaveCountInput")>255)
+    if(parseInt($("#slaveCountInput").text())>255)
     {
-      alert("Error zu viele Slaves wurden ausgewählt")
+      alert("Error! Zu viele Slaves wurden ausgewählt. Es dürfen maximal 255 Slaves ausgewählt werden.")
     }
-    if($("#slaveCountInput")>255)
+    else if(parseInt($("#slaveCountInput").text()) <= 0)
     {
-      alert("Error zu viele Slaves wurden ausgewählt")
+      alert("Error! Ungültige Eingabe")
     }
     else{
     sendNumberOfSlaves();
-    alert("Anzahl der Slaves wurden konfiguriert");
+    alert("Anzahl der Slaves wurden konfiguriert. Warten Sie bis die Tabelle befüllt wurde. (<10s)");
     }
   });
   updateMeasuredValues().then(data => {
@@ -134,9 +134,10 @@ function sendNumberOfSlaves() {
 
   var slaveCount = document.getElementById('slaveCountInput').value;
 
-  
+    
+
     const $table = $('#batteryDataTableBody');
-    $tabel.empty();
+    $("#batteryDataTableBody tr").detach();
     for (let i = 0; i < slaveCount; ++i) {
       const $tableRow = $('<tr>').attr({ id: 'cell' + (i + 1) });
       const $tableHead = $('<th>').attr({ scope: 'row' }).text(i + 1);
