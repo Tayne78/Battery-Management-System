@@ -1,19 +1,24 @@
 #include "bms_webserver.h"
 
 AsyncWebServer server(80);
-/*int temperature[NUMBER_OF_SLAVES] = {0};
-float voltage[NUMBER_OF_SLAVES] = {0};
-bool status[NUMBER_OF_SLAVES] = {0};*/
 
 int numOfSlaves = 2;
 
-int *temperature = (int *)malloc(numOfSlaves * sizeof(int));
-float *voltage = (float *)malloc(numOfSlaves * sizeof(float));
-bool *status = (bool *)malloc(numOfSlaves * sizeof(bool));
+int *temperature;
+int *voltage;
+bool *status;
 
-float maxCellVoltage = 0;
-float minCellVoltage = 0;
-float differenceMaxMin = 0;
+int *sorted_temperature;
+int *received_data;
+
+std::vector<std::vector<int>> sorted_voltage;
+
+int maxCellVoltage = 0;
+int minCellVoltage = 0;
+int differenceMaxMin = 0;
+
+int totale_voltage = 0;
+int avg_temperature = 0;
 
 int maxCell = 0;
 int minCell = 0;
@@ -93,6 +98,19 @@ void handleScriptJS(AsyncWebServerRequest *request)
     notFound(request);
   }
 }
+void handleLogo(AsyncWebServerRequest *request)
+{
+  File file = SPIFFS.open("/logo.png");
+  if (file)
+  {
+    request->send(SPIFFS, "/logo.png", "image/png");
+    file.close();
+  }
+  else
+  {
+    notFound(request);
+  }
+}
 
 void handleLog(AsyncWebServerRequest *request)
 {
@@ -121,6 +139,9 @@ void handleFetch(AsyncWebServerRequest *request)
     jsonDoc["temperature" + std::to_string(i + 1)] = temperature[i];
     jsonDoc["status" + std::to_string(i + 1)] = status[i];
   }
+  jsonDoc["averageTemp"] = avg_temperature;
+  jsonDoc["overallVolt"] = totale_voltage;
+
   jsonDoc["maxCell"] = maxCell + 1;
   jsonDoc["maxCellVoltage"] = maxCellVoltage;
 
@@ -155,14 +176,19 @@ void handleNumOfSlaves(AsyncWebServerRequest *request, uint8_t *data, size_t len
   numOfSlaves = atoi(json["numOfSlaves"]);
 
   temperature = (int *)realloc(temperature, numOfSlaves * sizeof(int));
-  voltage = (float *)realloc(voltage, numOfSlaves * sizeof(float));
+  voltage = (int *)realloc(voltage, numOfSlaves * sizeof(int));
   status = (bool *)realloc(status, numOfSlaves * sizeof(bool));
 
-  for(int i=0;i<numOfSlaves;i++)
+  sorted_voltage.resize(numOfSlaves, std::vector<int>(numOfSlaves, 0));
+
+  sorted_temperature = (int *)realloc(sorted_temperature, numOfSlaves * sizeof(int));
+  received_data = (int *)realloc(received_data, numOfSlaves * sizeof(int));
+
+  for (int i = 0; i < numOfSlaves; i++)
   {
-    temperature[i]=0;
-    voltage[i]=0;
-    status[i]=0;
+    temperature[i] = 0;
+    voltage[i] = 0;
+    status[i] = 0;
   }
 
   Serial.println(numOfSlaves);
@@ -179,11 +205,19 @@ void setupWebServer(const char *ssid, const char *password)
   Serial.print("Access Point IP-Adresse: ");
   Serial.println(IP);
 
-  for(int i=0;i<numOfSlaves;i++)
+  temperature = (int *)malloc(numOfSlaves * sizeof(int));
+  voltage = (int *)malloc(numOfSlaves * sizeof(int));
+  status = (bool *)malloc(numOfSlaves * sizeof(bool));
+  sorted_temperature = (int *)malloc(numOfSlaves * sizeof(int));
+  received_data = (int *)malloc(numOfSlaves * sizeof(int));
+
+  sorted_voltage.resize(numOfSlaves, std::vector<int>(numOfSlaves, 0));
+
+  for (int i = 0; i < numOfSlaves; i++)
   {
-    temperature[i]=0;
-    voltage[i]=0;
-    status[i]=0;
+    temperature[i] = 0;
+    voltage[i] = 0;
+    status[i] = 0;
   }
 
   // Initialisiere SPIFFS
@@ -197,6 +231,7 @@ void setupWebServer(const char *ssid, const char *password)
   server.on("/", HTTP_GET, handleRoot);
   server.on("/index.html", HTTP_GET, handleRoot);
   server.on("/favicon.ico", HTTP_GET, handleFavicon);
+  server.on("/logo.png", HTTP_GET, handleLogo);
   server.on("/about-us.html", HTTP_GET, handleAboutUs);
   server.on("/css/bootstrap.min.css", HTTP_GET, handleBootstrap);
   server.on("/js/jquery-3.2.1.slim.min.js", HTTP_GET, handleScriptJS);

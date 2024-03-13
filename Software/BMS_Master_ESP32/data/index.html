@@ -46,13 +46,12 @@
       background-color: #343a40;
       color: #ffffff;
     }
-
-    #batteryDataTableBody tbody tr:nth-child(odd) {
+    #batteryDataTableBody tr:nth-child(odd) {
       background-color: #f8f9fa;
       /* Lighter color for odd rows */
     }
 
-    #batteryDataTableBody tbody tr:nth-child(even) {
+    #batteryDataTableBody tr:nth-child(even) {
       background-color: #e9ecef;
       /* Slightly darker color for even rows */
     }
@@ -93,6 +92,8 @@
     /* Custom style for button */
     #confAkku{
       margin-top: 10px;
+      margin-bottom: 15px;
+
     }
 
 
@@ -102,29 +103,37 @@
 <body>
 
   <!-- Navigation Bar -->
-  <nav class="navbar navbar-expand-lg navbar-dark">
-    <a class="navbar-brand" href="#">
-      BMS
-    </a>
-  
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-      <ul class="navbar-nav">
-        <li class="nav-item active">
-          <a class="nav-link" href="./index.html">Home</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="./about-us.html">About us</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/log" target="_blank">Log</a>
-        </li>
-      </ul>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center mr-auto" href="#">
+            <img src="/logo.png" width="72px" class="mr-2" alt="Logo">
+        </a>
+
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mx-auto"> <!-- Use mx-auto class to center the nav items -->
+                <li class="nav-item active">
+                    <a class="nav-link" href="./index.html">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="./about-us.html">About us</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/log" target="_blank">Log</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Use d-none d-lg-flex to hide BMS on mobile -->
+        <a class="navbar-brand d-none d-lg-flex align-items-center ml-auto" href="#">
+            <span style = "margin-left: 12px;">BMS</span>
+        </a>
     </div>
-  </nav>
+</nav>
 
   <!-- Main Content -->
   <br>
@@ -143,23 +152,35 @@
               <th scope="col">Beschreibung</th>
             </tr>
             <tr>
+              <td scope="col">Gesamtspannung</th>
+              <td scope="col" id="overallVolt">...</td>
+              <td scope="col">/</td>
+
+            </tr>
+            <tr>
+              <td scope="col">Durchschnittstemperatur</th>
+              <td scope="col" id="averageTemp">...</td>
+              <td scope="col">/</td>
+
+            </tr>
+            <tr>
               <td scope="col">Höchste Zellspannung</th>
               <td scope="col" id="maxCellVoltage">...</td>
-              <td scope="col" id="maxCell"> ...</td>
+              <td scope="col" id="maxCell">...</td>
             
             </tr>
 
             <tr>
               <td scope="col">Niedrigste Zellspannung</th>
               <td scope="col" id="minCellVoltage">...</td>
-              <td scope="col" id="minCell">  ...</td>
+              <td scope="col" id="minCell">...</td>
             
             </tr>
 
             <tr>
               <td scope="col">Differenzspannung (Max-Min)</th>
-              <td scope="col" id="differenceMaxMin">Spannung</td>
-              <td scope="col" id="MaxMinCells">  ...</td>
+              <td scope="col" id="differenceMaxMin">...</td>
+              <td scope="col" id="MaxMinCells">...</td>
             
             </tr>
             <tr>
@@ -171,7 +192,7 @@
             </tr>
             <tr>
               <td scope="col">Anzahl der Zellen</th>
-              <td scope="col" id="numCells">Zellen</td>
+              <td scope="col" id="numCells">...</td>
               <td scope="col">/</td>
               
             </tr>
@@ -189,7 +210,7 @@
         <thead>
           <tr>
             <th scope="col">Zelle</th>
-            <th scope="col">Spannung (V)</th>
+            <th scope="col">Spannung (mV)</th>
             <th scope="col">Temperatur (°C)</th>
             <th scope="col">Status</th>
           </tr>

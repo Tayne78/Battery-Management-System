@@ -29,7 +29,7 @@ void Logfile::begin(const char *path, int numofcells)
   createLog(path,numofcells);
 }
 
-void Logfile::writeData(const char *path, int t[], float v[], int numofcells)
+void Logfile::writeData(const char *path, int t[], int v[], int numofcells)
 {
   if (!SD.exists(path))
   {

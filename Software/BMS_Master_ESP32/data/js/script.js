@@ -42,7 +42,7 @@ const renderTable = (number_of_slaves) => {
 
 const updateTable = data => {
   for (let i = 1; i <= data.NUMBER_OF_SLAVES; i++) {
-    $("#voltage" + i).text((data["voltage" + i] / 1000).toFixed(2));
+    $("#voltage" + i).text(data["voltage" + i]);
     $("#temperature" + i).text(data["temperature" + i]);
     if(data["status"+i] == 1){
     $("#status" + i).text("Balancing").addClass("red");
@@ -51,6 +51,8 @@ const updateTable = data => {
       $("#status" + i).text("Idle").addClass("green");
       }
   }
+  $("⁠#averageTemp").text(data["averageTemp"]+"°C");
+  $("#overallVolt").text(((parseInt(data["overallVolt"])/1000).toFixed(2))+"V");
   $("#maxCellVoltage").text(data["maxCellVoltage"]+"mV");
   $("#maxCell").text("Z"+data["maxCell"]);
   $("#minCellVoltage").text(data["minCellVoltage"]+"mV");
@@ -77,11 +79,11 @@ $(() => {
 
   });
   $("#sendSlaves").click(function(){
-    if(parseInt($("#slaveCountInput").text())>255)
+    if(parseInt($("#slaveCountInput").val())>255)
     {
       alert("Error! Zu viele Slaves wurden ausgewählt. Es dürfen maximal 255 Slaves ausgewählt werden.")
     }
-    else if(parseInt($("#slaveCountInput").text()) <= 0)
+    else if(parseInt($("#slaveCountInput").val()) <= 0)
     {
       alert("Error! Ungültige Eingabe")
     }

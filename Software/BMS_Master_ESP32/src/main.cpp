@@ -12,7 +12,6 @@ CAN_BMS canbus(12, 14);
 Led led(GPIO_NUM_32);
 HardwareSerial RS485Serial(2);
 
-#define CELLS 2
 #define IgnitondetectionPin 34
 #define ChargedetectionPin 35
 #define ladeschlussspannung 4200
@@ -24,8 +23,7 @@ TaskHandle_t statusled;
 
 int com_state = 0, timelastsend = 0, timereceive = 0, state = 0, charge_state = 0, timeled = 0, ledcolor = GREEN;
 bool idle = 0, error = 0;
-int totale_voltage_old = 0, totale_voltage_new = 0, avg_temperature = 0, sorted_voltages[CELLS][2], sorted_temperature[CELLS];
-int data[CELLS + 1];
+int totale_voltage_old = 0,sorted_voltages[2][2];
 
 void toggle(void *pvParameters)
 {
@@ -66,7 +64,7 @@ void setup()
   setupWebServer("BMS", "BMS1234Kaefer");
 
 
-  logfile.begin("/log.txt", CELLS);
+  logfile.begin("/log.txt", numOfSlaves);
 
   relay.turnOnRelay1();
   relay.turnOffRelay2();
@@ -83,13 +81,14 @@ void loop()
   }
   if (com_state == 1 || com_state == 3)
   {
-    if (millis() - timereceive > (20 * CELLS))
+    if (millis() - timereceive > (20 * numOfSlaves))
     {
       timereceive = millis();
-      for (int i = 0; i < CELLS + 1; i++)
+      for (int i = 0; i < numOfSlaves + 1; i++)
       {
-        data[i] = oneWireCom.receive();
-        if (data[i] == 0) // Fehler
+        
+        received_data[i] = oneWireCom.receive();
+        if (received_data[i] == 0) // Fehler
         {
           ledcolor = 0x000F0F;
           Serial.println("ERROR");
@@ -109,17 +108,17 @@ void loop()
         if (error == 1)
         {
           com_state = 0;
-          for (int i = 0; i < CELLS; i++)
+          for (int i = 0; i < numOfSlaves; i++)
             voltage[i] = 0;
         }
         else
         {
           com_state = 2;
-          for (int i = 0; i < CELLS; i++)
-            voltage[i] = data[i + 1];
+          for (int i = 0; i < numOfSlaves; i++)
+            voltage[i] = received_data[i + 1];
         }
         Serial.println("SPANNUNG");
-        for (int i = 0; i < CELLS; i++)
+        for (int i = 0; i < numOfSlaves; i++)
           Serial.println(voltage[i]);
       }
       else if (com_state == 3) // Daten Auswerten für Temperatur
@@ -127,17 +126,17 @@ void loop()
         if (error == 1)
         {
           com_state = 2;
-          for (int i = 0; i < CELLS; i++)
+          for (int i = 0; i < numOfSlaves; i++)
             voltage[i] = 0;
         }
         else
         {
           com_state = 0;
-          for (int i = 0; i < CELLS; i++)
-            temperature[i] = (data[i + 1] - 273);
+          for (int i = 0; i < numOfSlaves; i++)
+            temperature[i] = (received_data[i + 1] - 273);
         }
         Serial.println("TEMPERATUR");
-        for (int i = 0; i < CELLS; i++)
+        for (int i = 0; i < numOfSlaves; i++)
           Serial.println(temperature[i]);
 
         idle = 1;
@@ -150,32 +149,33 @@ void loop()
     {
       ledcolor = GREEN;
       idle = 0;
-      logfile.writeData("/log.txt", temperature, voltage, CELLS);
-      totale_voltage_new = 0;
+      logfile.writeData("/log.txt", temperature, voltage, numOfSlaves);
       avg_temperature = 0;
+      totale_voltage=0;
 
-      for (int i = 0; i < CELLS; i++)
+      for (int i = 0; i < numOfSlaves; i++)
       {
-        totale_voltage_new += voltage[i];
+        totale_voltage += voltage[i];
         avg_temperature += temperature[i];
         sorted_voltages[i][0] = voltage[i];
         sorted_voltages[i][1] = i;
       }
-      if (totale_voltage_old < totale_voltage_new) // Überarbeiten
+      if (totale_voltage_old < totale_voltage) // Überarbeiten
       {
         state = CHARGE;
         ledcolor = 0xF00000;
         Serial.println("LADEN");
       }
-      totale_voltage_old = totale_voltage_new;
-      avg_temperature = avg_temperature / CELLS;
+      totale_voltage_old = totale_voltage;
+
+      avg_temperature = avg_temperature / numOfSlaves;
       Serial.println(totale_voltage_old);
-      Serial.println(totale_voltage_new);
+      Serial.println(totale_voltage);
       Serial.println(avg_temperature);
 
-      for (int i = 0; i < CELLS - 1; i++)
+      for (int i = 0; i < numOfSlaves - 1; i++)
       {
-        for (int j = 0; j < CELLS - 1 - i; j++)
+        for (int j = 0; j < numOfSlaves - 1 - i; j++)
         {
           if (sorted_voltages[j][0] > sorted_voltages[j + 1][0])
           {
@@ -198,14 +198,14 @@ void loop()
           }
         }
       }
-      if ((sorted_voltages[CELLS - 1][0] <= ladeschlussspannung) && (sorted_voltages[CELLS - 1][0] >= (ladeschlussspannung - 50))) // ladeschlussspannung
+      if ((sorted_voltages[numOfSlaves - 1][0] <= ladeschlussspannung) && (sorted_voltages[numOfSlaves - 1][0] >= (ladeschlussspannung - 50))) // ladeschlussspannung
       {
         relay.turnOffRelay2();
         state = END_VOLTAGE;
         charge_state = CANNOT_BE_CHARGED;
         Serial.println("FULL Charged");
       }
-      else if (sorted_voltages[CELLS - 1][0] > ladeschlussspannung) // Overvoltage
+      else if (sorted_voltages[numOfSlaves - 1][0] > ladeschlussspannung) // Overvoltage
       {
         relay.turnOffRelay2();
         state = OVERVOLTAGE;
@@ -225,13 +225,13 @@ void loop()
         charge_state = CAN_BE_CHARGED;
         Serial.println("IDLE");
       }
-      maxCellVoltage = sorted_voltages[CELLS - 1][0];
+      maxCellVoltage = sorted_voltages[numOfSlaves - 1][0];
       minCellVoltage = sorted_voltages[0][0];
-      differenceMaxMin = sorted_voltages[CELLS - 1][0] - sorted_voltages[0][0];
-      maxCell = sorted_voltages[CELLS - 1][1];
+      differenceMaxMin = sorted_voltages[numOfSlaves - 1][0] - sorted_voltages[0][0];
+      maxCell = sorted_voltages[numOfSlaves - 1][1];
       minCell = sorted_voltages[0][1];
 
-      if (sorted_temperature[CELLS - 1] > MAXTemperature) // Overheating
+      if (sorted_temperature[numOfSlaves - 1] > MAXTemperature) // Overheating
       {
         relay.turnOffRelay2();
         state = OVERHEATING;
@@ -244,11 +244,11 @@ void loop()
         Serial.println("Ladegerät angesteckt und Ladebereit");
         relay.turnOnRelay2();
       }
-      canbus.send(totale_voltage_new, avg_temperature, charge_state, state, CANID);
+      canbus.send(totale_voltage, avg_temperature, charge_state, state, CANID);
 
       // Überarbeiten
       // BALANCEN wenn Auto ausgeschalten und ein Spannungsunterschied von 50mV herscht und die Zellespannung gößer der mininmale Balancespannung ist
-      if (IgnitondetectionPin == LOW && ((sorted_voltages[CELLS - 1][0] >= (sorted_voltages[0][0] + 50)) && (sorted_voltages[CELLS - 1][0] > MINBalanceVoltage)))
+      if (IgnitondetectionPin == LOW && ((sorted_voltages[numOfSlaves - 1][0] >= (sorted_voltages[0][0] + 50)) && (sorted_voltages[numOfSlaves - 1][0] > MINBalanceVoltage)))
       {
         relay.turnOffRelay1(); // Laden für Balancen unterbrechen um Overheating zu vermeiden
       }

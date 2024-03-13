@@ -24,12 +24,19 @@ extern float voltage[NUMBER_OF_SLAVES];
 extern bool status[NUMBER_OF_SLAVES];*/
 
 extern int* temperature;
-extern float* voltage;
+extern int* voltage;
 extern bool* status;
 
-extern float maxCellVoltage;
-extern float minCellVoltage;
-extern float differenceMaxMin;
+//extern std::vector<std::vector<int>> sorted_voltages;
+extern int* sorted_temperature;
+extern int* received_data;
+
+extern int totale_voltage;
+extern int avg_temperature;
+
+extern int maxCellVoltage;
+extern int minCellVoltage;
+extern int differenceMaxMin;
 
 extern int maxCell;
 extern int minCell;

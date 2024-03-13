@@ -13,7 +13,7 @@ class Logfile {
     Logfile();
 
     void begin(const char *path, int numofcells);
-    void writeData(const char *path, int t[], float v[], int numofcells);
+    void writeData(const char *path, int t[], int v[], int numofcells);
     void createLog(const char *path, int numofcells);
     void readLog(const char *path, int numofLines, String [][3]);
 
