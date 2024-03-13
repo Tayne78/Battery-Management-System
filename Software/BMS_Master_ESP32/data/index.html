@@ -15,7 +15,13 @@
       background-color: #f8f9fa;
       color: #495057;
     } 
-
+    
+    .center {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
     .navbar {
       background-color: #343a40;
     }
@@ -41,12 +47,12 @@
       color: #ffffff;
     }
 
-    tbody tr:nth-child(odd) {
+    #batteryDataTableBody tbody tr:nth-child(odd) {
       background-color: #f8f9fa;
       /* Lighter color for odd rows */
     }
 
-    tbody tr:nth-child(even) {
+    #batteryDataTableBody tbody tr:nth-child(even) {
       background-color: #e9ecef;
       /* Slightly darker color for even rows */
     }
@@ -58,10 +64,11 @@
       color: red;
     }
 
+    
     /* Custom style for select element */
-    .batteryInput {
-      margin-top: 20px;
-    }
+    .batterySelectAkku {
+    margin-top: 8px !important; /* Set margin-top to zero */
+  }
 
     .form-select {
       width: 100%;
@@ -84,9 +91,11 @@
     }
 
     /* Custom style for button */
-    .sendButton {
-      margin-top: 20px;
+    #confAkku{
+      margin-top: 10px;
     }
+
+
   </style>
 </head>
 
@@ -118,8 +127,63 @@
   </nav>
 
   <!-- Main Content -->
+  <br>
   <div class="container mt-4">
+    
+    <div class="container mt-4">
+      <h2 class="text-center">Akkuparameter</h2>
+      <br>
+      <div class="table-responsive">
+        <table class="table">
+
+          <tbody id="akkuParameter">
+            <tr>
+              <th scope="col">Parameter</th>
+              <th scope="col">Wert</th>
+              <th scope="col">Beschreibung</th>
+            </tr>
+            <tr>
+              <td scope="col">Höchste Zellspannung</th>
+              <td scope="col" id="maxCellVoltage">...</td>
+              <td scope="col" id="maxCell"> ...</td>
+            
+            </tr>
+
+            <tr>
+              <td scope="col">Niedrigste Zellspannung</th>
+              <td scope="col" id="minCellVoltage">...</td>
+              <td scope="col" id="minCell">  ...</td>
+            
+            </tr>
+
+            <tr>
+              <td scope="col">Differenzspannung (Max-Min)</th>
+              <td scope="col" id="differenceMaxMin">Spannung</td>
+              <td scope="col" id="MaxMinCells">  ...</td>
+            
+            </tr>
+            <tr>
+              <td scope="col">Ausgewählter Akkutyp</th>
+              <td scope="col" id="akkutyp">...</td>
+              <td scope="col">/</td>
+              
+            
+            </tr>
+            <tr>
+              <td scope="col">Anzahl der Zellen</th>
+              <td scope="col" id="numCells">Zellen</td>
+              <td scope="col">/</td>
+              
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+    <br>
     <!-- Zellspannung, Temperatur und Status Tabellen -->
+    <h2 class="text-center">Gesamtübersicht</h2>
+    <br>
     <div class="table-responsive">
       <table class="table">
         <thead>
@@ -136,16 +200,58 @@
         </tbody>
       </table>
     </div>
-    <div class="batteryInput container mt-4">
-      <p class="h2">Wähle deinen Akkutyp:<p>
-      <select name="batterySelect" id="batterySelect" class="form-select mt-4 form-select-lg" aria-label=".form-select-lg">
-        <option value="LithiumIonen" selected>Lithium-Ionen</option>
-        <option value="liPo">Lithium-Ion Polymer</option>
-        <option value="NiCd">Nickel-Kadmium</option>
-        <option value="NiMH">Nickel-Metallhybrid</option>
-      </select>
- 
+    
+      
+    <div class="cellInput container mt-4">
+      <h2 class="text-center">Konfiguriere dein Akkupaket</h2>
+      <div class="container mt-4">
+        <p class="h5">Anzahl der Slaves eingeben:</p>
+        <div class="input-group mb-3">
+          <input type="number" class="form-control" id="slaveCountInput" placeholder="Anzahl der Slaves eingeben">
+          <div class="input-group-append">
+            <button class="btn btn-primary" type="button" id="sendSlaves">Bestätigen</button>
+          </div>
+        </div>
+        <p class="h5" style="margin-bottom: 0;">Wähle deinen Akkutyp:</p>
+        <select name="batterySelect" id="batterySelect" class="form-select mt-4 form-select-lg batterySelectAkku" aria-label=".form-select-lg">
+          <option value="LithiumIonen" selected>Lithium-Ionen</option>
+          <option value="liPo">Lithium-Ion Polymer</option>
+          <option value="LiFePO4">Lithium-Eisenphosphat</option>
+        </select>
+        <button id="confAkku" type="button" class="btn btn-danger mt-4 mx-auto d-block" data-toggle="modal" data-target="#warningModal">
+          Konfiguriere Akkutyp
+        </button>
+      </div>
+    </div>
+    
+    </div>
+      
+      
 </div>
+
+
+
+
+
+  <div class="modal fade" id="warningModal" tabindex="-1" role="dialog" aria-labelledby="warningModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="warningModalLabel">Warning!</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          Das ist eine Warnung!! Das Ändern des Akkutyps kann Schäden am Akku verursachen!
+          Sind Sie sicher, dass Sie fortfahren möchten?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-danger" id="proceedBtn" data-dismiss="modal">Ja</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Bootstrap JavaScript (optional) -->

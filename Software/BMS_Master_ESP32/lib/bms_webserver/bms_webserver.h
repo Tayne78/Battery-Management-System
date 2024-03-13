@@ -1,7 +1,6 @@
 #ifndef BMS_WEBSERVER_H
 #define BMS_WEBSERVER_H
 
-#define NUMBER_OF_SLAVES 3
 #define BALANCING 1
 #define IDLE 0
 
@@ -20,9 +19,22 @@
 
 extern AsyncWebServer server;
 
-extern int temperature[NUMBER_OF_SLAVES];
+/*extern int temperature[NUMBER_OF_SLAVES];
 extern float voltage[NUMBER_OF_SLAVES];
-extern bool status[NUMBER_OF_SLAVES];
+extern bool status[NUMBER_OF_SLAVES];*/
+
+extern int* temperature;
+extern float* voltage;
+extern bool* status;
+
+extern float maxCellVoltage;
+extern float minCellVoltage;
+extern float differenceMaxMin;
+
+extern int maxCell;
+extern int minCell;
+
+extern int numOfSlaves;
 
 extern unsigned char akkutyp;
 

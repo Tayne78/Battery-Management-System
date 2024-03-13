@@ -12,7 +12,7 @@ class Logfile {
   public:
     Logfile();
 
-    void begin();
+    void begin(const char *path, int numofcells);
     void writeData(const char *path, int t[], float v[], int numofcells);
     void createLog(const char *path, int numofcells);
     void readLog(const char *path, int numofLines, String [][3]);

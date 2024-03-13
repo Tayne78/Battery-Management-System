@@ -1,9 +1,22 @@
 #include "bms_webserver.h"
 
 AsyncWebServer server(80);
-int temperature[NUMBER_OF_SLAVES] = {0};
+/*int temperature[NUMBER_OF_SLAVES] = {0};
 float voltage[NUMBER_OF_SLAVES] = {0};
-bool status[NUMBER_OF_SLAVES] = {0};
+bool status[NUMBER_OF_SLAVES] = {0};*/
+
+int numOfSlaves = 2;
+
+int *temperature = (int *)malloc(numOfSlaves * sizeof(int));
+float *voltage = (float *)malloc(numOfSlaves * sizeof(float));
+bool *status = (bool *)malloc(numOfSlaves * sizeof(bool));
+
+float maxCellVoltage = 0;
+float minCellVoltage = 0;
+float differenceMaxMin = 0;
+
+int maxCell = 0;
+int minCell = 0;
 
 unsigned char akkutyp = 1;
 
@@ -99,15 +112,25 @@ void handleLog(AsyncWebServerRequest *request)
 void handleFetch(AsyncWebServerRequest *request)
 {
   DynamicJsonDocument jsonDoc(256);
-  
-  jsonDoc["NUMBER_OF_SLAVES"] = NUMBER_OF_SLAVES;
 
-  for (int i = 0; i < NUMBER_OF_SLAVES; i++)
+  jsonDoc["NUMBER_OF_SLAVES"] = numOfSlaves;
+
+  for (int i = 0; i < numOfSlaves; i++)
   {
-    jsonDoc["voltage" + std::to_string(i+1)] = voltage[i];
-    jsonDoc["temperature" + std::to_string(i+1)] = temperature[i];
-    jsonDoc["status" + std::to_string(i+1)] = status[i];
+    jsonDoc["voltage" + std::to_string(i + 1)] = voltage[i];
+    jsonDoc["temperature" + std::to_string(i + 1)] = temperature[i];
+    jsonDoc["status" + std::to_string(i + 1)] = status[i];
   }
+  jsonDoc["maxCell"] = maxCell + 1;
+  jsonDoc["maxCellVoltage"] = maxCellVoltage;
+
+  jsonDoc["minCell"] = minCell + 1;
+  jsonDoc["minCellVoltage"] = minCellVoltage;
+
+  jsonDoc["differenceMaxMin"] = differenceMaxMin;
+
+  /* jsonDoc["akkutyp"] = ;
+   jsonDoc["numCells"] = ;*/
 
   String response;
   serializeJson(jsonDoc, response);
@@ -117,36 +140,50 @@ void handleFetch(AsyncWebServerRequest *request)
   request->send(200, "application/json", response);
 }
 
-
-void handleBatteryChange(AsyncWebServerRequest* req) {
+void handleBatteryChange(AsyncWebServerRequest *req)
+{
   int params = req->params();
-  if (params != 1) return;
-  AsyncWebParameter* p = req->getParam(0);
+  if (params != 1)
+    return;
+  AsyncWebParameter *p = req->getParam(0);
   Serial.print("NAME: ");
   Serial.println(p->name().c_str());
   Serial.print("VALUE: ");
   Serial.println(p->value().c_str());
   req->send(200, "text/plain", "ok");
 }
-void handleAkkutype(AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total){
-    // Hier empfängst du die POST-Daten vom Client (Webbrowser)
-    /*Serial.println(request->params());
-    AsyncWebParameter* p = request->getParam(0);
-    if (p) {
-      if (p->name() == "batteryType") {
-        Serial.println("Received battery type: " + p->value());
-      } else {
-        Serial.println("wrong parameter name!");
-      }
+void handleAkkutype(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+{
+  // Hier empfängst du die POST-Daten vom Client (Webbrowser)
+  /*Serial.println(request->params());
+  AsyncWebParameter* p = request->getParam(0);
+  if (p) {
+    if (p->name() == "batteryType") {
+      Serial.println("Received battery type: " + p->value());
     } else {
-      Serial.println("no parameters sent");
-    }*/
+      Serial.println("wrong parameter name!");
+    }
+  } else {
+    Serial.println("no parameters sent");
+  }*/
 
   DynamicJsonDocument json(256);
-  deserializeJson(json, const_cast<const char*>(reinterpret_cast<char*>(data)));
-  const char* batteryType = json["batteryType"];
+  deserializeJson(json, const_cast<const char *>(reinterpret_cast<char *>(data)));
+  const char *batteryType = json["batteryType"];
   Serial.println(batteryType);
+}
+void handleNumOfSlaves(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+{
 
+  DynamicJsonDocument json(256);
+  deserializeJson(json, const_cast<const char *>(reinterpret_cast<char *>(data)));
+  numOfSlaves = atoi(json["numOfSlaves"]);
+
+  temperature = (int *)realloc(temperature, numOfSlaves * sizeof(int));
+  voltage = (float *)realloc(voltage, numOfSlaves * sizeof(float));
+  status = (bool *)realloc(status, numOfSlaves * sizeof(bool));
+
+  Serial.println(numOfSlaves);
 }
 
 void setupWebServer(const char *ssid, const char *password)
@@ -169,7 +206,7 @@ void setupWebServer(const char *ssid, const char *password)
   Serial.println("SPIFFS initialisiert");
 
   server.on("/", HTTP_GET, handleRoot);
-  server.on("/index.html", HTTP_GET, handleRoot); 
+  server.on("/index.html", HTTP_GET, handleRoot);
   server.on("/favicon.ico", HTTP_GET, handleFavicon);
   server.on("/about-us.html", HTTP_GET, handleAboutUs);
   server.on("/css/bootstrap.min.css", HTTP_GET, handleBootstrap);
@@ -180,9 +217,15 @@ void setupWebServer(const char *ssid, const char *password)
   server.on("/log", HTTP_GET, handleLog);
   server.on("/api/measured-values", HTTP_GET, handleFetch);
 
-  server.on("/api/akkutyp", HTTP_POST, [](AsyncWebServerRequest* req){
-    req->send(200, "text/plain", "success");
-  }, NULL, handleAkkutype);
+  server.on(
+      "/api/numOfSlaves", HTTP_POST, [](AsyncWebServerRequest *req)
+      { req->send(200, "text/plain", "success"); },
+      NULL, handleNumOfSlaves);
+
+  server.on(
+      "/api/akkutyp", HTTP_POST, [](AsyncWebServerRequest *req)
+      { req->send(200, "text/plain", "success"); },
+      NULL, handleAkkutype);
 
   // Fange 404-Fehler ab
   server.onNotFound(notFound);

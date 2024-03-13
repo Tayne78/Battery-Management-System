@@ -2,7 +2,7 @@
 
 Logfile::Logfile() {}
 
-void Logfile::begin()
+void Logfile::begin(const char *path, int numofcells)
 {
   if (!SD.begin(5))
   {
@@ -26,6 +26,7 @@ void Logfile::begin()
   {
     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
+  createLog(path,numofcells);
 }
 
 void Logfile::writeData(const char *path, int t[], float v[], int numofcells)

@@ -21,7 +21,7 @@ class CAN_BMS
 {
 public:
   CAN_BMS(uint8_t _rxPin, uint8_t _txPin);
-  void begin();
+  void begin(uint32_t transfer_rate);
   bool send(uint16_t total_voltage, uint8_t temperatur, uint8_t chargestate, uint8_t state_error, uint16_t canId);
   int receive();
 

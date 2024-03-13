@@ -51,7 +51,14 @@ const updateTable = data => {
       $("#status" + i).text("Idle").addClass("green");
       }
   }
-  
+  $("#maxCellVoltage").text(data["maxCellVoltage"]+"mV");
+  $("#maxCell").text("Z"+data["maxCell"]);
+  $("#minCellVoltage").text(data["minCellVoltage"]+"mV");
+  $("#minCell").text("Z"+data["minCell"]);
+  $("#differenceMaxMin").text(data["differenceMaxMin"]+"mV");
+  $("#MaxMinCells").text("Z"+data["maxCell"] + " -" + " Z"+data["minCell"]);
+  $("#numCells").text(data["NUMBER_OF_SLAVES"]);
+  $("#akkutyp").text(data["akkutyp"]);
 
   // setColorBasedOnValue(data.voltage1, "voltage1");
   // setColorBasedOnValue(data.temperature1, "temperature1");
@@ -65,10 +72,24 @@ $(() => {
     });
   }
 
-  $('#batterySelect').on('change', () => {
+  $("#proceedBtn").click(function(){
     sendSelectedBatteryType();
-  })
 
+  });
+  $("#sendSlaves").click(function(){
+    if($("#slaveCountInput")>255)
+    {
+      alert("Error zu viele Slaves wurden ausgewählt")
+    }
+    if($("#slaveCountInput")>255)
+    {
+      alert("Error zu viele Slaves wurden ausgewählt")
+    }
+    else{
+    sendNumberOfSlaves();
+    alert("Anzahl der Slaves wurden konfiguriert");
+    }
+  });
   updateMeasuredValues().then(data => {
     console.log("UPDATE")
     renderTable(data.NUMBER_OF_SLAVES);
@@ -87,6 +108,55 @@ function sendSelectedBatteryType() {
   var url = '/api/akkutyp'; 
 
   var data = { batteryType: selectedBattery };
+
+  // POST-Anfrage konfigurieren
+  var options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  };
+
+  // POST-Anfrage senden
+  fetch(url, options)
+    .then(response => {
+      if (response.ok) {
+        console.log('POST-Anfrage erfolgreich gesendet!');
+      } else {
+        console.error('Fehler beim Senden der POST-Anfrage:', response.statusText);
+      }
+    })
+    .catch(error => console.error('Fehler beim Senden der POST-Anfrage:', error));
+}
+
+function sendNumberOfSlaves() {
+
+  var slaveCount = document.getElementById('slaveCountInput').value;
+
+  
+    const $table = $('#batteryDataTableBody');
+    $tabel.empty();
+    for (let i = 0; i < slaveCount; ++i) {
+      const $tableRow = $('<tr>').attr({ id: 'cell' + (i + 1) });
+      const $tableHead = $('<th>').attr({ scope: 'row' }).text(i + 1);
+      const $voltage = $('<td>').attr({ id: 'voltage' + (i + 1) });
+      const $temperature = $('<td>').attr({ id: 'temperature' + (i + 1) });
+      const $status = $('<td>').attr({ id: 'status' + (i + 1) });
+  
+      $tableRow
+        .append($tableHead)
+        .append($voltage)
+        .append($temperature)
+        .append($status);
+      $table.append($tableRow);
+    }
+
+  console.log("sendNumberOfSlaves");
+
+  var url = '/api/numOfSlaves'; 
+
+  var data = { numOfSlaves: slaveCount };
 
   // POST-Anfrage konfigurieren
   var options = {

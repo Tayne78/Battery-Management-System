@@ -6,9 +6,9 @@ CAN_BMS::CAN_BMS(uint8_t _rxPin, uint8_t _txPin)
     txPin = _txPin;
     CAN.setPins(rxPin, txPin);
 }
-void CAN_BMS::begin()
+void CAN_BMS::begin(uint32_t transfer_rate)
 {
-    if (!CAN.begin(500E3))
+    if (!CAN.begin(transfer_rate))
     {
         Serial.println("Starting CAN failed!");
         while (1)
