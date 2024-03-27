@@ -51,7 +51,8 @@ const updateTable = data => {
       $("#status" + i).text("Idle").addClass("green");
       }
   }
-  $("⁠#averageTemp").text(data["averageTemp"]+"°C");
+  console.log(data);
+  $("#averageTemp").text(data["averageTemp"]+"°C");
   $("#overallVolt").text(((parseInt(data["overallVolt"])/1000).toFixed(2))+"V");
   $("#maxCellVoltage").text(data["maxCellVoltage"]+"mV");
   $("#maxCell").text("Z"+data["maxCell"]);

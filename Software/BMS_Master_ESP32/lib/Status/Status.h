@@ -8,8 +8,11 @@
 #define RED 0x000F00  
 #define GREEN 0x0F0000
 #define BLUE 0x00000F
-#define ORANGE 0x0F0F00
-#define TURQOISE 0x4F000F
+#define WHITE 0x0F0F0F
+#define TURQOISE 0x1F000F
+#define YELLOW 0x0F0F00
+#define PURPLE 0x000F0F
+
 
 class Led
 {

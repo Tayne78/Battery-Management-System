@@ -23,13 +23,16 @@ extern AsyncWebServer server;
 extern float voltage[NUMBER_OF_SLAVES];
 extern bool status[NUMBER_OF_SLAVES];*/
 
-extern int* temperature;
-extern int* voltage;
-extern bool* status;
+extern std::vector<int> temperature;
+extern std::vector<int> voltage;
+extern std::vector<bool> status;
 
-//extern std::vector<std::vector<int>> sorted_voltages;
-extern int* sorted_temperature;
-extern int* received_data;
+using SlaveVoltagePair = std::tuple<unsigned int, unsigned int>;
+extern std::vector<SlaveVoltagePair> sorted_voltages;
+
+//extern int** sorted_voltages;
+extern std::vector<int> sorted_temperature;
+extern std::vector<int> received_data;
 
 extern int totale_voltage;
 extern int avg_temperature;
@@ -38,12 +41,11 @@ extern int maxCellVoltage;
 extern int minCellVoltage;
 extern int differenceMaxMin;
 
-extern int maxCell;
-extern int minCell;
+extern int maxCellId;
+extern int minCellId;
 
 extern int numOfSlaves;
 
-extern unsigned char akkutyp;
 
 void notFound(AsyncWebServerRequest *request);
 void handleRoot(AsyncWebServerRequest *request);
@@ -55,5 +57,7 @@ void handleFetch(AsyncWebServerRequest *request);
 
 void setupWebServer(const char* ssid, const char* password);
 
+void sortBy(const bool voltage);
+void changeVoltage(unsigned int slaveId, unsigned int newVoltage);
 
 #endif

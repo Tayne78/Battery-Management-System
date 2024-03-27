@@ -12,20 +12,26 @@ CAN_BMS canbus(12, 14);
 Led led(GPIO_NUM_32);
 HardwareSerial RS485Serial(2);
 
-#define IgnitondetectionPin 34
-#define ChargedetectionPin 35
-#define ladeschlussspannung 4200
+#define IGNITONDETECTIONPIN 34
+#define CHARGEDETECTIONPIN 35
+
+#define LADESCHLUSSSPANNUNG 4200
+#define MINVOLTAGE 3300
 #define MAXTemperature 55
+
 #define MINBalanceVoltage 3700
+
 #define CANID 0x100
 
 TaskHandle_t statusled;
+TaskHandle_t communication;
 
 int com_state = 0, timelastsend = 0, timereceive = 0, state = 0, charge_state = 0, timeled = 0, ledcolor = GREEN;
 bool idle = 0, error = 0;
-int totale_voltage_old = 0,sorted_voltages[2][2];
+int totale_voltage_old = 0, avg_voltage=0;
 
-void toggle(void *pvParameters)
+
+void Led(void *pvParameters)
 {
   while (1)
   {
@@ -33,6 +39,17 @@ void toggle(void *pvParameters)
     delay(1000);
     led.setColor(0x000000);
     delay(1000);
+  }
+}
+void Communication(void *pvParameters)
+{
+  while (1)
+  {
+    digitalWrite(33,HIGH);
+    RS485Serial.print("afsdgh");
+    RS485Serial.flush();
+    digitalWrite(33,LOW);
+    delay(10000);
   }
 }
 void send()
@@ -58,7 +75,7 @@ void setup()
 
   canbus.begin(500E3);
 
-  RS485Serial.begin(9600, SERIAL_8N1, 16, 17);
+  RS485Serial.begin(112500, SERIAL_8N1, 16, 17);
   pinMode(33, OUTPUT);
 
   setupWebServer("BMS", "BMS1234Kaefer");
@@ -69,7 +86,8 @@ void setup()
   relay.turnOnRelay1();
   relay.turnOffRelay2();
 
-  xTaskCreatePinnedToCore(toggle, "StautsLED", 1000, NULL, 1, &statusled, 0);
+  xTaskCreatePinnedToCore(Led, "StautsLED", 1000, NULL, 1, &statusled, 0);
+  xTaskCreatePinnedToCore(Communication,"Communication",1000,NULL,1,&communication,0);
 }
 void loop()
 {
@@ -90,7 +108,7 @@ void loop()
         received_data[i] = oneWireCom.receive();
         if (received_data[i] == 0) // Fehler
         {
-          ledcolor = 0x000F0F;
+          ledcolor = RED;
           Serial.println("ERROR");
           if (error == 0)
           {
@@ -99,7 +117,7 @@ void loop()
         }
         else
         {
-          ledcolor = GREEN; // Alle Daten Empfangen
+          ledcolor = GREEN; // Daten Empfangen
         }
       }
       Serial.println("Daten Empfangen");
@@ -107,12 +125,14 @@ void loop()
       {
         if (error == 1)
         {
+          ledcolor = RED;
           com_state = 0;
           for (int i = 0; i < numOfSlaves; i++)
             voltage[i] = 0;
         }
         else
         {
+          ledcolor = GREEN;
           com_state = 2;
           for (int i = 0; i < numOfSlaves; i++)
             voltage[i] = received_data[i + 1];
@@ -125,12 +145,14 @@ void loop()
       {
         if (error == 1)
         {
+          ledcolor = RED;
           com_state = 2;
           for (int i = 0; i < numOfSlaves; i++)
             voltage[i] = 0;
         }
         else
         {
+          ledcolor = GREEN;
           com_state = 0;
           for (int i = 0; i < numOfSlaves; i++)
             temperature[i] = (received_data[i + 1] - 273);
@@ -149,26 +171,27 @@ void loop()
     {
       ledcolor = GREEN;
       idle = 0;
-      logfile.writeData("/log.txt", temperature, voltage, numOfSlaves);
+      logfile.writeData("/log.txt", temperature.data(), voltage.data(), numOfSlaves);
       avg_temperature = 0;
-      totale_voltage=0;
+      totale_voltage = 0;
 
       for (int i = 0; i < numOfSlaves; i++)
       {
         totale_voltage += voltage[i];
         avg_temperature += temperature[i];
-        sorted_voltages[i][0] = voltage[i];
-        sorted_voltages[i][1] = i;
+        sorted_voltages[i] = std::make_pair(voltage[i], i);
       }
       if (totale_voltage_old < totale_voltage) // Überarbeiten
       {
         state = CHARGE;
-        ledcolor = 0xF00000;
+        ledcolor = WHITE;
         Serial.println("LADEN");
+        totale_voltage_old = totale_voltage;
       }
-      totale_voltage_old = totale_voltage;
-
+      avg_voltage = totale_voltage / numOfSlaves;
       avg_temperature = avg_temperature / numOfSlaves;
+
+      Serial.println(avg_voltage);
       Serial.println(totale_voltage_old);
       Serial.println(totale_voltage);
       Serial.println(avg_temperature);
@@ -177,17 +200,6 @@ void loop()
       {
         for (int j = 0; j < numOfSlaves - 1 - i; j++)
         {
-          if (sorted_voltages[j][0] > sorted_voltages[j + 1][0])
-          {
-            int temp_value = sorted_voltages[j][0];
-            int temp_index = sorted_voltages[j][1];
-
-            sorted_voltages[j][0] = sorted_voltages[j + 1][0];
-            sorted_voltages[j][1] = sorted_voltages[j + 1][1];
-
-            sorted_voltages[j + 1][0] = temp_value;
-            sorted_voltages[j + 1][1] = temp_index;
-          }
           if (sorted_temperature[j] > sorted_temperature[j + 1])
           {
             int temp_value = sorted_temperature[j];
@@ -198,22 +210,41 @@ void loop()
           }
         }
       }
-      if ((sorted_voltages[numOfSlaves - 1][0] <= ladeschlussspannung) && (sorted_voltages[numOfSlaves - 1][0] >= (ladeschlussspannung - 50))) // ladeschlussspannung
+
+      sortBy(true);
+
+      const auto maxCell = sorted_voltages.at(sorted_voltages.size()-1);
+      const auto minCell = sorted_voltages.at(0);
+
+      maxCellVoltage = std::get<0>(maxCell);
+      maxCellId = std::get<1>(maxCell);
+
+      minCellVoltage = std::get<0>(minCell);
+      minCellId = std::get<1>(minCell);
+
+      differenceMaxMin = maxCellVoltage-minCellVoltage;
+
+
+
+      if ((maxCellVoltage <= LADESCHLUSSSPANNUNG) && (maxCellVoltage >= (LADESCHLUSSSPANNUNG - 50))) // LADESCHLUSSSPANNUNG
       {
+        ledcolor = TURQOISE;
         relay.turnOffRelay2();
         state = END_VOLTAGE;
         charge_state = CANNOT_BE_CHARGED;
         Serial.println("FULL Charged");
       }
-      else if (sorted_voltages[numOfSlaves - 1][0] > ladeschlussspannung) // Overvoltage
+      else if (maxCellVoltage > LADESCHLUSSSPANNUNG) // Overvoltage
       {
+        ledcolor = BLUE;
         relay.turnOffRelay2();
         state = OVERVOLTAGE;
         charge_state = CANNOT_BE_CHARGED;
         Serial.println("OverVoltage");
       }
-      else if (sorted_voltages[0][0] < 3300) // Undervoltage
+      else if (minCellVoltage < MINVOLTAGE) // Undervoltage
       {
+        ledcolor = YELLOW;
         relay.turnOffRelay2();
         state = UNDERVOLTAGE;
         charge_state = CANNOT_BE_CHARGED;
@@ -221,37 +252,34 @@ void loop()
       }
       else
       {
+        ledcolor = GREEN;
         state = GOOD;
         charge_state = CAN_BE_CHARGED;
         Serial.println("IDLE");
       }
-      maxCellVoltage = sorted_voltages[numOfSlaves - 1][0];
-      minCellVoltage = sorted_voltages[0][0];
-      differenceMaxMin = sorted_voltages[numOfSlaves - 1][0] - sorted_voltages[0][0];
-      maxCell = sorted_voltages[numOfSlaves - 1][1];
-      minCell = sorted_voltages[0][1];
 
       if (sorted_temperature[numOfSlaves - 1] > MAXTemperature) // Overheating
       {
+        ledcolor = PURPLE;
         relay.turnOffRelay2();
         state = OVERHEATING;
         charge_state = CANNOT_BE_CHARGED;
         Serial.println("Overheating");
       }
 
-      if (charge_state == CAN_BE_CHARGED && ChargedetectionPin == HIGH) // Überarbeiten
+      if (charge_state == CAN_BE_CHARGED && CHARGEDETECTIONPIN == HIGH) // Überarbeiten
       {
         Serial.println("Ladegerät angesteckt und Ladebereit");
         relay.turnOnRelay2();
       }
-      canbus.send(totale_voltage, avg_temperature, charge_state, state, CANID);
+      canbus.send(totale_voltage/10, avg_temperature, charge_state, state, CANID);
 
       // Überarbeiten
-      // BALANCEN wenn Auto ausgeschalten und ein Spannungsunterschied von 50mV herscht und die Zellespannung gößer der mininmale Balancespannung ist
-      if (IgnitondetectionPin == LOW && ((sorted_voltages[numOfSlaves - 1][0] >= (sorted_voltages[0][0] + 50)) && (sorted_voltages[numOfSlaves - 1][0] > MINBalanceVoltage)))
+     /* // BALANCEN wenn Auto ausgeschalten und ein Spannungsunterschied von 50mV herscht und die Zellespannung gößer der mininmale Balancespannung ist
+      if (IGNITONDETECTIONPIN == LOW && )
       {
         relay.turnOffRelay1(); // Laden für Balancen unterbrechen um Overheating zu vermeiden
-      }
+      }*/
     }
   }
 }

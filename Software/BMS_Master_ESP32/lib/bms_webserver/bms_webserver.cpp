@@ -4,14 +4,19 @@ AsyncWebServer server(80);
 
 int numOfSlaves = 2;
 
-int *temperature;
-int *voltage;
-bool *status;
+std::vector<int> temperature;
+std::vector<int> voltage;
+std::vector<bool> status;
 
-int *sorted_temperature;
-int *received_data;
+std::vector<int> sorted_temperature;
+std::vector<int> received_data;
 
-std::vector<std::vector<int>> sorted_voltage;
+// int **sorted_voltages;
+
+constexpr const bool SORT_BY_VOLTAGE = true;
+constexpr const bool SORT_BY_SLAVE_ID = false;
+
+std::vector<SlaveVoltagePair> sorted_voltages;
 
 int maxCellVoltage = 0;
 int minCellVoltage = 0;
@@ -20,10 +25,27 @@ int differenceMaxMin = 0;
 int totale_voltage = 0;
 int avg_temperature = 0;
 
-int maxCell = 0;
-int minCell = 0;
+int maxCellId = 0;
+int minCellId = 0;
 
-unsigned char akkutyp = 1;
+String batteryType="Lithium-Ionen";
+
+void sortBy(const bool v)
+{ // voltage
+  std::sort(sorted_voltages.begin(), sorted_voltages.end(), [&](SlaveVoltagePair a, SlaveVoltagePair b)
+            {
+        if (v) return std::get<0>(a) < std::get<0>(b);
+        else return std::get<1>(a) < std::get<1>(b); });
+}
+
+void changeVoltage(unsigned int slaveId, unsigned int newVoltage)
+{
+  for (auto &slave : sorted_voltages)
+  {
+    if (std::get<1>(slave) == slaveId)
+      std::get<0>(slave) = newVoltage;
+  }
+}
 
 void notFound(AsyncWebServerRequest *request)
 {
@@ -137,18 +159,20 @@ void handleFetch(AsyncWebServerRequest *request)
   {
     jsonDoc["voltage" + std::to_string(i + 1)] = voltage[i];
     jsonDoc["temperature" + std::to_string(i + 1)] = temperature[i];
-    jsonDoc["status" + std::to_string(i + 1)] = status[i];
+    jsonDoc["status" + std::to_string(i + 1)] = std::to_string(status[i]);
   }
   jsonDoc["averageTemp"] = avg_temperature;
   jsonDoc["overallVolt"] = totale_voltage;
 
-  jsonDoc["maxCell"] = maxCell + 1;
+  jsonDoc["maxCell"] = maxCellId + 1;
   jsonDoc["maxCellVoltage"] = maxCellVoltage;
 
-  jsonDoc["minCell"] = minCell + 1;
+  jsonDoc["minCell"] = minCellId + 1;
   jsonDoc["minCellVoltage"] = minCellVoltage;
 
   jsonDoc["differenceMaxMin"] = differenceMaxMin;
+
+  jsonDoc["akkutyp"] = batteryType;
 
   /* jsonDoc["akkutyp"] = ;
    jsonDoc["numCells"] = ;*/
@@ -165,7 +189,8 @@ void handleAkkutype(AsyncWebServerRequest *request, uint8_t *data, size_t len, s
 {
   DynamicJsonDocument json(256);
   deserializeJson(json, const_cast<const char *>(reinterpret_cast<char *>(data)));
-  const char *batteryType = json["batteryType"];
+  // const char *batteryType =
+  batteryType = String(json["batteryType"].as<const char *>());
   Serial.println(batteryType);
 }
 void handleNumOfSlaves(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
@@ -174,26 +199,32 @@ void handleNumOfSlaves(AsyncWebServerRequest *request, uint8_t *data, size_t len
   DynamicJsonDocument json(256);
   deserializeJson(json, const_cast<const char *>(reinterpret_cast<char *>(data)));
   numOfSlaves = atoi(json["numOfSlaves"]);
+  Serial.println(numOfSlaves);
 
-  temperature = (int *)realloc(temperature, numOfSlaves * sizeof(int));
-  voltage = (int *)realloc(voltage, numOfSlaves * sizeof(int));
-  status = (bool *)realloc(status, numOfSlaves * sizeof(bool));
+  temperature.resize(numOfSlaves);
+  voltage.resize(numOfSlaves);
+  status.resize(numOfSlaves);
 
-  sorted_voltage.resize(numOfSlaves, std::vector<int>(numOfSlaves, 0));
+  int diff = numOfSlaves - sorted_voltages.size();
+  const bool shrink = (diff < 0);
+  sortBy(false);
 
-  sorted_temperature = (int *)realloc(sorted_temperature, numOfSlaves * sizeof(int));
-  received_data = (int *)realloc(received_data, numOfSlaves * sizeof(int));
-
-  for (int i = 0; i < numOfSlaves; i++)
+  for (int i = 0; i < std::abs(diff); ++i)
   {
-    temperature[i] = 0;
-    voltage[i] = 0;
-    status[i] = 0;
+    if (shrink)
+      sorted_voltages.pop_back();
+    else
+      sorted_voltages.push_back({0, sorted_voltages.size() + 1});
   }
+  sorted_temperature.resize(numOfSlaves);
+  received_data.resize(numOfSlaves + 1);
+
+  /*std::fill(temperature.begin(), temperature.end(), 0);
+  std::fill(voltage.begin(), voltage.end(), 0);
+  std::fill(status.begin(), status.end(), 0);*/
 
   Serial.println(numOfSlaves);
 }
-
 void setupWebServer(const char *ssid, const char *password)
 {
   Serial.begin(115200);
@@ -205,20 +236,18 @@ void setupWebServer(const char *ssid, const char *password)
   Serial.print("Access Point IP-Adresse: ");
   Serial.println(IP);
 
-  temperature = (int *)malloc(numOfSlaves * sizeof(int));
-  voltage = (int *)malloc(numOfSlaves * sizeof(int));
-  status = (bool *)malloc(numOfSlaves * sizeof(bool));
-  sorted_temperature = (int *)malloc(numOfSlaves * sizeof(int));
-  received_data = (int *)malloc(numOfSlaves * sizeof(int));
+  temperature.resize(numOfSlaves);
+  voltage.resize(numOfSlaves);
+  status.resize(numOfSlaves);
+  sorted_temperature.resize(numOfSlaves);
+  received_data.resize(numOfSlaves + 1);
 
-  sorted_voltage.resize(numOfSlaves, std::vector<int>(numOfSlaves, 0));
+  sorted_voltages.push_back({0, 1});
+  sorted_voltages.push_back({0, 2});
 
-  for (int i = 0; i < numOfSlaves; i++)
-  {
-    temperature[i] = 0;
-    voltage[i] = 0;
-    status[i] = 0;
-  }
+  std::fill(temperature.begin(), temperature.end(), 0);
+  std::fill(voltage.begin(), voltage.end(), 0);
+  std::fill(status.begin(), status.end(), 0);
 
   // Initialisiere SPIFFS
   if (!SPIFFS.begin())
