@@ -11,8 +11,6 @@ std::vector<bool> status;
 std::vector<int> sorted_temperature;
 std::vector<int> received_data;
 
-// int **sorted_voltages;
-
 constexpr const bool SORT_BY_VOLTAGE = true;
 constexpr const bool SORT_BY_SLAVE_ID = false;
 
@@ -28,8 +26,37 @@ int avg_temperature = 0;
 int maxCellId = 0;
 int minCellId = 0;
 
-String batteryType="Lithium-Ionen";
+BatteryParameters batteryParams;
 
+String batteryType = "Lithium-Ionen"
+
+BatteryParameters getBatteryParameters()           //Akku Parameter       
+{
+  BatteryParameters params;
+
+  if (batteryType == "Lithium-Ionen")
+  {
+    params.endVoltage = 4200;
+    params.minVoltage = 3000;
+    params.minBalanceVoltage = 3700;
+    params.maxTemperature = 60;
+  }
+  else if (batteryType == "Lithium-Polymer")
+  {
+    params.endVoltage = 4100;
+    params.minVoltage = 3300;
+    params.minBalanceVoltage = 3700;
+    params.maxTemperature = 60;
+  }
+  else if (batteryType == "Lithium-Eisenphosphat")
+  {
+    params.endVoltage = 2500;
+    params.minVoltage = 3650;
+    params.minBalanceVoltage = 2900;
+    params.maxTemperature = 80;
+  }
+  return params;
+}
 void sortBy(const bool v)
 { // voltage
   std::sort(sorted_voltages.begin(), sorted_voltages.end(), [&](SlaveVoltagePair a, SlaveVoltagePair b)
@@ -184,18 +211,25 @@ void handleFetch(AsyncWebServerRequest *request)
   Serial.println("--------------------");*/
   request->send(200, "application/json", response);
 }
-
 void handleAkkutype(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
 {
   DynamicJsonDocument json(256);
   deserializeJson(json, const_cast<const char *>(reinterpret_cast<char *>(data)));
-  // const char *batteryType =
   batteryType = String(json["batteryType"].as<const char *>());
+
   Serial.println(batteryType);
+
+  BatteryParameters batteryParams = getBatteryParameters();
+
+  Serial.print("Ladeschlussspannung: ");
+  Serial.println(batteryParams.endVoltage);
+  Serial.print("Untere Spannungsgrenze: ");
+  Serial.println(batteryParams.minVoltage);
+  Serial.print("Maximale Temperatur: ");
+  Serial.println(batteryParams.maxTemperature);
 }
 void handleNumOfSlaves(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
 {
-
   DynamicJsonDocument json(256);
   deserializeJson(json, const_cast<const char *>(reinterpret_cast<char *>(data)));
   numOfSlaves = atoi(json["numOfSlaves"]);
@@ -218,10 +252,6 @@ void handleNumOfSlaves(AsyncWebServerRequest *request, uint8_t *data, size_t len
   }
   sorted_temperature.resize(numOfSlaves);
   received_data.resize(numOfSlaves + 1);
-
-  /*std::fill(temperature.begin(), temperature.end(), 0);
-  std::fill(voltage.begin(), voltage.end(), 0);
-  std::fill(status.begin(), status.end(), 0);*/
 
   Serial.println(numOfSlaves);
 }
@@ -249,7 +279,14 @@ void setupWebServer(const char *ssid, const char *password)
   std::fill(voltage.begin(), voltage.end(), 0);
   std::fill(status.begin(), status.end(), 0);
 
-  // Initialisiere SPIFFS
+  batteryParams = getBatteryParameters();
+  Serial.print("Ladeschlussspannung: ");
+  Serial.println(batteryParams.endVoltage);
+  Serial.print("Untere Spannungsgrenze: ");
+  Serial.println(batteryParams.minVoltage);
+  Serial.print("Maximale Temperatur: ");
+  Serial.println(batteryParams.maxTemperature);
+
   if (!SPIFFS.begin())
   {
     Serial.println("Fehler beim Initialisieren von SPIFFS");
@@ -280,7 +317,7 @@ void setupWebServer(const char *ssid, const char *password)
       { req->send(200, "text/plain", "success"); },
       NULL, handleAkkutype);
 
-  // Fange 404-Fehler ab
+  // 404-Fehler abfangen
   server.onNotFound(notFound);
 
   server.begin();

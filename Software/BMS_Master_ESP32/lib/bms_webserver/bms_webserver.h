@@ -46,6 +46,16 @@ extern int minCellId;
 
 extern int numOfSlaves;
 
+struct BatteryParameters {
+    int endVoltage;
+    int minVoltage;
+    int minBalanceVoltage;
+    int maxTemperature;
+};
+
+BatteryParameters getBatteryParameters();
+
+extern BatteryParameters batteryParams;
 
 void notFound(AsyncWebServerRequest *request);
 void handleRoot(AsyncWebServerRequest *request);

@@ -15,10 +15,6 @@ HardwareSerial RS485Serial(2);
 #define IGNITONDETECTIONPIN 34
 #define CHARGEDETECTIONPIN 35
 
-#define LADESCHLUSSSPANNUNG 4200
-#define MINVOLTAGE 3300
-#define MAXTemperature 55
-
 #define MINBalanceVoltage 3700
 
 #define CANID 0x100
@@ -226,7 +222,7 @@ void loop()
 
 
 
-      if ((maxCellVoltage <= LADESCHLUSSSPANNUNG) && (maxCellVoltage >= (LADESCHLUSSSPANNUNG - 50))) // LADESCHLUSSSPANNUNG
+      if ((maxCellVoltage <= batteryParams.endVoltage) && (maxCellVoltage >= (batteryParams.endVoltage - 50))) // LADESCHLUSSSPANNUNG
       {
         ledcolor = TURQOISE;
         relay.turnOffRelay2();
@@ -234,7 +230,7 @@ void loop()
         charge_state = CANNOT_BE_CHARGED;
         Serial.println("FULL Charged");
       }
-      else if (maxCellVoltage > LADESCHLUSSSPANNUNG) // Overvoltage
+      else if (maxCellVoltage > batteryParams.endVoltage) // Overvoltage
       {
         ledcolor = BLUE;
         relay.turnOffRelay2();
@@ -242,7 +238,7 @@ void loop()
         charge_state = CANNOT_BE_CHARGED;
         Serial.println("OverVoltage");
       }
-      else if (minCellVoltage < MINVOLTAGE) // Undervoltage
+      else if (minCellVoltage < batteryParams.minVoltage) // Undervoltage
       {
         ledcolor = YELLOW;
         relay.turnOffRelay2();
@@ -258,7 +254,7 @@ void loop()
         Serial.println("IDLE");
       }
 
-      if (sorted_temperature[numOfSlaves - 1] > MAXTemperature) // Overheating
+      if (sorted_temperature[numOfSlaves - 1] > batteryParams.maxTemperature) // Overheating
       {
         ledcolor = PURPLE;
         relay.turnOffRelay2();
