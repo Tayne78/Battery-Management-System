@@ -55,7 +55,7 @@ struct BatteryParameters {
 
 BatteryParameters getBatteryParameters();
 
-extern BatteryParameters batteryParams;
+extern BatteryParameters battery;
 
 void notFound(AsyncWebServerRequest *request);
 void handleRoot(AsyncWebServerRequest *request);

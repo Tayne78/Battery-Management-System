@@ -26,9 +26,9 @@ int avg_temperature = 0;
 int maxCellId = 0;
 int minCellId = 0;
 
-BatteryParameters batteryParams;
+BatteryParameters battery;
 
-String batteryType = "Lithium-Ionen"
+String batteryType = "Lithium-Ionen";
 
 BatteryParameters getBatteryParameters()           //Akku Parameter       
 {
@@ -178,7 +178,7 @@ void handleLog(AsyncWebServerRequest *request)
 
 void handleFetch(AsyncWebServerRequest *request)
 {
-  DynamicJsonDocument jsonDoc(256);
+  JsonDocument jsonDoc;
 
   jsonDoc["NUMBER_OF_SLAVES"] = numOfSlaves;
 
@@ -201,8 +201,6 @@ void handleFetch(AsyncWebServerRequest *request)
 
   jsonDoc["akkutyp"] = batteryType;
 
-  /* jsonDoc["akkutyp"] = ;
-   jsonDoc["numCells"] = ;*/
 
   String response;
   serializeJson(jsonDoc, response);
@@ -213,26 +211,30 @@ void handleFetch(AsyncWebServerRequest *request)
 }
 void handleAkkutype(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
 {
-  DynamicJsonDocument json(256);
+  JsonDocument json;
   deserializeJson(json, const_cast<const char *>(reinterpret_cast<char *>(data)));
   batteryType = String(json["batteryType"].as<const char *>());
 
   Serial.println(batteryType);
 
-  BatteryParameters batteryParams = getBatteryParameters();
+  BatteryParameters battery = getBatteryParameters();
 
   Serial.print("Ladeschlussspannung: ");
-  Serial.println(batteryParams.endVoltage);
+  Serial.println(battery.endVoltage);
   Serial.print("Untere Spannungsgrenze: ");
-  Serial.println(batteryParams.minVoltage);
+  Serial.println(battery.minVoltage);
   Serial.print("Maximale Temperatur: ");
-  Serial.println(batteryParams.maxTemperature);
+  Serial.println(battery.maxTemperature);
+  Serial.print("Mindest Balancespannung: ");
+  Serial.println(battery.minBalanceVoltage);
 }
 void handleNumOfSlaves(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
 {
-  DynamicJsonDocument json(256);
+  JsonDocument json;
   deserializeJson(json, const_cast<const char *>(reinterpret_cast<char *>(data)));
   numOfSlaves = atoi(json["numOfSlaves"]);
+  
+  Serial.print("Anzahl Slaves: ");
   Serial.println(numOfSlaves);
 
   temperature.resize(numOfSlaves);
@@ -279,13 +281,15 @@ void setupWebServer(const char *ssid, const char *password)
   std::fill(voltage.begin(), voltage.end(), 0);
   std::fill(status.begin(), status.end(), 0);
 
-  batteryParams = getBatteryParameters();
+  battery = getBatteryParameters();
   Serial.print("Ladeschlussspannung: ");
-  Serial.println(batteryParams.endVoltage);
+  Serial.println(battery.endVoltage);
   Serial.print("Untere Spannungsgrenze: ");
-  Serial.println(batteryParams.minVoltage);
+  Serial.println(battery.minVoltage);
   Serial.print("Maximale Temperatur: ");
-  Serial.println(batteryParams.maxTemperature);
+  Serial.println(battery.maxTemperature);
+  Serial.print("Mindest Balancespannung: ");
+  Serial.println(battery.minBalanceVoltage);
 
   if (!SPIFFS.begin())
   {
