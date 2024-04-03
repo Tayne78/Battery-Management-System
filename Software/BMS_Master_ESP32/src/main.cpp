@@ -41,9 +41,17 @@ void Communication(void *pvParameters)
   while (1)
   {
     digitalWrite(MAX485_ENABLE_PIN, HIGH);
-    RS485Serial.print("afsdgh");
+    RS485Serial.print("Totale Voltage:");
+    RS485Serial.print(totale_voltage);
+    RS485Serial.print("Average Temperature:");
+    RS485Serial.println(avg_temperature);
+    RS485Serial.print("Charge State:");
+    RS485Serial.println(charge_state);
+    RS485Serial.print("State:");
+    RS485Serial.println(state);
     RS485Serial.flush();
     digitalWrite(MAX485_ENABLE_PIN, LOW);
+    canbus.send(totale_voltage / 10, avg_temperature, charge_state, state, CANID);
     delay(10000);
   }
 }
@@ -180,7 +188,7 @@ void loop()
         avg_temperature += temperature[i];
         sorted_voltages[i] = std::make_pair(voltage[i], i);
       }
-      if (millis() - timecharge > 5 * 60 * 1000 && totale_voltage_old < totale_voltage) // Alle 5 Minuten prüfen ob Spannung der Zellen gestiegen ist == LADEN
+      if (millis() - timecharge > 5 * 60 * 1000 && totale_voltage_old < totale_voltage) // Alle 5 Minuten prüfen ob Spannung der Zellen gestiegen, LADEN
       {
         timecharge = millis();
         state = CHARGE;
@@ -203,9 +211,7 @@ void loop()
           if (sorted_temperature[j] > sorted_temperature[j + 1])
           {
             int temp_value = sorted_temperature[j];
-
             sorted_temperature[j] = sorted_temperature[j + 1];
-
             sorted_temperature[j + 1] = temp_value;
           }
         }
@@ -274,8 +280,6 @@ void loop()
         Serial.println("Ladegerät angesteckt und Ladebereit");
         relay.turnOnRelay2();
       }
-      canbus.send(totale_voltage / 10, avg_temperature, charge_state, state, CANID);
-
       // Überarbeiten
       /* // BALANCEN wenn Auto ausgeschalten und ein Spannungsunterschied von 50mV herscht und die Zellespannung gößer der mininmale Balancespannung ist
        if (IGNITON_DETECTION_PIN == LOW && )
