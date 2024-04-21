@@ -46,9 +46,11 @@ const updateTable = data => {
     $("#temperature" + i).text(data["temperature" + i]);
     if(data["status"+i] == 1){
     $("#status" + i).text("Balancing").addClass("red");
+    $("#status" + i).text("Balancing").removeClass("green");
     }
     else if(data["status" + i] == 0){
       $("#status" + i).text("Idle").addClass("green");
+      $("#status" + i).text("Idle").removeClass("red");
       }
   }
   console.log(data);
