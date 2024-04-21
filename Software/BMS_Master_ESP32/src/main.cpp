@@ -80,16 +80,17 @@ void send()
     {
       if (status[balancen[i] - 1] == IDLE || millis() - balancentime[balancen[i] - 1] > 48000)
       {
+        Serial.println("BALANCEN");
         oneWireCom.send(COM_BLC_A + balancen[i]);
         balancentime[balancen[i] - 1] = millis();
         status[balancen[i] - 1] = BALANCING;
         com_state = 5;
+        timereceive = millis();
         break;
       }
       else
         com_state = 0;
     }
-    timereceive = millis();
   }
 }
 void setup()
@@ -323,7 +324,7 @@ void loop()
         {
           if (status[i] == BALANCING && millis() - balancentime[i] > 50000)
             status[i] = IDLE;
-          if (std::get<0>(sorted_voltages.at(i)) > avg_voltage && std::get<0>(sorted_voltages.at(i)) > battery.minBalanceVoltage && (minCellVoltage + 50) < maxCellVoltage)
+          if (std::get<0>(sorted_voltages.at(i)) > avg_voltage && std::get<0>(sorted_voltages.at(i)) > battery.minBalanceVoltage && (minCellVoltage + 50) < maxCellVoltage&&temperature[std::get<1>(sorted_voltages.at(i))]<=battery.maxTemperature)
           {
             relay.turnOffRelay1(); // Laden für Balancen unterbrechen um Overheating zu vermeiden
             Serial.println("Balancen");
