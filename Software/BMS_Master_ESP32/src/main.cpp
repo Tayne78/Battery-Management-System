@@ -24,7 +24,9 @@ TaskHandle_t communication;
 unsigned long timelastsend = 0, timereceive = 0, timelastsd = 0, timecharge = 0;
 unsigned int com_state = 0, state = 0, charge_state = 0, ledcolor = GREEN;
 bool idle = 0, error = 0;
-unsigned int totale_voltage_old = 0, avg_voltage = 0;
+unsigned int totale_voltage_old = 0;
+
+int anzbalance = 0;
 
 void Led(void *pvParameters)
 {
@@ -61,6 +63,7 @@ void send()
   {
     oneWireCom.send(REQ_VOLT_G);
     com_state = 1;
+    timelastsend = millis();
     timereceive = millis();
   }
   else if (com_state == 2)
@@ -68,6 +71,24 @@ void send()
     delay(20);
     oneWireCom.send(REQ_TEMP_G);
     com_state = 3;
+    timelastsend = millis();
+    timereceive = millis();
+  }
+  else if (com_state == 4)
+  {
+    for (int i = 0; i < anzbalance; i++)
+    {
+      if (status[balancen[i] - 1] == IDLE || millis() - balancentime[balancen[i] - 1] > 48000)
+      {
+        oneWireCom.send(COM_BLC_A + balancen[i]);
+        balancentime[balancen[i] - 1] = millis();
+        status[balancen[i] - 1] = BALANCING;
+        com_state = 5;
+        break;
+      }
+      else
+        com_state = 0;
+    }
     timereceive = millis();
   }
 }
@@ -75,6 +96,8 @@ void setup()
 {
   Serial.begin(112500);
   relay.begin();
+
+  pinMode(IGNITON_DETECTION_PIN, INPUT_PULLDOWN);
 
   canbus.begin(500E3);
 
@@ -93,17 +116,18 @@ void setup()
 }
 void loop()
 {
-  if (millis() - timelastsend > 10000 || com_state == 2)
+  if ((millis() - timelastsend > 10000 && com_state != 5) || com_state == 2 || com_state == 4) // Nach 10 Sekunden ab dem Zeitpunkt der temperaturabfrage oder Balancen
   {
-    timelastsend = millis();
+    if (millis() - timelastsend > 10000)
+      com_state = 0;
+
     error = 0;
     send();
   }
-  if (com_state == 1 || com_state == 3)
+  if (com_state == 1 || com_state == 3 || com_state == 5)
   {
     if (millis() - timereceive > (20 * numOfSlaves))
     {
-      timereceive = millis();
       for (int i = 0; i < numOfSlaves + 1; i++)
       {
         received_data[i] = oneWireCom.receive();
@@ -122,7 +146,7 @@ void loop()
         }
       }
       Serial.println("Daten Empfangen");
-      if (com_state == 1) // Daten Auswerten für Spannung
+      if (com_state == 1) // Daten für Spannung
       {
         if (error == 1)
         {
@@ -142,14 +166,14 @@ void loop()
         for (int i = 0; i < numOfSlaves; i++)
           Serial.println(voltage[i]);
       }
-      else if (com_state == 3) // Daten Auswerten für Temperatur
+      else if (com_state == 3) // Daten für Temperatur
       {
         if (error == 1)
         {
           ledcolor = RED;
           com_state = 2;
           for (int i = 0; i < numOfSlaves; i++)
-            voltage[i] = 0;
+            temperature[i] = 0;
         }
         else
         {
@@ -161,8 +185,15 @@ void loop()
         Serial.println("TEMPERATUR");
         for (int i = 0; i < numOfSlaves; i++)
           Serial.println(temperature[i]);
-
         idle = 1;
+      }
+      else if (com_state == 5) // Rückgabe Werte des Balancen
+      {
+        for (int i = 0; i < numOfSlaves; i++)
+        {
+          Serial.println(received_data[i]);
+        }
+        com_state = 4;
       }
     }
   }
@@ -173,8 +204,8 @@ void loop()
       ledcolor = GREEN;
       idle = 0;
 
-      if ((IGNITON_DETECTION_PIN == HIGH && millis() - timelastsd > 10 * 60 * 1000) ||  
-          (IGNITON_DETECTION_PIN != HIGH && millis() - timelastsd > 20 * 60 * 1000)) // Wenn Auto im Betrieb 10min sonst 20min
+      if ((digitalRead(IGNITON_DETECTION_PIN) == HIGH && millis() - timelastsd > 10 * 60 * 1000) ||
+          (digitalRead(IGNITON_DETECTION_PIN) != HIGH && millis() - timelastsd > 20 * 60 * 1000)) // Wenn Auto im Betrieb 10min sonst 20min
       {
         logfile.writeData("/log.txt", temperature.data(), voltage.data(), numOfSlaves);
         timelastsd = millis();
@@ -187,6 +218,7 @@ void loop()
         totale_voltage += voltage[i];
         avg_temperature += temperature[i];
         sorted_voltages[i] = std::make_pair(voltage[i], i);
+        sorted_temperature[i] = temperature[i];
       }
       if (millis() - timecharge > 5 * 60 * 1000 && totale_voltage_old < totale_voltage) // Alle 5 Minuten prüfen ob Spannung der Zellen gestiegen, LADEN
       {
@@ -199,12 +231,16 @@ void loop()
       avg_voltage = totale_voltage / numOfSlaves;
       avg_temperature = avg_temperature / numOfSlaves;
 
+      Serial.print("AVG_VOLTAGE:");
       Serial.println(avg_voltage);
+      Serial.print("TOTALE_OLD_VOLTAGE:");
       Serial.println(totale_voltage_old);
+      Serial.print("TOTALE_VOLTAGE:");
       Serial.println(totale_voltage);
+      Serial.print("AVG_TEMPERATURE:");
       Serial.println(avg_temperature);
 
-      for (int i = 0; i < numOfSlaves - 1; i++)
+      for (int i = 0; i < numOfSlaves; i++)
       {
         for (int j = 0; j < numOfSlaves - 1 - i; j++)
         {
@@ -280,12 +316,40 @@ void loop()
         Serial.println("Ladegerät angesteckt und Ladebereit");
         relay.turnOnRelay2();
       }
-      // Überarbeiten
-      /* // BALANCEN wenn Auto ausgeschalten und ein Spannungsunterschied von 50mV herscht und die Zellespannung gößer der mininmale Balancespannung ist
-       if (IGNITON_DETECTION_PIN == LOW && )
-       {
-         relay.turnOffRelay1(); // Laden für Balancen unterbrechen um Overheating zu vermeiden
-       }*/
+      anzbalance = 0;
+      if (digitalRead(IGNITON_DETECTION_PIN) == LOW)
+      {
+        for (int i = 0; i < numOfSlaves; i++)
+        {
+          if (status[i] == BALANCING && millis() - balancentime[i] > 50000)
+            status[i] = IDLE;
+          if (std::get<0>(sorted_voltages.at(i)) > avg_voltage && std::get<0>(sorted_voltages.at(i)) > battery.minBalanceVoltage && (minCellVoltage + 50) < maxCellVoltage)
+          {
+            relay.turnOffRelay1(); // Laden für Balancen unterbrechen um Overheating zu vermeiden
+            Serial.println("Balancen");
+            balancen[anzbalance] = std::get<1>(sorted_voltages.at(i)) + 1;
+            Serial.println(balancen[anzbalance]);
+            anzbalance++;
+            com_state = 4;
+          }
+        }
+        Serial.println(anzbalance);
+        if (anzbalance != 1)
+        {
+          for (int i = 0; i < anzbalance; i++)
+          {
+            for (int j = 0; j < anzbalance - i; j++)
+            {
+              if (std::get<0>(sorted_voltages.at(j)) < std::get<0>(sorted_voltages.at(j + 1)))
+              {
+                int temp_id = balancen[j];
+                balancen[j] = balancen[j + 1];
+                balancen[j + 1] = temp_id;
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

@@ -26,31 +26,61 @@ void Logfile::begin(const char *path, int numofcells)
   {
     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
-  createLog(path,numofcells);
+  createLog(path, numofcells);
 }
 
 void Logfile::writeData(const char *path, int t[], int v[], int numofcells)
 {
   if (!SD.exists(path))
+{
+  createLog(path, numofcells);
+}
+
+DateTime now = rtc.now();
+String data = String(now.year()) + '-' + String(now.month()) + '-' + String(now.day()) + ';' + String(now.hour()) + ':' + String(now.minute()) + ':' + String(now.second());
+for (int i = 0; i < numofcells; i++)
+  data += ';' + String(t[i]) + ';' + String(v[i]);
+data += '\n';
+Serial.print("\nSaving data: ");
+Serial.println(data);
+
+File file = SD.open(path);
+if (!file)
+{
+  Serial.println("Failed to open file for reading");
+  return;
+}
+
+String firstLine = file.readStringUntil('\n');
+file.close();
+char numberChar = firstLine.charAt(firstLine.lastIndexOf(';') + 6); // Anzahl an Slaves
+int number = numberChar - '0';
+
+if (number != numofcells)
+{
+  String newFilename = "/Log_" + String(number) + ".txt";
+  if (SD.rename(path,newFilename))
   {
-    createLog(path,numofcells);
+    Serial.println("Datei erfolgreich umbenannt.");
   }
-  DateTime now = rtc.now();
-  String data = String(now.year()) + '-' + String(now.month()) + '-' + String(now.day()) + ';' + String(now.hour()) + ':' + String(now.minute()) + ':' + String(now.second());
-  for (int i = 0; i < numofcells; i++)
-    data += ';' + String(t[i]) + ';' + String(v[i]);
-  data += '\n';
-  Serial.print("\nSaving data: ");
-  Serial.println(data);
-  File file = SD.open(path, FILE_APPEND);
-  if (!file)
+  else
   {
-    Serial.println("Failed to open file for writing");
-    return;
+    Serial.println("Fehler beim Umbenennen der Datei.");
   }
-  if (!file.print(data))
-    Serial.println("Write failed");
-  file.close();
+  createLog(path, numofcells);
+}
+
+file = SD.open(path, FILE_APPEND);
+if (!file)
+{
+  Serial.println("Failed to open file for writing");
+  return;
+}
+
+if (!file.print(data))
+  Serial.println("Write failed");
+file.close();
+
 }
 void Logfile::createLog(const char *path, int numofcells)
 {

@@ -16,12 +16,19 @@ constexpr const bool SORT_BY_SLAVE_ID = false;
 
 std::vector<SlaveVoltagePair> sorted_voltages;
 
+std::vector<unsigned long> balancentime;
+
+std::vector<int> balancen;
+
+
 int maxCellVoltage = 0;
 int minCellVoltage = 0;
 int differenceMaxMin = 0;
 
 int totale_voltage = 0;
 int avg_temperature = 0;
+int avg_voltage = 0;
+
 
 int maxCellId = 0;
 int minCellId = 0;
@@ -191,6 +198,9 @@ void handleFetch(AsyncWebServerRequest *request)
   jsonDoc["averageTemp"] = avg_temperature;
   jsonDoc["overallVolt"] = totale_voltage;
 
+  jsonDoc["averageVolt"] = avg_voltage;
+
+
   jsonDoc["maxCell"] = maxCellId + 1;
   jsonDoc["maxCellVoltage"] = maxCellVoltage;
 
@@ -240,6 +250,9 @@ void handleNumOfSlaves(AsyncWebServerRequest *request, uint8_t *data, size_t len
   temperature.resize(numOfSlaves);
   voltage.resize(numOfSlaves);
   status.resize(numOfSlaves);
+  
+  balancentime.resize(numOfSlaves);
+  balancen.resize(numOfSlaves);
 
   int diff = numOfSlaves - sorted_voltages.size();
   const bool shrink = (diff < 0);
@@ -274,12 +287,18 @@ void setupWebServer(const char *ssid, const char *password)
   sorted_temperature.resize(numOfSlaves);
   received_data.resize(numOfSlaves + 1);
 
+  balancentime.resize(numOfSlaves);
+  balancen.resize(numOfSlaves);
+
   sorted_voltages.push_back({0, 1});
   sorted_voltages.push_back({0, 2});
 
   std::fill(temperature.begin(), temperature.end(), 0);
   std::fill(voltage.begin(), voltage.end(), 0);
   std::fill(status.begin(), status.end(), 0);
+  std::fill(balancen.begin(), balancen.end(), 0);
+  std::fill(balancentime.begin(), balancentime.end(), 0);
+
 
   battery = getBatteryParameters();
   Serial.print("Ladeschlussspannung: ");

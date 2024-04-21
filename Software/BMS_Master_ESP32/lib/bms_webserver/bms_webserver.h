@@ -19,10 +19,6 @@
 
 extern AsyncWebServer server;
 
-/*extern int temperature[NUMBER_OF_SLAVES];
-extern float voltage[NUMBER_OF_SLAVES];
-extern bool status[NUMBER_OF_SLAVES];*/
-
 extern std::vector<int> temperature;
 extern std::vector<int> voltage;
 extern std::vector<bool> status;
@@ -30,12 +26,17 @@ extern std::vector<bool> status;
 using SlaveVoltagePair = std::tuple<unsigned int, unsigned int>;
 extern std::vector<SlaveVoltagePair> sorted_voltages;
 
-//extern int** sorted_voltages;
 extern std::vector<int> sorted_temperature;
 extern std::vector<int> received_data;
 
 extern int totale_voltage;
 extern int avg_temperature;
+
+extern int avg_voltage;
+
+extern std::vector<unsigned long> balancentime;
+
+extern std::vector<int> balancen;
 
 extern int maxCellVoltage;
 extern int minCellVoltage;

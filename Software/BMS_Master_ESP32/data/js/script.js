@@ -47,12 +47,13 @@ const updateTable = data => {
     if(data["status"+i] == 1){
     $("#status" + i).text("Balancing").addClass("red");
     }
-    else{
+    else if(data["status" + i] == 0){
       $("#status" + i).text("Idle").addClass("green");
       }
   }
   console.log(data);
   $("#averageTemp").text(data["averageTemp"]+"°C");
+  $("#averageVolt").text(data["averageVolt"]+"mV");
   $("#overallVolt").text(((parseInt(data["overallVolt"])/1000).toFixed(2))+"V");
   $("#maxCellVoltage").text(data["maxCellVoltage"]+"mV");
   $("#maxCell").text("Z"+data["maxCell"]);
