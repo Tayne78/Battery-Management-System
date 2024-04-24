@@ -311,12 +311,6 @@ void loop()
         charge_state = CANNOT_BE_CHARGED;
         Serial.println("Overheating");
       }
-
-      if (charge_state == CAN_BE_CHARGED && CHARGE_DETECTION_PIN == HIGH) // LADEN
-      {
-        Serial.println("Ladegerät angesteckt und Ladebereit");
-        relay.turnOnRelay2();
-      }
       anzbalance = 0;
       if (digitalRead(IGNITON_DETECTION_PIN) == LOW)
       {
@@ -326,7 +320,8 @@ void loop()
             status[i] = IDLE;
           if (std::get<0>(sorted_voltages.at(i)) > avg_voltage && std::get<0>(sorted_voltages.at(i)) > battery.minBalanceVoltage && (minCellVoltage + 50) < maxCellVoltage&&temperature[std::get<1>(sorted_voltages.at(i))]<=battery.maxTemperature)
           {
-            relay.turnOffRelay1(); // Laden für Balancen unterbrechen um Overheating zu vermeiden
+            relay.turnOffRelay2(); // Laden für Balancen unterbrechen um Overheating zu vermeiden
+            charge_state = CANNOT_BE_CHARGED;
             Serial.println("Balancen");
             balancen[anzbalance] = std::get<1>(sorted_voltages.at(i)) + 1;
             Serial.println(balancen[anzbalance]);
@@ -350,6 +345,11 @@ void loop()
             }
           }
         }
+      }
+      if (charge_state == CAN_BE_CHARGED && CHARGE_DETECTION_PIN == HIGH) // LADEN
+      {
+        Serial.println("Ladegerät angesteckt und Ladebereit");
+        relay.turnOnRelay2();
       }
     }
   }
